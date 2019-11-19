@@ -7,7 +7,9 @@
          <=
          =
          >=
-         >)
+         >
+         ≤
+         ≥)
 
 (require (prefix-in b: racket/base)
          racket/generic)
@@ -41,3 +43,6 @@
                  (string>=? comparable other))
                (define (> comparable other)
                  (string>? comparable other))]))
+
+(define ≤ <=)
+(define ≥ >=)
