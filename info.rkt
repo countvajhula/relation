@@ -1,2 +1,4 @@
-#lang setup/infotab
-(define deps (list))
+#lang info
+(define collection "relation")
+(define deps '("base"
+               "generic"))
