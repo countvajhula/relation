@@ -27,8 +27,27 @@
   ;; Any code in this `test` submodule runs when this file is run using DrRacket
   ;; or with `raco test`. The code here does not run when this file is
   ;; required by another module.
+  (require relation/comparable)
 
-  (check-equal? (+ 2 2) 4))
+  (check-true (< 1 2 3) "less than")
+  (check-true (<= 1 1 3) "less than or equal to")
+  (check-true (= 1 1 1) "equal to")
+  (check-true (>= 3 3 1) "greater than or equal to")
+  (check-true (> 3 2 1) "greater than")
+  (check-false (< 3 2))
+  (check-false (<= 3 2))
+  (check-false (= 3 2))
+  (check-false (>= 2 3))
+  (check-false (> 2 3))
+  (check-true (≤ 2 3))
+  (check-false (≤ 3 2))
+  (check-true (≥ 3 2))
+  (check-false (≥ 2 3))
+  (check-true (< "apple" "banana" "cherry"))
+  (check-false (< "banana" "apple" "cherry"))
+  (check-true (> "cherry" "banana" "apple"))
+  (check-false (> "banana" "apple" "cherry"))
+  (check-true (= "banana" "banana")))
 
 (module+ main
   ;; (Optional) main submodule. Put code here if you need it to be executed when
