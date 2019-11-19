@@ -1,4 +1,3 @@
 #lang info
 (define collection "relation")
-(define deps '("base"
-               "generic"))
+(define deps '("base"))
