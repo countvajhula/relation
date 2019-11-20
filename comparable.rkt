@@ -42,7 +42,18 @@
                (define (>= comparable . others)
                  (apply string>=? (cons comparable others)))
                (define (> comparable . others)
-                 (apply string>? (cons comparable others)))]))
+                 (apply string>? (cons comparable others)))]
+              [char?
+               (define (< comparable . others)
+                 (apply char<? (cons comparable others)))
+               (define (<= comparable . others)
+                 (apply char<=? (cons comparable others)))
+               (define (= comparable . others)
+                 (apply char=? (cons comparable others)))
+               (define (>= comparable . others)
+                 (apply char>=? (cons comparable others)))
+               (define (> comparable . others)
+                 (apply char>? (cons comparable others)))]))
 
 (define ≤ <=)
 (define ≥ >=)
