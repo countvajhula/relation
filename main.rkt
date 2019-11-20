@@ -47,7 +47,12 @@
   (check-false (< "banana" "apple" "cherry"))
   (check-true (> "cherry" "banana" "apple"))
   (check-false (> "banana" "apple" "cherry"))
-  (check-true (= "banana" "banana")))
+  (check-true (= "banana" "banana"))
+  (check-true (= #\a #\a))
+  (check-true (< #\a #\b #\c))
+  (check-false (< #\b #\a #\c))
+  (check-true (> #\c #\b #\a))
+  (check-false (> #\b #\c #\a)))
 
 (module+ main
   ;; (Optional) main submodule. Put code here if you need it to be executed when
