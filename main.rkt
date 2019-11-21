@@ -21,13 +21,13 @@
 
 ;; Code here
 
-
+(require "comparable.rkt")
+(provide (all-from-out "comparable.rkt"))
 
 (module+ test
   ;; Any code in this `test` submodule runs when this file is run using DrRacket
   ;; or with `raco test`. The code here does not run when this file is
   ;; required by another module.
-  (require relation/comparable)
 
   (check-true (< 1 2 3) "less than")
   (check-true (<= 1 1 3) "less than or equal to")
