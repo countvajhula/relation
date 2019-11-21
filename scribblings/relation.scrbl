@@ -14,7 +14,8 @@ A generic interface for comparing data. The built-in Racket operators @racket[<]
 
 @(define relation-eval (make-base-eval))
 @interaction-eval[#:eval relation-eval
-                  (require relation)]
+                  (require relation)
+				  (require racket/set)]
 
 @defthing[gen:comparable any/c]{
 
@@ -23,13 +24,15 @@ A generic interface for comparing data. The built-in Racket operators @racket[<]
 @itemlist[
  @item{@tech{numbers}}
  @item{@tech{strings}}
- @item{@tech{characters}}]
+ @item{@tech{characters}}
+ @item{@tech{sets}}]
 
 @examples[
     #:eval relation-eval
     (< 1 2 3)
     (< #\a #\b #\c)
     (< "apple" "banana" "cherry")
+    (< (set) (set 1) (set 1 2))
   ]
 }
 
@@ -112,6 +115,7 @@ A generic interface for comparing data. The built-in Racket operators @racket[<]
     (comparable? 3)
     (comparable? #\a)
     (comparable? "cherry")
+    (comparable? (set))
     (comparable? (hash))
   ]
 }

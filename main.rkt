@@ -1,7 +1,8 @@
 #lang racket/base
 
 (module+ test
-  (require rackunit))
+  (require rackunit)
+  (require racket/set))
 
 ;; Notice
 ;; To install (from within the package directory):
@@ -52,7 +53,17 @@
   (check-true (< #\a #\b #\c))
   (check-false (< #\b #\a #\c))
   (check-true (> #\c #\b #\a))
-  (check-false (> #\b #\c #\a)))
+  (check-false (> #\b #\c #\a))
+  (check-true (< (set) (set 1) (set 1 2)))
+  (check-true (<= (set) (set 1) (set 1)))
+  (check-true (= (set 1) (set 1) (set 1)))
+  (check-true (>= (set 1 2) (set 1 2) (set)))
+  (check-true (> (set 1 2) (set 1) (set)))
+  (check-false (< (set 1 2) (set 1 2)))
+  (check-false (<= (set 1 2) (set)))
+  (check-false (= (set 1 2) (set)))
+  (check-false (>= (set) (set 1 2)))
+  (check-false (> (set 1 2) (set 1 2))))
 
 (module+ main
   ;; (Optional) main submodule. Put code here if you need it to be executed when
