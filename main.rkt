@@ -22,8 +22,11 @@
 
 ;; Code here
 
-(require "comparable.rkt")
-(provide (all-from-out "comparable.rkt"))
+(require "comparable.rkt"
+         "transform.rkt")
+
+(provide (all-from-out "comparable.rkt"
+                       "transform.rkt"))
 
 (module+ test
   ;; Any code in this `test` submodule runs when this file is run using DrRacket
