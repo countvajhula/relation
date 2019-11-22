@@ -45,6 +45,7 @@
                            [(eq? round 'up) (ceiling v)]
                            [(eq? round 'nearest) (b:round v)]
                            [else (error "Unrecognized rounding policy!" round)])]
+        [(char? v) char->integer]
         [(string? v) (->integer (->number v))]
         [else (error "Unsupported type!" v)]))
 
@@ -99,6 +100,10 @@
 (define (->syntax v)
   (cond [(syntax? v) v]
         [else (datum->syntax #f v)]))
+
+(define (->code v)
+  (cond [(syntax? v) (syntax->datum v)]
+        [else v]))
 
 (define (->values v)
   (cond [(vector? v) (vector->values v)]
