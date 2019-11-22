@@ -89,3 +89,17 @@
   (cond [(stream? v) v]
         [(sequence? v) (sequence->stream v)]
         [else (error "Unsupported type!" v)]))
+
+(define (->set v)
+  (cond [(set? v) v]
+        [(list? v) (list->set v)]
+        [(sequence? v) (->set (->list v))]
+        [else (error "Unsupported type!" v)]))
+
+(define (->syntax v)
+  (cond [(syntax? v) v]
+        [else (datum->syntax #f v)]))
+
+(define (->values v)
+  (cond [(vector? v) (vector->values v)]
+        [else (->values (->vector v))]))
