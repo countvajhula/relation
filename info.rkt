@@ -1,7 +1,7 @@
 #lang info
 (define collection "relation")
 (define deps '("base" "set"))
-(define build-deps '("scribble-lib" "racket-doc" "rackunit-lib"))
+(define build-deps '("scribble-lib" "scribble-abbrevs" "racket-doc" "rackunit-lib"))
 (define scribblings '(("scribblings/relation.scrbl" ())))
 (define pkg-desc "Generic interfaces and convenient utilities for relations")
 (define version "0.0")

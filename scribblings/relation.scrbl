@@ -1,5 +1,6 @@
 #lang scribble/doc
 @require[scribble/manual
+         scribble-abbrevs/manual
          scribble/example
 		 racket/sandbox
          @for-label[relation
@@ -11,7 +12,7 @@
 
 @defmodule[relation]
 
-A generic interface for comparing data. The built-in Racket operators @racket[<], @racket[<=], @racket[=], @racket[>=] and @racket[>] operate on @tech{numbers} specifically, while other comparable types like characters and strings have their own type-specific comparison operators, for instance @racket[char<?] and @racket[string<?]. This collection provides a generic interface that allows use of the standard operators for any comparable type and not just numbers. The interface can also be implemented in any custom types so that they can be compared using the same operators.
+A generic interface for comparing data. The built-in Racket operators @racket[<], @racket[<=], @racket[=], @racket[>=] and @racket[>] operate on @tech/reference{numbers} specifically, while other comparable types like characters and strings have their own type-specific comparison operators, for instance @racket[char<?] and @racket[string<?]. This collection provides a generic interface that allows use of the standard operators for any comparable type and not just numbers. The interface can also be implemented in any custom types so that they can be compared using the same operators.
 
 @(define eval-for-docs
   (parameterize ([sandbox-output 'string]
@@ -21,13 +22,13 @@ A generic interface for comparing data. The built-in Racket operators @racket[<]
 
 @defthing[gen:comparable any/c]{
 
- A @tech{generic interface} that represents any object that can be compared with other objects of the same type. The following built-in types have implementations for @racket[gen:comparable]:
+ A @tech/reference{generic interface} that represents any object that can be compared with other objects of the same type. The following built-in types have implementations for @racket[gen:comparable]:
 
 @itemlist[
- @item{@tech{numbers}}
- @item{@tech{strings}}
- @item{@tech{characters}}
- @item{@tech{sets}}]
+ @item{@tech/reference{numbers}}
+ @item{@tech/reference{strings}}
+ @item{@tech/reference{characters}}
+ @item{@tech/reference{sets}}]
 
 @examples[
     #:eval eval-for-docs
