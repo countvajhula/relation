@@ -8,7 +8,20 @@
 (provide ->boolean
          ->string
          ->number
-         ->list)
+         ->inexact
+         ->exact
+         ->integer
+         ->list
+         ->vector
+         ->symbol
+         ->keyword
+         ->bytes
+         ->char
+         ->stream
+         ->set
+         ->syntax
+         ->code
+         ->values)
 
 (define (->boolean v)
   (if v
