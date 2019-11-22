@@ -34,6 +34,11 @@
         [(exact? v) (exact->inexact v)]
         [else (error "Unsupported type!" v)]))
 
+(define (->exact v)
+  (cond [(exact? v) v]
+        [(inexact? v) (inexact->exact v)]
+        [else (error "Unsupported type!" v)]))
+
 (define (->integer v #:round [round 'down])
   (cond [(integer? v) v]
         [(number? v) (cond [(eq? round 'down) (floor v)]
@@ -44,14 +49,43 @@
         [else (error "Unsupported type!" v)]))
 
 (define (->list v)
-  (cond [(string? v) (string->list v)]
+  (cond [(list? v) v]
+        [(string? v) (string->list v)]
         [(vector? v) (vector->list v)]
         [(dict? v) (dict->list v)]
         [(set? v) (set->list v)]
         [(syntax? v) (syntax->list v)]
+        [(bytes? v) (bytes->list v)]
+        [(sequence? v) (sequence->list v)]
         [else (error "Unsupported type!" v)]))
 
 (define (->vector v)
   (cond [(vector? v) v]
         [(list? v) (list->vector v)]
         [else (->vector (->list v))]))
+
+(define (->symbol v)
+  (cond [(symbol? v) v]
+        [(string? v) (string->symbol v)]
+        [else (error "Unsupported type!" v)]))
+
+(define (->keyword v)
+  (cond [(keyword? v) v]
+        [(string? v) (string->keyword v)]
+        [else (error "Unsupported type!" v)]))
+
+(define (->bytes v)
+  (cond [(bytes? v) v]
+        [(list? v) (list->bytes v)]
+        [else (error "Unsupported type!" v)]))
+
+(define (->char v)
+  (cond [(char? v) v]
+        [(integer? v) (integer->char v)]
+        [(string? v) (string-ref v 0)]
+        [else (error "Unsupported type!" v)]))
+
+(define (->stream v)
+  (cond [(stream? v) v]
+        [(sequence? v) (sequence->stream v)]
+        [else (error "Unsupported type!" v)]))
