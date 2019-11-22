@@ -2,7 +2,8 @@
 
 (module+ test
   (require rackunit)
-  (require racket/set))
+  (require racket/set)
+  (require racket/stream))
 
 ;; Notice
 ;; To install (from within the package directory):
