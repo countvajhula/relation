@@ -1,5 +1,8 @@
 #lang racket
 
+(require (prefix-in b: racket/base)
+         racket/generic)
+
 (provide gen:comparable
          comparable?
          comparable/c
@@ -10,9 +13,6 @@
          >
          ≤
          ≥)
-
-(require (prefix-in b: racket/base)
-         racket/generic)
 
 ;; define a generic `comparable` interface
 (define-generics comparable
