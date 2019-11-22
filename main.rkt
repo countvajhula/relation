@@ -33,6 +33,7 @@
   ;; or with `raco test`. The code here does not run when this file is
   ;; required by another module.
 
+  ;; comparable
   (check-true (< 1 2 3) "less than")
   (check-true (<= 1 1 3) "less than or equal to")
   (check-true (= 1 1 1) "equal to")
@@ -66,7 +67,33 @@
   (check-false (<= (set 1 2) (set)))
   (check-false (= (set 1 2) (set)))
   (check-false (>= (set) (set 1 2)))
-  (check-false (> (set 1 2) (set 1 2))))
+  (check-false (> (set 1 2) (set 1 2)))
+
+  ;; transform
+  (check-true (->boolean 0))
+  (check-false (->boolean #f))
+  (check-equal? (->string 123) "123")
+  (check-equal? (->number "123") 123)
+  (check-equal? (->inexact 3/2) 1.5)
+  (check-equal? (->exact 1.5) 3/2)
+  (check-equal? (->integer 1.5) 1)
+  (check-equal? (->integer 1.3 #:round 'up) 2)
+  (check-equal? (->integer 1.6 #:round 'down) 1)
+  (check-equal? (->integer 1.6 #:round 'nearest) 2)
+  (check-equal? (->list "abc") (list #\a #\b #\c))
+  (check-equal? (->list #(1 2 3)) (list 1 2 3))
+  (check-equal? (->list (hash 'a 1)) (list (cons 'a 1)))
+  (check-equal? (->vector (list 1 2 3)) #(1 2 3))
+  (check-equal? (->vector "abc") #(#\a #\b #\c))
+  (check-equal? (->symbol "abc") 'abc)
+  (check-equal? (->keyword "abc") '#:abc)
+  (check-equal? (->bytes (list 97 98 99)) #"abc")
+  (check-equal? (->char 97) #\a)
+  (check-equal? (stream-first (->stream (list 1 2 3))) 1)
+  (check-equal? (set-count (->set (list 1 2 3 1))) 3)
+  (check-equal? (->code (->syntax (list 1 2 3))) '(1 2 3))
+  (check-equal? (let-values ([(a b c) (->values (list 1 2 3))])
+                  (list a b c)) (list 1 2 3)))
 
 (module+ main
   ;; (Optional) main submodule. Put code here if you need it to be executed when
