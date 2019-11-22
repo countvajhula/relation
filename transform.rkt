@@ -54,9 +54,9 @@
 
 (define (->integer v #:round [round 'down])
   (cond [(integer? v) v]
-        [(number? v) (cond [(eq? round 'down) (floor v)]
-                           [(eq? round 'up) (ceiling v)]
-                           [(eq? round 'nearest) (b:round v)]
+        [(number? v) (cond [(eq? round 'down) (->exact (floor v))]
+                           [(eq? round 'up) (->exact (ceiling v))]
+                           [(eq? round 'nearest) (->exact (b:round v))]
                            [else (error "Unrecognized rounding policy!" round)])]
         [(char? v) char->integer]
         [(string? v) (->integer (->number v))]
