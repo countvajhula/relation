@@ -2,8 +2,11 @@
 
 (require (rename-in racket/base
                     (round b:round))
+         racket/contract/base
+         racket/format
          racket/set
-         racket/dict)
+         racket/dict
+         racket/stream)
 
 (provide ->boolean
          ->string
@@ -33,7 +36,9 @@
         [(symbol? v) (symbol->string v)]
         [(number? v) (number->string v)]
         [(keyword? v) (keyword->string v)]
-        [(list? v) (list->string v)]
+        [((listof char?) v) (list->string v)]
+        [(bytes? v) (bytes->string/locale v)]
+        [(list? v) (~a v)]
         [else (error "Unsupported type!" v)]))
 
 (define (->number v)
@@ -43,14 +48,14 @@
         [else (error "Unsupported type!" v)]))
 
 (define (->inexact v)
-  (cond [(inexact? v) v]
-        [(exact? v) (exact->inexact v)]
-        [else (error "Unsupported type!" v)]))
+  (cond [((and/c number? inexact?) v) v]
+        [(number? v) (exact->inexact v)]
+        [else (->inexact (->number v))]))
 
 (define (->exact v)
-  (cond [(exact? v) v]
-        [(inexact? v) (inexact->exact v)]
-        [else (error "Unsupported type!" v)]))
+  (cond [((and/c number? exact?) v) v]
+        [(number? v) (inexact->exact v)]
+        [else (->exact (->number v))]))
 
 (define (->integer v #:round [round 'down])
   (cond [(integer? v) v]
@@ -81,22 +86,26 @@
 (define (->symbol v)
   (cond [(symbol? v) v]
         [(string? v) (string->symbol v)]
+        [(keyword? v) (->symbol (->string v))]
         [else (error "Unsupported type!" v)]))
 
 (define (->keyword v)
   (cond [(keyword? v) v]
         [(string? v) (string->keyword v)]
+        [(symbol? v) (->keyword (->string v))]
         [else (error "Unsupported type!" v)]))
 
 (define (->bytes v)
   (cond [(bytes? v) v]
         [(list? v) (list->bytes v)]
+        [(string? v) (->bytes (map char->integer (->list v)))]
         [else (error "Unsupported type!" v)]))
 
 (define (->char v)
   (cond [(char? v) v]
         [(integer? v) (integer->char v)]
         [(string? v) (string-ref v 0)]
+        [(symbol? v) (->char (->string v))]
         [else (error "Unsupported type!" v)]))
 
 (define (->stream v)
