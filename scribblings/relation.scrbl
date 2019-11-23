@@ -1,124 +1,16 @@
 #lang scribble/doc
 @require[scribble/manual
          scribble-abbrevs/manual
-         scribble/example
-		 racket/sandbox
-         @for-label[relation
-		            racket/generic
-                    (except-in racket < <= = >= >)]]
+         @for-label[racket]]
 
 @title{Generic Relations}
 @author{Siddhartha Kasivajhula}
 
 @defmodule[relation]
 
-A generic interface for comparing data. The built-in Racket operators @racket[<], @racket[<=], @racket[=], @racket[>=] and @racket[>] operate on @tech/reference{numbers} specifically, while other comparable types like characters and strings have their own type-specific comparison operators, for instance @racket[char<?] and @racket[string<?]. This collection provides a generic interface that allows use of the standard operators for any comparable type and not just numbers. The interface can also be implemented in any custom types so that they can be compared using the same operators.
+This collection provides generic relations and type-agnostic operators. Many built-in Racket relations and operators are type-specific. For instance, @racket[<] operates specifically on numbers, conversion of any datatype to a string must use a type-specific transformer like @racket[symbol->string], and likewise @racket[+] operates specifically on numbers even though many datatypes sustain a natural notion of addition. This package provides a number of interfaces and utilities to override these default Racket operators with generic versions.
 
-@(define eval-for-docs
-  (parameterize ([sandbox-output 'string]
-                 [sandbox-error-output 'string]
-                 [sandbox-memory-limit #f])
-                 (make-evaluator 'racket/base '(require relation) '(require racket/set))))
+@table-of-contents[]
 
-@defthing[gen:comparable any/c]{
-
- A @tech/reference{generic interface} that represents any object that can be compared with other objects of the same type. The following built-in types have implementations for @racket[gen:comparable]:
-
-@itemlist[
- @item{@tech/reference{numbers}}
- @item{@tech/reference{strings}}
- @item{@tech/reference{characters}}
- @item{@tech/reference{sets}}]
-
-@examples[
-    #:eval eval-for-docs
-    (< 1 2 3)
-    (< #\a #\b #\c)
-    (< "apple" "banana" "cherry")
-    (< (set) (set 1) (set 1 2))
-  ]
-}
-
-@defproc[(< [v comparable?] ...)
-         boolean?]{
-
- True if the v's are monotonically increasing.
-
-@examples[
-    #:eval eval-for-docs
-    (< 1 2 3)
-    (< 2 1)
-    (< "apple" "banana" "cherry")
-  ]
-}
-
-@deftogether[(@defproc[(<= [v comparable?] ...)
-              boolean?]
-			  @defproc[(≤ [v comparable?] ...)
-              boolean?])]{
-
- True if the v's are monotonically nondecreasing.
-
-@examples[
-    #:eval eval-for-docs
-    (≤ 1 1 3)
-    (≤ 2 1)
-    (≤ "apple" "apple" "cherry")
-  ]
-}
-
-@defproc[(= [v comparable?] ...)
-         boolean?]{
-
- True if the v's are equal.
-
-@examples[
-    #:eval eval-for-docs
-    (= 1 1 1)
-    (= 1 2)
-    (= "apple" "apple" "apple")
-  ]
-}
-
-@deftogether[(@defproc[(>= [v comparable?] ...)
-              boolean?]
-			  @defproc[(≥ [v comparable?] ...)
-              boolean?])]{
-
- True if the v's are monotonically nonincreasing.
-
-@examples[
-    #:eval eval-for-docs
-    (≥ 3 1 1)
-    (≥ 1 2)
-    (≥ "banana" "apple" "apple")
-  ]
-}
-
-@defproc[(> [v comparable?] ...)
-         boolean?]{
-
- True if the v's are monotonically decreasing.
-
-@examples[
-    #:eval eval-for-docs
-    (> 3 2 1)
-    (> 1 1)
-    (> "cherry" "banana" "apple")
-  ]
-}
-
-@defproc[(comparable? [v any/c])
-         boolean?]{
-
- Predicate to check if a value is comparable via the generic comparison operators @racket[<], @racket[<=], @racket[=], @racket[>=] and @racket[>].
-
-@examples[
-    #:eval eval-for-docs
-    (comparable? 3)
-    (comparable? #\a)
-    (comparable? "cherry")
-    (comparable? (set))
-    (comparable? (hash))
-  ]
-}
+@include-section["comparable.scrbl"]
+@include-section["transform.scrbl"]
