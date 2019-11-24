@@ -3,7 +3,7 @@
          scribble-abbrevs/manual
          scribble/example
 		 racket/sandbox
-         @for-label[relation
+         @for-label[relation/transform
                     (except-in racket < <= = >= >)]]
 
 @title{Type Transformers}

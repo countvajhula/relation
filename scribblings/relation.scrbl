@@ -14,3 +14,4 @@ This collection provides generic relations and type-agnostic operators. Many bui
 
 @include-section["comparable.scrbl"]
 @include-section["transform.scrbl"]
+@include-section["algebraic.scrbl"]

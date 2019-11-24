@@ -24,10 +24,12 @@
 ;; Code here
 
 (require "comparable.rkt"
-         "transform.rkt")
+         "transform.rkt"
+         "algebraic.rkt")
 
 (provide (all-from-out "comparable.rkt"
-                       "transform.rkt"))
+                       "transform.rkt"
+                       "algebraic.rkt"))
 
 (module+ test
   ;; Any code in this `test` submodule runs when this file is run using DrRacket

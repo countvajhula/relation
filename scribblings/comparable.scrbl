@@ -3,7 +3,7 @@
          scribble-abbrevs/manual
          scribble/example
 		 racket/sandbox
-         @for-label[relation
+         @for-label[relation/comparable
 		            racket/generic
                     (except-in racket < <= = >= >)]]
 
@@ -17,7 +17,9 @@ A generic interface for comparing data. The built-in Racket operators @racket[<]
   (parameterize ([sandbox-output 'string]
                  [sandbox-error-output 'string]
                  [sandbox-memory-limit #f])
-                 (make-evaluator 'racket/base '(require relation) '(require racket/set))))
+                 (make-evaluator 'racket/base
+				                 '(require relation)
+								 '(require racket/set))))
 
 @defthing[gen:comparable any/c]{
 
