@@ -96,7 +96,13 @@
   (check-equal? (set-count (->set (list 1 2 3 1))) 3)
   (check-equal? (->code (->syntax (list 1 2 3))) '(1 2 3))
   (check-equal? (let-values ([(a b c) (->values (list 1 2 3))])
-                  (list a b c)) (list 1 2 3)))
+                  (list a b c)) (list 1 2 3))
+
+  ;; algebraic
+  (check-equal? (+ 97 3) 100)
+  (check-equal? (->vector (+ #(1 2 3) #(1 2 3) #(1 2 3))) #(3 6 9))
+  (check-equal? (* '(1 2 3) '(4 5 6)) '(1 2 3 4 5 6))
+  (check-equal? (* "hi" " " "there") "hi there"))
 
 (module+ main
   ;; (Optional) main submodule. Put code here if you need it to be executed when
