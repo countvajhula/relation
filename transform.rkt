@@ -6,7 +6,8 @@
          racket/format
          racket/set
          racket/dict
-         racket/stream)
+         racket/stream
+         racket/sequence)
 
 (provide ->boolean
          ->string
@@ -39,6 +40,7 @@
         [((listof char?) v) (list->string v)]
         [(bytes? v) (bytes->string/locale v)]
         [(list? v) (~a v)]
+        [(sequence? v) (list->string (->list v))]
         [else (error "Unsupported type!" v)]))
 
 (define (->number v)
