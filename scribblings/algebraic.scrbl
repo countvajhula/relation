@@ -11,7 +11,7 @@
 
 @defmodule[relation/algebraic]
 
-Generic algebraic operations. The built-in algebraic operators @racket[+] and @racket[*] operate on numbers specifically. This module enables use of these operations to achieve the "canonical" operation for a given type. The operator @racket[+] performs the canonical @hyperlink["https://en.wikipedia.org/wiki/Group_(mathematics)"]{group} operation (e.g. addition, for numbers), while @racket[*] performs the canonical @hyperlink["https://en.wikipedia.org/wiki/Monoid"]{monoid} operation (e.g. concatenation, for strings and lists).
+Generic algebraic operations. The built-in algebraic operators @racket[+] and @racket[*] operate on numbers specifically. This module enables use of these operations to achieve the "canonical" operation for a given type. The operator @racket[+] performs the canonical @hyperlink["https://en.wikipedia.org/wiki/Group_(mathematics)"]{group} operation (e.g. addition, for numbers), while @racket[*] or @racket[∘] performs the canonical @hyperlink["https://en.wikipedia.org/wiki/Monoid"]{monoid} operation (e.g. concatenation, for strings and lists).
 
 @(define eval-for-docs
   (parameterize ([sandbox-output 'string]
@@ -47,7 +47,9 @@ Generic algebraic operations. The built-in algebraic operators @racket[+] and @r
  @item{@tech/reference{byte strings}}
  @item{@tech/reference{lists}}
  @item{@tech/reference{vectors}}
- @item{@tech/reference{sequences}}]
+ @item{@tech/reference{sequences}}
+ @item{@tech/reference{procedures}}
+]
 
 @examples[
     #:eval eval-for-docs
@@ -69,8 +71,10 @@ Generic algebraic operations. The built-in algebraic operators @racket[+] and @r
   ]
 }
 
-@defproc[(* [v monoid?] ...)
-         monoid?]{
+@deftogether[(@defproc[(* [v monoid?] ...)
+              monoid?]
+			  @defproc[(∘ [v monoid?] ...)
+              monoid?])]{
 
  Performs the canonical "multiplication-like" operation on the data, based on its type. This operation is the natural operation on the data type that forms an algebraic monoid.
 
@@ -79,5 +83,6 @@ Generic algebraic operations. The built-in algebraic operators @racket[+] and @r
     (* 1 2 3)
     (* "hi" " " "there")
     (* '(1 2 3) '(4 5 6))
+	((∘ ->string +) 3 4)
   ]
 }

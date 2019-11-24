@@ -6,7 +6,8 @@
          data/collection)
 
 (provide +
-         *)
+         *
+         ∘)
 
 (define-generics group
   (+ group . others)
@@ -48,4 +49,9 @@
                  (apply vector-append (cons monoid others)))]
               [sequence?
                (define (* monoid . others)
-                 (apply append (cons monoid others)))]))
+                 (apply append (cons monoid others)))]
+              [procedure?
+               (define (* monoid . others)
+                 (apply compose (cons monoid others)))]))
+
+(define ∘ *)
