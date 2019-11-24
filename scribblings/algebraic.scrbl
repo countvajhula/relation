@@ -47,6 +47,7 @@ Generic algebraic operations. The built-in algebraic operators @racket[+] and @r
  @item{@tech/reference{byte strings}}
  @item{@tech/reference{lists}}
  @item{@tech/reference{vectors}}
+ @item{@tech/reference{sets}}
  @item{@tech/reference{sequences}}
  @item{@tech/reference{procedures}}
 ]
