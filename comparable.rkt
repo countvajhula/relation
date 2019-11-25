@@ -76,9 +76,9 @@
                  (let ([vals (cons comparable others)])
                    (check-sequence equal? vals)))
                (define (>= comparable . others)
-                 ((or/c (curry apply generic-=)
-                        (curry apply generic->))
-                  (cons comparable others)))
+                 (let ([vals (cons comparable others)])
+                   (check-sequence subset?
+                                   (reverse vals))))
                (define (> comparable . others)
                  (let ([vals (cons comparable others)])
                    (check-sequence proper-subset?
