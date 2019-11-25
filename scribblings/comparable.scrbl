@@ -31,6 +31,8 @@ A generic interface for comparing data. The built-in Racket operators @racket[<]
  @item{@tech/reference{characters}}
  @item{@tech/reference{sets}}]
 
+Note that some values may be order-incomparable (see @hyperlink["https://en.wikipedia.org/wiki/Partially_ordered_set"]{partial order}), meaning that none of the order relations would return true for them. For instance, the sets {1, 2} and {1, 3} are incomparable under the @racket[subset?] relation.
+
 @examples[
     #:eval eval-for-docs
     (< 1 2 3)
