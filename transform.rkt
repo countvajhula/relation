@@ -65,9 +65,7 @@
                            [(eq? round 'up) (->exact (ceiling v))]
                            [(eq? round 'nearest) (->exact (b:round v))]
                            [else (error "Unrecognized rounding policy!" round)])]
-        [(char? v) char->integer]
-        [(string? v) (->integer (->number v))]
-        [else (error "Unsupported type!" v)]))
+        [else (->integer (->number v))]))
 
 (define (->list v)
   (cond [(list? v) v]
@@ -88,14 +86,12 @@
 (define (->symbol v)
   (cond [(symbol? v) v]
         [(string? v) (string->symbol v)]
-        [(keyword? v) (->symbol (->string v))]
-        [else (error "Unsupported type!" v)]))
+        [else (->symbol (->string v))]))
 
 (define (->keyword v)
   (cond [(keyword? v) v]
         [(string? v) (string->keyword v)]
-        [(symbol? v) (->keyword (->string v))]
-        [else (error "Unsupported type!" v)]))
+        [else (->keyword (->string v))]))
 
 (define (->bytes v)
   (cond [(bytes? v) v]
@@ -106,7 +102,10 @@
 (define (->char v)
   (cond [(char? v) v]
         [(integer? v) (integer->char v)]
-        [(string? v) (string-ref v 0)]
+        [((and/c non-empty-string? (string-len/c 2)) v) (string-ref v 0)]
+        [((and/c (non-empty-listof any/c)
+                 (property/c length (=/c 1))) v)
+         (->char (list-ref v 0))]
         [(symbol? v) (->char (->string v))]
         [else (error "Unsupported type!" v)]))
 
@@ -118,8 +117,7 @@
 (define (->set v)
   (cond [(set? v) v]
         [(list? v) (list->set v)]
-        [(sequence? v) (->set (->list v))]
-        [else (error "Unsupported type!" v)]))
+        [else (->set (->list v))]))
 
 (define (->syntax v)
   (cond [(syntax? v) v]
