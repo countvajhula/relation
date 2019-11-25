@@ -71,6 +71,11 @@
   (check-false (= (set 1 2) (set)))
   (check-false (>= (set) (set 1 2)))
   (check-false (> (set 1 2) (set 1 2)))
+  (check-false (< (set 1 2) (set 1 3)) "incomparable sets")
+  (check-false (≤ (set 1 2) (set 1 3)) "incomparable sets")
+  (check-false (= (set 1 2) (set 1 3)) "incomparable sets")
+  (check-false (≥ (set 1 2) (set 1 3)) "incomparable sets")
+  (check-false (> (set 1 2) (set 1 3)) "incomparable sets")
 
   ;; transform
   (check-true (->boolean 0))
