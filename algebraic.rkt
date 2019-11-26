@@ -21,22 +21,10 @@
   #:defaults ([number?
                (define (+ group . others)
                  (apply b:+ (cons group others)))]
-              [string?
-               (define (+ group . others)
-                 (error "No canonical group operation defined for " string?))]
-              [bytes?
-               (define (+ group . others)
-                 (error "No canonical group operation defined for " bytes?))]
-              [list?
-               (define (+ group . others)
-                 (error "No canonical group operation defined for " list?))]
               [vector?
                (define/generic generic-+ +)
                (define (+ group . others)
-                 (apply map generic-+ (cons group others)))]
-              [sequence?
-               (define (+ group . others)
-                 (error "No canonical group operation defined for " sequence?))]))
+                 (apply map generic-+ (cons group others)))]))
 
 (define-generics monoid
   (.. monoid . others)
