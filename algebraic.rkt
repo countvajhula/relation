@@ -7,7 +7,7 @@
          data/collection)
 
 (provide +
-         *
+         ..
          ∘)
 
 (define-generics group
@@ -32,30 +32,30 @@
                  (error "No canonical group operation defined for " sequence?))]))
 
 (define-generics monoid
-  (* monoid . others)
+  (.. monoid . others)
   #:defaults ([number?
-               (define (* monoid . others)
+               (define (.. monoid . others)
                  (apply b:* (cons monoid others)))]
               [string?
-               (define (* monoid . others)
+               (define (.. monoid . others)
                  (apply string-append (cons monoid others)))]
               [bytes?
-               (define (* monoid . others)
+               (define (.. monoid . others)
                  (apply bytes-append (cons monoid others)))]
               [list?
-               (define (* monoid . others)
+               (define (.. monoid . others)
                  (apply b:append (cons monoid others)))]
               [vector?
-               (define (* monoid . others)
+               (define (.. monoid . others)
                  (apply vector-append (cons monoid others)))]
               [set?
-               (define (* monoid . others)
+               (define (.. monoid . others)
                  (apply set-union (cons monoid others)))]
               [sequence?
-               (define (* monoid . others)
+               (define (.. monoid . others)
                  (apply append (cons monoid others)))]
               [procedure?
-               (define (* monoid . others)
+               (define (.. monoid . others)
                  (apply compose (cons monoid others)))]))
 
-(define ∘ *)
+(define ∘ ..)

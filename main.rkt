@@ -167,14 +167,14 @@
   ;; algebraic
   (check-equal? (+ 97 3) 100)
   (check-equal? (->vector (+ #(1 2 3) #(1 2 3) #(1 2 3))) #(3 6 9))
-  (check-equal? (* 3 4) 12)
-  (check-equal? (* "hi" " " "there") "hi there")
-  (check-equal? (* #"hi" #" " #"there") #"hi there")
-  (check-equal? (* '(1 2 3) '(4 5 6)) '(1 2 3 4 5 6))
-  (check-equal? (* #(1 2 3) #(4 5 6)) #(1 2 3 4 5 6))
-  (check-equal? (set-count (* (set 1 2 3) (set 3 4 5))) 5)
-  (check-equal? (->list (* (stream 1 2 3) (stream 4 5 6))) (list 1 2 3 4 5 6))
-  (check-equal? ((* ->string +) 3 4) "7"))
+  (check-equal? (.. 3 4) 12)
+  (check-equal? (.. "hi" " " "there") "hi there")
+  (check-equal? (.. #"hi" #" " #"there") #"hi there")
+  (check-equal? (.. '(1 2 3) '(4 5 6)) '(1 2 3 4 5 6))
+  (check-equal? (.. #(1 2 3) #(4 5 6)) #(1 2 3 4 5 6))
+  (check-equal? (set-count (.. (set 1 2 3) (set 3 4 5))) 5)
+  (check-equal? (->list (.. (stream 1 2 3) (stream 4 5 6))) (list 1 2 3 4 5 6))
+  (check-equal? ((.. ->string +) 3 4) "7"))
 
 (module+ main
   ;; (Optional) main submodule. Put code here if you need it to be executed when
