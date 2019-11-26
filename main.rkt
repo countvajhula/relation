@@ -150,12 +150,6 @@
                (->vector eval)))
   (check-exn exn:fail?
              (lambda ()
-               (->symbol eval)))
-  (check-exn exn:fail?
-             (lambda ()
-               (->keyword eval)))
-  (check-exn exn:fail?
-             (lambda ()
                (->bytes "λ")))
   (check-exn exn:fail?
              (lambda ()

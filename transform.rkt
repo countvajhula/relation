@@ -39,6 +39,7 @@
         [(keyword? v) (keyword->string v)]
         [((listof char?) v) (list->string v)]
         [(bytes? v) (bytes->string/locale v)]
+        [(list? v) (~a v)]
         [(sequence? v) (list->string (->list v))]
         [else (~a v)]))
 
