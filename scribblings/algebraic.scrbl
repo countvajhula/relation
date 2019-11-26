@@ -101,6 +101,7 @@ Generic algebraic operations. The built-in algebraic operators @racket[+] and @r
     (.. 1 2 3 4)
     (.. "hi" " " "there")
     (.. '(1 2 3) '(4 5 6))
+    (.. (hash 'a 1 'b 2) (hash 'c 3))
 	((∘ ->string +) 3 4)
   ]
 }

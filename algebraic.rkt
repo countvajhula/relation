@@ -3,6 +3,7 @@
 (require (prefix-in b: racket/base)
          racket/vector
          racket/set
+         racket/dict
          racket/generic
          data/collection)
 
@@ -46,6 +47,9 @@
               [set?
                (define (.. monoid . others)
                  (apply set-union (cons monoid others)))]
+              [dict?
+               (define (.. monoid . others)
+                 (make-hash (sequence->list (apply append (cons monoid others)))))]
               [sequence?
                (define (.. monoid . others)
                  (apply append (cons monoid others)))]
