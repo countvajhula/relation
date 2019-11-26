@@ -117,7 +117,58 @@
   (check-equal? (->code (->syntax (list 1 2 3))) '(1 2 3))
   (check-equal? (let-values ([(a b c) (->values (list 1 2 3))])
                   (list a b c)) (list 1 2 3))
-  ;; TODO: add failure cases
+  ;; failure cases
+  (check-exn exn:fail?
+             (lambda ()
+               (->number 'hi)))
+  (check-exn exn:fail?
+             (lambda ()
+               (->number '(1 2 3))))
+  (check-exn exn:fail?
+             (lambda ()
+               (->inexact 'hi)))
+  (check-exn exn:fail?
+             (lambda ()
+               (->inexact '(1 2 3))))
+  (check-exn exn:fail?
+             (lambda ()
+               (->exact 'hi)))
+  (check-exn exn:fail?
+             (lambda ()
+               (->exact '(1 2 3))))
+  (check-exn exn:fail?
+             (lambda ()
+               (->integer 'hi)))
+  (check-exn exn:fail?
+             (lambda ()
+               (->integer '(1 2 3))))
+  (check-exn exn:fail?
+             (lambda ()
+               (->list eval)))
+  (check-exn exn:fail?
+             (lambda ()
+               (->vector eval)))
+  (check-exn exn:fail?
+             (lambda ()
+               (->symbol eval)))
+  (check-exn exn:fail?
+             (lambda ()
+               (->keyword eval)))
+  (check-exn exn:fail?
+             (lambda ()
+               (->bytes "λ")))
+  (check-exn exn:fail?
+             (lambda ()
+               (->char '(1 2 3))))
+  (check-exn exn:fail?
+             (lambda ()
+               (->stream 'hi)))
+  (check-exn exn:fail?
+             (lambda ()
+               (->set 'hi)))
+  (check-exn exn:fail?
+             (lambda ()
+               (->values 'hi)))
 
   ;; algebraic
   (check-equal? (+ 97 3) 100)
