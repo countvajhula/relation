@@ -23,7 +23,7 @@ A generic interface for comparing data. By default, the built-in comparison oper
 
 @defthing[gen:comparable any/c]{
 
- A @tech/reference{generic interface} that represents any object that can be compared with other objects of the same type. The following built-in types have implementations for @racket[gen:comparable]:
+ A @tech/reference{generic interface} that represents any object that can be compared with other objects of the same type. All built-in types have a default implementation for @racket[gen:comparable], however, only a few of them support comparison relations other than equality. Specifically, the following built-in types have implementations for the order relations @racket[<], @racket[<=], @racket[>=] and @racket[>] in addition to the equality relation @racket[=]:
 
 @itemlist[
  @item{@tech/reference{numbers}}
@@ -36,7 +36,7 @@ Note that some values may be order-incomparable (see @hyperlink["https://en.wiki
 @examples[
     #:eval eval-for-docs
     (< 1 2 3)
-    (< #\a #\b #\c)
+    (> #\c #\b #\a)
     (< "apple" "banana" "cherry")
     (< (set) (set 1) (set 1 2))
   ]
@@ -73,13 +73,14 @@ Note that some values may be order-incomparable (see @hyperlink["https://en.wiki
 @defproc[(= [v comparable?] ...)
          boolean?]{
 
- True if the v's are equal.
+ True if the v's are equal. This uses the most appropriate equality check for the type. For instance, it uses the built-in @racket[=] operator for numeric data, and @racket[equal?] for some other types such as @tech/reference{structures}.
 
 @examples[
     #:eval eval-for-docs
     (= 1 1 1)
     (= 1 2)
     (= "apple" "apple" "apple")
+    (= 3/2 1.5)
   ]
 }
 

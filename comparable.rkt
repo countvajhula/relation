@@ -14,7 +14,6 @@
          ≤
          ≥)
 
-;; define a generic `comparable` interface
 (define-generics comparable
   (< comparable . others)
   (<= comparable . others)
@@ -82,7 +81,18 @@
                (define (> comparable . others)
                  (let ([vals (cons comparable others)])
                    (check-sequence proper-subset?
-                                   (reverse vals))))]))
+                                   (reverse vals))))]
+              [any/c
+               (define (= comparable . others)
+                 (apply equal? (cons comparable others)))
+               (define (< comparable . others)
+                 (error "Type is not orderable!" comparable))
+               (define (<= comparable . others)
+                 (error "Type is not orderable!" comparable))
+               (define (>= comparable . others)
+                 (error "Type is not orderable!" comparable))
+               (define (> comparable . others)
+                 (error "Type is not orderable!" comparable))]))
 
 (define ≤ <=)
 (define ≥ >=)
