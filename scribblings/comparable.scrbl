@@ -11,7 +11,7 @@
 
 @defmodule[relation/comparable]
 
-A generic interface for comparing data. The built-in Racket operators @racket[<], @racket[<=], @racket[=], @racket[>=] and @racket[>] operate on @tech/reference{numbers} specifically, while other comparable types like characters and strings have their own type-specific comparison operators, for instance @racket[char<?] and @racket[string<?]. This collection provides a generic interface that allows use of the standard operators for any comparable type and not just numbers. The interface can also be implemented in any custom types so that they can be compared using the standard operators.
+A generic interface for comparing data. By default, the built-in comparison operators @racket[<], @racket[<=], @racket[=], @racket[>=] and @racket[>] operate on @tech/reference{numbers} specifically, while other comparable types like characters and strings have their own type-specific comparison operators, for instance @racket[char<?] and @racket[string<?]. This module provides a generic interface that overrides these standard operators to allow their use for any comparable type and not only numbers. You can also provide an implementation for the interface in custom types so that they can be compared using the same standard operators.
 
 @(define eval-for-docs
   (parameterize ([sandbox-output 'string]
