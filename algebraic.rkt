@@ -25,8 +25,9 @@
                (define (+ group . others)
                  (error "No canonical group operation defined for " list?))]
               [vector?
+               (define/generic generic-+ +)
                (define (+ group . others)
-                 (apply map b:+ (cons group others)))]
+                 (apply map generic-+ (cons group others)))]
               [sequence?
                (define (+ group . others)
                  (error "No canonical group operation defined for " sequence?))]))
