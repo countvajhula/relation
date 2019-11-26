@@ -14,12 +14,31 @@
          ≤
          ≥)
 
+(define (check-sequence check? vals)
+  (let ([current (car vals)]
+        [remaining (cdr vals)])
+    (if (empty? remaining)
+        #t
+        (and (check? current (car remaining))
+             (check-sequence check? remaining)))))
+
 (define-generics comparable
   (< comparable . others)
   (<= comparable . others)
   (= comparable . others)
   (>= comparable . others)
   (> comparable . others)
+  #:fallbacks [(define (= comparable . others)
+                 (let ([vals (cons comparable others)])
+                   (check-sequence equal? vals)))
+               (define (< comparable . others)
+                 (error "Type is not orderable!" comparable))
+               (define (<= comparable . others)
+                 (error "Type is not orderable!" comparable))
+               (define (>= comparable . others)
+                 (error "Type is not orderable!" comparable))
+               (define (> comparable . others)
+                 (error "Type is not orderable!" comparable))]
   #:defaults ([number?
                (define (< comparable . others)
                  (apply b:< (cons comparable others)))
@@ -58,13 +77,6 @@
                (define/generic generic-< <)
                (define/generic generic-= =)
                (define/generic generic-> >)
-               (define (check-sequence check? vals)
-                 (let ([current (car vals)]
-                       [remaining (cdr vals)])
-                   (if (empty? remaining)
-                       #t
-                       (and (check? current (car remaining))
-                            (check-sequence check? remaining)))))
                (define (< comparable . others)
                  (let ([vals (cons comparable others)])
                    (check-sequence proper-subset? vals)))
@@ -82,17 +94,14 @@
                  (let ([vals (cons comparable others)])
                    (check-sequence proper-subset?
                                    (reverse vals))))]
+              [symbol?
+               (define (= comparable . others)
+                 (let ([vals (cons comparable others)])
+                   (check-sequence eq? vals)))]
               [any/c
                (define (= comparable . others)
-                 (apply equal? (cons comparable others)))
-               (define (< comparable . others)
-                 (error "Type is not orderable!" comparable))
-               (define (<= comparable . others)
-                 (error "Type is not orderable!" comparable))
-               (define (>= comparable . others)
-                 (error "Type is not orderable!" comparable))
-               (define (> comparable . others)
-                 (error "Type is not orderable!" comparable))]))
+                 (let ([vals (cons comparable others)])
+                   (check-sequence equal? vals)))]))
 
 (define ≤ <=)
 (define ≥ >=)

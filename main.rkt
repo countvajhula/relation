@@ -77,6 +77,7 @@
   (check-false (= (set 1 2) (set 1 3)) "incomparable sets")
   (check-false (≥ (set 1 2) (set 1 3)) "incomparable sets")
   (check-false (> (set 1 2) (set 1 3)) "incomparable sets")
+  (check-true (= 'hi 'hi 'hi))
 
   ;; transform
   (check-true (->boolean 0))
