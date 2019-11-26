@@ -6,7 +6,13 @@
          racket/generic
          data/collection)
 
-(provide +
+(provide gen:group
+         group?
+         group/c
+         gen:monoid
+         monoid?
+         monoid/c
+         +
          ..
          ∘)
 

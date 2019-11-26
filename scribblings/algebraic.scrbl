@@ -87,3 +87,37 @@ Generic algebraic operations. The built-in algebraic operators @racket[+] and @r
 	((∘ ->string +) 3 4)
   ]
 }
+
+@defproc[(group? [v any/c])
+         boolean?]{
+
+ Predicate to check if a value may be operated on using the generic "addition-like" operator, @racket[+].
+
+@examples[
+    #:eval eval-for-docs
+    (group? 3)
+    (group? #\a)
+    (group? "cherry")
+    (group? (list))
+    (group? (set))
+    (group? (hash))
+    (group? (vector))
+  ]
+}
+
+@defproc[(monoid? [v any/c])
+         boolean?]{
+
+ Predicate to check if a value may be operated on using the generic "composition-like" operator, @racket[..] or @racket[∘].
+
+@examples[
+    #:eval eval-for-docs
+    (monoid? 3)
+    (monoid? #\a)
+    (monoid? "cherry")
+    (monoid? (list))
+    (monoid? (set))
+    (monoid? (hash))
+    (monoid? (vector))
+  ]
+}
