@@ -4,14 +4,15 @@
          scribble/example
 		 racket/sandbox
          @for-label[relation/comparable
+                    relation/transform
 		            racket/generic
                     (except-in racket < <= = >= >)]]
 
-@title{Order Relations}
+@title{Order and Equivalence Relations}
 
 @defmodule[relation/comparable]
 
-A generic interface for comparing data. By default, the built-in comparison operators @racket[<], @racket[<=], @racket[=], @racket[>=] and @racket[>] operate on @tech/reference{numbers} specifically, while other comparable types like characters and strings have their own type-specific comparison operators, for instance @racket[char<?] and @racket[string<?]. This module provides a generic interface that overrides these standard operators to allow their use for any comparable type and not only numbers. You can also provide an implementation for the interface in custom types so that they can be compared using the same standard operators.
+A generic interface for comparing data. By default, the built-in comparison operators @racket[<], @racket[<=], @racket[=], @racket[>=] and @racket[>] operate on @tech/reference{numbers} specifically, while other comparable types like characters and strings have their own type-specific comparison operators, for instance @racket[char<?] and @racket[string<?]. This module provides a generic interface that overrides these standard operators to allow their use for any comparable type and not only numbers, and also provides additional interfaces to support broader notions of equivalence than simple equality. You can also provide an implementation for the interface in custom types so that they can be compared using the same standard operators.
 
 @(define eval-for-docs
   (parameterize ([sandbox-output 'string]
@@ -19,11 +20,12 @@ A generic interface for comparing data. By default, the built-in comparison oper
                  [sandbox-memory-limit #f])
                  (make-evaluator 'racket/base
 				                 '(require relation)
+				                 '(require racket/function)
 								 '(require racket/set))))
 
 @defthing[gen:comparable any/c]{
 
- A @tech/reference{generic interface} that represents any object that can be compared with other objects of the same type. All built-in types have a default implementation for @racket[gen:comparable], however, only a few of them support comparison relations other than equality. Specifically, the following built-in types have implementations for the order relations @racket[<], @racket[<=], @racket[>=] and @racket[>] in addition to the equality relation @racket[=]:
+ A @tech/reference{generic interface} that represents any object that can be compared with other objects of the same type in terms of equivalence ("are these values equal, for some definition of equality?") and order ("is this value less than or greater than that value?"). All built-in types have a default implementation for @racket[gen:comparable], however, most of them implement only the equivalence relations, while a few support the order relations as well. Specifically, the following built-in types have implementations for the order relations @racket[<], @racket[<=], @racket[>=] and @racket[>] in addition to the equivalence relations @racket[=] and @racket[=~]:
 
 @itemlist[
  @item{@tech/reference{numbers}}
@@ -31,7 +33,7 @@ A generic interface for comparing data. By default, the built-in comparison oper
  @item{@tech/reference{characters}}
  @item{@tech/reference{sets}}]
 
-Note that some values may be order-incomparable (see @hyperlink["https://en.wikipedia.org/wiki/Partially_ordered_set"]{partial order}), meaning that none of the order relations would return true for them. For instance, the sets {1, 2} and {1, 3} are incomparable under their canonical order relation (i.e. @racket[subset?]).
+Note that even if a type implements the order relations, some values may still be order-incomparable (see @hyperlink["https://en.wikipedia.org/wiki/Partially_ordered_set"]{partial order}), meaning that none of the relations would return true for them. For instance, the sets {1, 2} and {1, 3} are incomparable under their canonical order relation (i.e. @racket[subset?]), while also not being equal.
 
 @examples[
     #:eval eval-for-docs
@@ -39,6 +41,9 @@ Note that some values may be order-incomparable (see @hyperlink["https://en.wiki
     (> #\c #\b #\a)
     (< "apple" "banana" "cherry")
     (< (set) (set 1) (set 1 2))
+    (= "apple" "APPLE")
+    (=~ string-upcase "apple" "APPLE")
+    (=~ ->number "42.0" "42/1")
   ]
 }
 
@@ -84,6 +89,23 @@ Note that some values may be order-incomparable (see @hyperlink["https://en.wiki
   ]
 }
 
+@defproc[(=~ [key procedure?] [v comparable?] ...)
+         boolean?]{
+
+ True if the v's are equal under the transformation @racket[key]. This first applies the provided transformation to the input values and then performs the equality check on the resulting values using the generic @racket[=] operator.
+
+@examples[
+    #:eval eval-for-docs
+    (=~ identity 1 1 1)
+    (=~ string-upcase "apple" "Apple" "APPLE")
+    (=~ ->number "42.0" "42/1" "42")
+    (=~ ->number "42" "42.1")
+    (=~ even? 12 20)
+    (=~ odd? 12 20)
+    (=~ (.. even? ->number) "12" "20")
+  ]
+}
+
 @deftogether[(@defproc[(>= [v comparable?] ...)
               boolean?]
 			  @defproc[(≥ [v comparable?] ...)
@@ -115,7 +137,7 @@ Note that some values may be order-incomparable (see @hyperlink["https://en.wiki
 @defproc[(comparable? [v any/c])
          boolean?]{
 
- Predicate to check if a value is comparable via the generic comparison operators @racket[<], @racket[<=], @racket[=], @racket[>=] and @racket[>].
+ Predicate to check if a value is comparable via the generic comparison operators @racket[<], @racket[<=], @racket[=], @racket[=~], @racket[>=] and @racket[>].
 
 @examples[
     #:eval eval-for-docs
