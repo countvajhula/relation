@@ -15,7 +15,9 @@
           [->number (-> any/c number?)]
           [->inexact (-> any/c inexact?)]
           [->exact (-> any/c exact?)]
-          [->integer (-> any/c integer?)]
+          [->integer (->* (any/c)
+                          (#:round symbol?)
+                          integer?)]
           [->list (-> any/c list?)]
           [->vector (-> any/c vector?)]
           [->symbol (-> any/c symbol?)]

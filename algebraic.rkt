@@ -5,7 +5,8 @@
          racket/set
          racket/dict
          racket/generic
-         data/collection)
+         data/collection
+         relation/transform)
 
 (provide gen:group
          group/c
@@ -26,7 +27,8 @@
               [vector?
                (define/generic generic-+ +)
                (define (+ group . others)
-                 (apply map generic-+ (cons group others)))]))
+                 (->vector
+                  (apply map generic-+ (cons group others))))]))
 
 (define-generics monoid
   (.. monoid . others)
