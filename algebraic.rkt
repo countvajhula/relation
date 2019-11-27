@@ -16,6 +16,7 @@
           [group? (-> any/c boolean?)]
           [monoid? (-> any/c boolean?)]
           [+ (-> group? group? ... group?)]
+          [- (-> group? group? ... group?)]
           [inverse (-> group? group?)]
           [.. (-> monoid? monoid? ... monoid?)]
           [∘ (-> monoid? monoid? ... monoid?)]))
@@ -68,3 +69,6 @@
                  (apply compose (cons monoid others)))]))
 
 (define ∘ ..)
+
+(define (- v . others)
+  (apply + v (map inverse others)))

@@ -5,7 +5,7 @@
 		 racket/sandbox
          @for-label[relation/algebraic
 		            racket/generic
-                    (except-in racket +)]]
+                    (except-in racket + -)]]
 
 @title{Algebraic Operations}
 
