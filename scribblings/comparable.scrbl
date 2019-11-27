@@ -89,8 +89,10 @@ Note that even if a type implements the order relations, some values may still b
   ]
 }
 
-@defproc[(=~ [key procedure?] [v comparable?] ...)
-         boolean?]{
+@deftogether[(@defproc[(=~ [key procedure?] [v comparable?] ...)
+              boolean?]
+			  @defproc[(≡ [key procedure?] [v comparable?] ...)
+              boolean?])]{
 
  True if the v's are equal under the transformation @racket[key]. This first applies the provided transformation to the input values and then performs the equality check on the resulting values using the generic @racket[=] operator.
 

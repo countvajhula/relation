@@ -15,6 +15,11 @@
                   comparable?
                   ...
                   boolean?)]
+          [≡ (-> (-> comparable? comparable?)
+                 comparable?
+                 comparable?
+                 ...
+                 boolean?)]
           [>= (-> comparable? comparable? ... boolean?)]
           [> (-> comparable? comparable? ... boolean?)]
           [≤ (-> comparable? comparable? ... boolean?)]
@@ -116,3 +121,4 @@
 
 (define ≤ <=)
 (define ≥ >=)
+(define ≡ =~)
