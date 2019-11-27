@@ -25,7 +25,7 @@ A generic interface for comparing data. By default, the built-in comparison oper
 
 @defthing[gen:comparable any/c]{
 
- A @tech/reference{generic interface} that represents any object that can be compared with other objects of the same type in terms of equivalence ("are these values equal, for some definition of equality?") and order ("is this value less than or greater than that value?"). All built-in types have a default implementation for @racket[gen:comparable], however, most of them implement only the equivalence relations, while a few support the order relations as well. Specifically, the following built-in types have implementations for the order relations @racket[<], @racket[<=], @racket[>=] and @racket[>] in addition to the equivalence relations @racket[=] and @racket[=~]:
+ A @tech/reference{generic interface} that represents any object that can be compared with other objects of the same type in terms of equivalence ("are these values equal, for some definition of equality?") and order ("is this value less than or greater than that value?"). All built-in types have a default implementation for @racket[gen:comparable], however, most of them implement only the equivalence relations, while a few support the order relations as well. Specifically, the following built-in types have implementations for the order relations @racket[<], @racket[<=], @racket[>=] and @racket[>] in addition to the equivalence relations @racket[=], @racket[=~] and @racket[/=]:
 
 @itemlist[
  @item{@tech/reference{numbers}}
@@ -108,6 +108,20 @@ Note that even if a type implements the order relations, some values may still b
   ]
 }
 
+@defproc[(/= [v comparable?] ...)
+          boolean?]{
+
+ True if the v's are not equal. This is simply a negation of the generic @racket[=].
+
+@examples[
+    #:eval eval-for-docs
+    (/= 1 1 2)
+    (/= 1 1)
+    (/= "apple" "Apple")
+    (/= 3/2 1.5)
+  ]
+}
+
 @deftogether[(@defproc[(>= [v comparable?] ...)
               boolean?]
 			  @defproc[(≥ [v comparable?] ...)
@@ -139,7 +153,7 @@ Note that even if a type implements the order relations, some values may still b
 @defproc[(comparable? [v any/c])
          boolean?]{
 
- Predicate to check if a value is comparable via the generic comparison operators @racket[<], @racket[<=], @racket[=], @racket[=~], @racket[>=] and @racket[>].
+ Predicate to check if a value is comparable via the generic comparison operators @racket[<], @racket[<=], @racket[=], @racket[=~], @racket[/=], @racket[>=] and @racket[>].
 
 @examples[
     #:eval eval-for-docs

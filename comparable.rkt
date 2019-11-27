@@ -20,6 +20,7 @@
                  comparable?
                  ...
                  boolean?)]
+          [/= (-> comparable? comparable? ... boolean?)]
           [>= (-> comparable? comparable? ... boolean?)]
           [> (-> comparable? comparable? ... boolean?)]
           [≤ (-> comparable? comparable? ... boolean?)]
@@ -38,6 +39,7 @@
   (<= comparable . others)
   (= comparable . others)
   (=~ key comparable . others)
+  (/= comparable . others)
   (>= comparable . others)
   (> comparable . others)
   #:fallbacks [(define/generic generic-= =)
@@ -47,6 +49,8 @@
                (define (=~ key comparable . others)
                  (let ([vals (map key (cons comparable others))])
                    (apply generic-= vals)))
+               (define (/= comparable . others)
+                 (not (apply generic-= comparable others)))
                (define (< comparable . others)
                  (error "Type is not orderable!" comparable))
                (define (<= comparable . others)

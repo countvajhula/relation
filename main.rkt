@@ -70,6 +70,11 @@
   (check-true (=~ string-upcase "apple" "Apple" "APPLE"))
   (check-true (=~ ->number "42" "42.0" "42/1"))
   (check-false (=~ ->number "42" "42.1"))
+  (check-true (/= 1 1 2))
+  (check-true (/= "apple" "Apple"))
+  (check-true (/= 'a 'b))
+  (check-false (/= 1 1))
+  (check-false (/= "apple" "apple"))
 
   ;; transform
   (check-true (->boolean 0))
