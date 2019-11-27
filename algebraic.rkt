@@ -16,19 +16,26 @@
           [group? (-> any/c boolean?)]
           [monoid? (-> any/c boolean?)]
           [+ (-> group? group? ... group?)]
+          [inverse (-> group? group?)]
           [.. (-> monoid? monoid? ... monoid?)]
           [∘ (-> monoid? monoid? ... monoid?)]))
 
 (define-generics group
   (+ group . others)
+  (inverse group)
   #:defaults ([number?
                (define (+ group . others)
-                 (apply b:+ (cons group others)))]
+                 (apply b:+ (cons group others)))
+               (define (inverse group)
+                 (b:- group))]
               [vector?
                (define/generic generic-+ +)
                (define (+ group . others)
                  (->vector
-                  (apply map generic-+ (cons group others))))]))
+                  (apply map generic-+ (cons group others))))
+               (define (inverse group)
+                 (->vector
+                  (map b:- group)))]))
 
 (define-generics monoid
   (.. monoid . others)
