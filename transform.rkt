@@ -84,7 +84,7 @@
 
 (define (->vector v)
   (cond [(vector? v) v]
-        [(list? v) (list->vector v)]
+        [(list? v) (vector->immutable-vector (list->vector v))]
         [else (->vector (->list v))]))
 
 (define (->symbol v)
