@@ -83,7 +83,7 @@ Generic utilities for transforming data into different types. The type transform
   ]
 }
 
-@defproc[(->integer [v any/c])
+@defproc[(->integer [v any/c] [#:round round (one-of/c 'up 'down 'nearest) 'down])
          integer?]{
 
  Maps the input data to an @tech/reference{integer}.
@@ -212,7 +212,7 @@ Generic utilities for transforming data into different types. The type transform
 }
 
 @defproc[(->code [v any/c])
-         code?]{
+         any/c]{
 
  Maps the input data (for instance, a syntax object in a macro definition) to a @tech/reference{datum}, that is, to an elementary syntactic representation, the literal "code."
 

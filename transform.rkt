@@ -16,7 +16,9 @@
           [->inexact (-> any/c inexact?)]
           [->exact (-> any/c exact?)]
           [->integer (->* (any/c)
-                          (#:round symbol?)
+                          (#:round (one-of/c 'up
+                                             'down
+                                             'nearest))
                           integer?)]
           [->list (-> any/c list?)]
           [->vector (-> any/c vector?)]
@@ -66,8 +68,7 @@
   (cond [(integer? v) v]
         [(number? v) (cond [(eq? round 'down) (->exact (floor v))]
                            [(eq? round 'up) (->exact (ceiling v))]
-                           [(eq? round 'nearest) (->exact (b:round v))]
-                           [else (error "Unrecognized rounding policy!" round)])]
+                           [(eq? round 'nearest) (->exact (b:round v))])]
         [else (->integer (->number v))]))
 
 (define (->list v)

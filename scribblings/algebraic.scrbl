@@ -33,7 +33,7 @@ Generic algebraic operations. The built-in algebraic operators @racket[+] and @r
 @examples[
     #:eval eval-for-docs
     (+ 1 2 3)
-    (->list (+ #(1 2 3) #(1 2 3) #(1 2 3)))
+    (+ #(1 2 3) #(1 2 3) #(1 2 3))
   ]
 }
 
@@ -45,7 +45,7 @@ Generic algebraic operations. The built-in algebraic operators @racket[+] and @r
 @examples[
     #:eval eval-for-docs
     (+ 1 2 3)
-    (->list (+ #(1 2 3) #(1 2 3) #(1 2 3)))
+    (+ #(1 2 3) #(1 2 3) #(1 2 3))
   ]
 }
 
