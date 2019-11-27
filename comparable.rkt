@@ -27,13 +27,13 @@
           [≤ (-> comparable? comparable? ... boolean?)]
           [≥ (-> comparable? comparable? ... boolean?)]))
 
-(define (check-sequence check? vals)
+(define (check-pairwise check? vals)
   (let ([current (car vals)]
         [remaining (cdr vals)])
     (if (empty? remaining)
         #t
         (and (check? current (car remaining))
-             (check-sequence check? remaining)))))
+             (check-pairwise check? remaining)))))
 
 (define-generics comparable
   (< comparable . others)
@@ -46,7 +46,7 @@
   #:fallbacks [(define/generic generic-= =)
                (define (= comparable . others)
                  (let ([vals (cons comparable others)])
-                   (check-sequence equal? vals)))
+                   (check-pairwise equal? vals)))
                (define (=~ key comparable . others)
                  (let ([vals (map key (cons comparable others))])
                    (apply generic-= vals)))
@@ -100,29 +100,29 @@
                (define/generic generic-> >)
                (define (< comparable . others)
                  (let ([vals (cons comparable others)])
-                   (check-sequence proper-subset? vals)))
+                   (check-pairwise proper-subset? vals)))
                (define (<= comparable . others)
                  (let ([vals (cons comparable others)])
-                   (check-sequence subset? vals)))
+                   (check-pairwise subset? vals)))
                (define (= comparable . others)
                  (let ([vals (cons comparable others)])
-                   (check-sequence equal? vals)))
+                   (check-pairwise equal? vals)))
                (define (>= comparable . others)
                  (let ([vals (cons comparable others)])
-                   (check-sequence subset?
+                   (check-pairwise subset?
                                    (reverse vals))))
                (define (> comparable . others)
                  (let ([vals (cons comparable others)])
-                   (check-sequence proper-subset?
+                   (check-pairwise proper-subset?
                                    (reverse vals))))]
               [symbol?
                (define (= comparable . others)
                  (let ([vals (cons comparable others)])
-                   (check-sequence eq? vals)))]
+                   (check-pairwise eq? vals)))]
               [any/c
                (define (= comparable . others)
                  (let ([vals (cons comparable others)])
-                   (check-sequence equal? vals)))]))
+                   (check-pairwise equal? vals)))]))
 
 (define ≤ <=)
 (define ≥ >=)
