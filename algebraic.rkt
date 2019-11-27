@@ -8,14 +8,15 @@
          data/collection)
 
 (provide gen:group
-         group?
          group/c
          gen:monoid
-         monoid?
          monoid/c
-         +
-         ..
-         ∘)
+         (contract-out
+          [group? (-> any/c boolean?)]
+          [monoid? (-> any/c boolean?)]
+          [+ (-> group? group? ... group?)]
+          [.. (-> monoid? monoid? ... monoid?)]
+          [∘ (-> monoid? monoid? ... monoid?)]))
 
 (define-generics group
   (+ group . others)

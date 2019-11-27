@@ -9,23 +9,24 @@
          racket/stream
          racket/sequence)
 
-(provide ->boolean
-         ->string
-         ->number
-         ->inexact
-         ->exact
-         ->integer
-         ->list
-         ->vector
-         ->symbol
-         ->keyword
-         ->bytes
-         ->char
-         ->stream
-         ->set
-         ->syntax
-         ->code
-         ->values)
+(provide (contract-out
+          [->boolean (-> any/c boolean?)]
+          [->string (-> any/c string?)]
+          [->number (-> any/c number?)]
+          [->inexact (-> any/c inexact?)]
+          [->exact (-> any/c exact?)]
+          [->integer (-> any/c integer?)]
+          [->list (-> any/c list?)]
+          [->vector (-> any/c vector?)]
+          [->symbol (-> any/c symbol?)]
+          [->keyword (-> any/c keyword?)]
+          [->bytes (-> any/c bytes?)]
+          [->char (-> any/c char?)]
+          [->stream (-> any/c stream?)]
+          [->set (-> any/c set?)]
+          [->syntax (-> any/c syntax?)]
+          [->code (-> any/c any/c)]
+          [->values (-> any/c any)]))
 
 (define (->boolean v)
   (if v

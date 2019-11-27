@@ -4,15 +4,16 @@
          racket/generic)
 
 (provide gen:comparable
-         comparable?
          comparable/c
-         <
-         <=
-         =
-         >=
-         >
-         ≤
-         ≥)
+         (contract-out
+          [comparable? (-> any/c boolean?)]
+          [< (-> comparable? comparable? ... boolean?)]
+          [<= (-> comparable? comparable? ... boolean?)]
+          [= (-> comparable? comparable? ... boolean?)]
+          [>= (-> comparable? comparable? ... boolean?)]
+          [> (-> comparable? comparable? ... boolean?)]
+          [≤ (-> comparable? comparable? ... boolean?)]
+          [≥ (-> comparable? comparable? ... boolean?)]))
 
 (define (check-sequence check? vals)
   (let ([current (car vals)]
