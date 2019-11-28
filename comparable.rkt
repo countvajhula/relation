@@ -2,7 +2,8 @@
 
 (require (prefix-in b: racket/base)
          racket/generic
-         racket/function)
+         racket/function
+         data/collection)
 
 ;; There is a lot of redundancy in this module that should ideally be addressed:
 ;;   1. contracts are duplicated across aliases
@@ -53,7 +54,15 @@
           [> (->* (comparable?)
                   (#:key (-> comparable? comparable?))
                   #:rest (listof comparable?)
-                  boolean?)]))
+                  boolean?)]
+          (min (->* (comparable?)
+                    (#:key (-> comparable? comparable?))
+                    #:rest (listof comparable?)
+                    comparable?))
+          (max (->* (comparable?)
+                    (#:key (-> comparable? comparable?))
+                    #:rest (listof comparable?)
+                    comparable?))))
 
 (define (check-pairwise check? vals)
   (let ([current (car vals)]
@@ -267,3 +276,15 @@
 (define ≤ <=)
 (define ≥ >=)
 (define ≠ /=)
+
+(define (min #:key [key #f] . args)
+  (first (sort args
+               (if key
+                   (curry < #:key key)
+                   <))))
+
+(define (max #:key [key #f] . args)
+  (first (sort args
+               (if key
+                   (curry > #:key key)
+                   >))))

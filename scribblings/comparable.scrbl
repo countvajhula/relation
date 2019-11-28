@@ -6,7 +6,7 @@
          @for-label[relation/comparable
                     relation/transform
 		            racket/generic
-                    (except-in racket < <= = >= >)]]
+                    (except-in racket < <= = >= > min max)]]
 
 @title{Order and Equivalence Relations}
 
