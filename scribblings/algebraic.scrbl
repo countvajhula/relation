@@ -102,7 +102,9 @@ Generic algebraic operations. The built-in algebraic operators @racket[+] and @r
  @item{@tech/reference{vectors}}
  @item{@tech/reference{sets}}
  @item{@tech/reference{sequences}}
- @item{@tech/reference{procedures}}
+ @;{would be better to link to the procedures reference instead
+    of the lambda definition}
+ @item{@racketlink[lambda]{procedures}}
 ]
 
 @examples[
