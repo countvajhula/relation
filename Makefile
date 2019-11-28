@@ -10,6 +10,7 @@ help:
 	@echo "remove - remove package"
 	@echo "check-deps - check dependencies"
 	@echo "test - run tests"
+	@echo "docs - view docs in a browser"
 
 # Primarily for use by CI.
 # Installs dependencies as well as linking this as a package.
@@ -40,4 +41,7 @@ check-deps:
 test:
 	raco test -x -p $(PACKAGE-NAME)
 
-.PHONY:	help setup check-deps test clean install remove
+docs:
+	raco docs $(PACKAGE-NAME)
+
+.PHONY:	help setup check-deps test clean install remove docs
