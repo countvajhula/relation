@@ -4,6 +4,16 @@
          racket/generic
          racket/function)
 
+;; There is a lot of redundancy in this module that should ideally be addressed:
+;;   1. contracts are duplicated across aliases
+;;   2. transformation by key is repeated across
+;;      all relations because the dispatch is by
+;;      type and not the other arguments
+;;   3. (for the same reason) generic versions of
+;;      relations are redefined in every block
+;; One alternative is to use separate operators for keyed- and
+;; unkeyed relations, but that involves duplication of its own
+
 (provide gen:comparable
          comparable/c
          (contract-out
@@ -138,6 +148,43 @@
                    (if key
                        (apply generic-> (map key vals))
                        (check-pairwise string>? vals))))]
+              [bytes?
+               (define/generic generic-= =)
+               (define/generic generic-< <)
+               (define/generic generic-<= <=)
+               (define/generic generic->= >=)
+               (define/generic generic-> >)
+               (define (< #:key [key #f] comparable . others)
+                 (let ([vals (cons comparable others)])
+                   (if key
+                       (apply generic-< (map key vals))
+                       (check-pairwise bytes<? vals))))
+               (define (<= #:key [key #f] comparable . others)
+                 (let ([vals (cons comparable others)])
+                   (if key
+                       (apply generic-<= (map key vals))
+                       (check-pairwise (λ (a b)
+                                         (or (bytes=? a b)
+                                             (bytes<? a b)))
+                                       vals))))
+               (define (= #:key [key #f] comparable . others)
+                 (let ([vals (cons comparable others)])
+                   (if key
+                       (apply generic-= (map key vals))
+                       (check-pairwise bytes=? vals))))
+               (define (>= #:key [key #f] comparable . others)
+                 (let ([vals (cons comparable others)])
+                   (if key
+                       (apply generic->= (map key vals))
+                       (check-pairwise (λ (a b)
+                                         (or (bytes=? a b)
+                                             (bytes>? a b)))
+                                       vals))))
+               (define (> #:key [key #f] comparable . others)
+                 (let ([vals (cons comparable others)])
+                   (if key
+                       (apply generic-> (map key vals))
+                       (check-pairwise bytes>? vals))))]
               [char?
                (define/generic generic-= =)
                (define/generic generic-< <)

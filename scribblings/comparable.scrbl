@@ -30,6 +30,7 @@ A generic interface for comparing data. By default, the built-in comparison oper
 @itemlist[
  @item{@tech/reference{numbers}}
  @item{@tech/reference{strings}}
+ @item{@tech/reference{byte strings}}
  @item{@tech/reference{characters}}
  @item{@tech/reference{sets}}]
 
