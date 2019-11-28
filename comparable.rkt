@@ -12,7 +12,14 @@
                   (#:key (-> comparable? comparable?))
                   #:rest (listof comparable?)
                   boolean?)]
-          [<= (-> comparable? comparable? ... boolean?)]
+          [<= (->* (comparable?)
+                   (#:key (-> comparable? comparable?))
+                   #:rest (listof comparable?)
+                   boolean?)]
+          [≤ (->* (comparable?)
+                  (#:key (-> comparable? comparable?))
+                  #:rest (listof comparable?)
+                  boolean?)]
           [= (->* (comparable?)
                   (#:key (-> comparable? comparable?))
                   #:rest (listof comparable?)
@@ -27,7 +34,6 @@
                   boolean?)]
           [>= (-> comparable? comparable? ... boolean?)]
           [> (-> comparable? comparable? ... boolean?)]
-          [≤ (-> comparable? comparable? ... boolean?)]
           [≥ (-> comparable? comparable? ... boolean?)]))
 
 (define (check-pairwise check? vals)
@@ -40,7 +46,7 @@
 
 (define-generics comparable
   (< #:key [key] comparable . others)
-  (<= comparable . others)
+  (<= #:key [key] comparable . others)
   (= #:key [key] comparable . others)
   (/= #:key [key] comparable . others)
   (>= comparable . others)
@@ -55,7 +61,7 @@
                  (not (apply generic-= #:key key comparable others)))
                (define (< #:key [key #f] comparable . others)
                  (error "Type is not orderable!" comparable))
-               (define (<= comparable . others)
+               (define (<= #:key [key #f] comparable . others)
                  (error "Type is not orderable!" comparable))
                (define (>= comparable . others)
                  (error "Type is not orderable!" comparable))
@@ -64,14 +70,17 @@
   #:defaults ([number?
                (define/generic generic-= =)
                (define/generic generic-< <)
+               (define/generic generic-<= <=)
                (define (< #:key [key #f] comparable . others)
                  (let ([vals (cons comparable others)])
                    (if key
                        (apply generic-< (map key vals))
                        (check-pairwise b:< vals))))
-               (define (<= comparable . others)
+               (define (<= #:key [key #f] comparable . others)
                  (let ([vals (cons comparable others)])
-                   (check-pairwise b:<= vals)))
+                   (if key
+                       (apply generic-<= (map key vals))
+                       (check-pairwise b:<= vals))))
                (define (= #:key [key #f] comparable . others)
                  (let ([vals (cons comparable others)])
                    (if key
@@ -86,14 +95,17 @@
               [string?
                (define/generic generic-= =)
                (define/generic generic-< <)
+               (define/generic generic-<= <=)
                (define (< #:key [key #f] comparable . others)
                  (let ([vals (cons comparable others)])
                    (if key
                        (apply generic-< (map key vals))
                        (check-pairwise string<? vals))))
-               (define (<= comparable . others)
+               (define (<= #:key [key #f] comparable . others)
                  (let ([vals (cons comparable others)])
-                   (check-pairwise string<=? vals)))
+                   (if key
+                       (apply generic-<= (map key vals))
+                       (check-pairwise string<=? vals))))
                (define (= #:key [key #f] comparable . others)
                  (let ([vals (cons comparable others)])
                    (if key
@@ -108,14 +120,17 @@
               [char?
                (define/generic generic-= =)
                (define/generic generic-< <)
+               (define/generic generic-<= <=)
                (define (< #:key [key #f] comparable . others)
                  (let ([vals (cons comparable others)])
                    (if key
                        (apply generic-< (map key vals))
                        (check-pairwise char<? vals))))
-               (define (<= comparable . others)
+               (define (<= #:key [key #f] comparable . others)
                  (let ([vals (cons comparable others)])
-                   (check-pairwise char<=? vals)))
+                   (if key
+                       (apply generic-<= (map key vals))
+                       (check-pairwise char<=? vals))))
                (define (= #:key [key #f] comparable . others)
                  (let ([vals (cons comparable others)])
                    (if key
@@ -130,14 +145,17 @@
               [set?
                (define/generic generic-= =)
                (define/generic generic-< <)
+               (define/generic generic-<= <=)
                (define (< #:key [key #f] comparable . others)
                  (let ([vals (cons comparable others)])
                    (if key
                        (apply generic-< (map key vals))
                        (check-pairwise proper-subset? vals))))
-               (define (<= comparable . others)
+               (define (<= #:key [key #f] comparable . others)
                  (let ([vals (cons comparable others)])
-                   (check-pairwise subset? vals)))
+                   (if key
+                       (apply generic-<= (map key vals))
+                       (check-pairwise subset? vals))))
                (define (= #:key [key #f] comparable . others)
                  (let ([vals (cons comparable others)])
                    (if key
