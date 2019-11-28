@@ -14,8 +14,14 @@
                   (#:key (-> comparable? comparable?))
                   #:rest (listof comparable?)
                   boolean?)]
-          [/= (-> comparable? comparable? ... boolean?)]
-          [≠ (-> comparable? comparable? ... boolean?)]
+          [/= (->* (comparable?)
+                  (#:key (-> comparable? comparable?))
+                  #:rest (listof comparable?)
+                  boolean?)]
+          [≠ (->* (comparable?)
+                  (#:key (-> comparable? comparable?))
+                  #:rest (listof comparable?)
+                  boolean?)]
           [>= (-> comparable? comparable? ... boolean?)]
           [> (-> comparable? comparable? ... boolean?)]
           [≤ (-> comparable? comparable? ... boolean?)]
@@ -33,7 +39,7 @@
   (< comparable . others)
   (<= comparable . others)
   (= #:key [key] comparable . others)
-  (/= comparable . others)
+  (/= #:key [key] comparable . others)
   (>= comparable . others)
   (> comparable . others)
   #:fallbacks [(define/generic generic-= =)
@@ -42,8 +48,8 @@
                    (if key
                        (apply generic-= (map key vals))
                        (check-pairwise equal? vals))))
-               (define (/= comparable . others)
-                 (not (apply generic-= comparable others)))
+               (define (/= #:key [key #f] comparable . others)
+                 (not (apply generic-= #:key key comparable others)))
                (define (< comparable . others)
                  (error "Type is not orderable!" comparable))
                (define (<= comparable . others)
