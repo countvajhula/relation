@@ -25,7 +25,7 @@ A generic interface for comparing data. By default, the built-in comparison oper
 
 @defthing[gen:comparable any/c]{
 
- A @tech/reference{generic interface} that represents any object that can be compared with other objects of the same type in terms of equivalence ("are these values equal, for some definition of equality?") and order ("is this value less than or greater than that value?"). All built-in types have a default implementation for @racket[gen:comparable], however, most of them implement only the equivalence relations, while a few support the order relations as well. Specifically, the following built-in types have implementations for the order relations @racket[<], @racket[<=], @racket[>=] and @racket[>] in addition to the equivalence relations @racket[=], @racket[=~] and @racket[/=]:
+ A @tech/reference{generic interface} that represents any object that can be compared with other objects of the same type in terms of equivalence ("are these values equal, for some definition of equality?") and order ("is this value less than or greater than that value?"). All built-in types have a default implementation for @racket[gen:comparable], however, most of them implement only the equivalence relations, while a few support the order relations as well. Specifically, the following built-in types have implementations for the order relations @racket[<], @racket[<=], @racket[>=] and @racket[>] in addition to the equivalence relations @racket[=] and @racket[/=]:
 
 @itemlist[
  @item{@tech/reference{numbers}}
@@ -42,8 +42,8 @@ Note that even if a type implements the order relations, some values may still b
     (< "apple" "banana" "cherry")
     (< (set) (set 1) (set 1 2))
     (= "apple" "APPLE")
-    (=~ string-upcase "apple" "APPLE")
-    (=~ ->number "42.0" "42/1")
+    (= #:key string-upcase "apple" "APPLE")
+    (= #:key ->number "42.0" "42/1")
   ]
 }
 
@@ -75,10 +75,10 @@ Note that even if a type implements the order relations, some values may still b
   ]
 }
 
-@defproc[(= [v comparable?] ...)
-         boolean?]{
+@defproc[(= [#:key key (-> comparable? comparable?) #f] [v comparable?] ...)
+              boolean?]{
 
- True if the v's are equal. This uses the most appropriate equality check for the type. For instance, it uses the built-in @racket[=] operator for numeric data, and @racket[equal?] for some other types such as @tech/reference{structures}.
+ True if the v's are equal. This uses the most appropriate equality check for the type. For instance, it uses the built-in @racket[=] operator for numeric data, and @racket[equal?] for some other types such as @tech/reference{structures}. If a transformation is provided via the @racket[#:key] argument, then this transformation is applied to the input values first, prior to performing the equality check.
 
 @examples[
     #:eval eval-for-docs
@@ -86,25 +86,13 @@ Note that even if a type implements the order relations, some values may still b
     (= 1 2)
     (= "apple" "apple" "apple")
     (= 3/2 1.5)
-  ]
-}
-
-@deftogether[(@defproc[(=~ [key procedure?] [v comparable?] ...)
-              boolean?]
-			  @defproc[(≡ [key procedure?] [v comparable?] ...)
-              boolean?])]{
-
- True if the v's are equal under the transformation @racket[key]. This first applies the provided transformation to the input values and then performs the equality check on the resulting values using the generic @racket[=] operator.
-
-@examples[
-    #:eval eval-for-docs
-    (=~ identity 1 1 1)
-    (=~ string-upcase "apple" "Apple" "APPLE")
-    (=~ ->number "42.0" "42/1" "42")
-    (=~ ->number "42" "42.1")
-    (=~ even? 12 20)
-    (=~ odd? 12 20)
-    (=~ (.. even? ->number) "12" "20")
+    (= #:key identity 1 1 1)
+    (= #:key string-upcase "apple" "Apple" "APPLE")
+    (= #:key ->number "42.0" "42/1" "42")
+    (= #:key ->number "42" "42.1")
+    (= #:key even? 12 20)
+    (= #:key odd? 12 20)
+    (= #:key (.. even? ->number) "12" "20")
   ]
 }
 
@@ -155,7 +143,7 @@ Note that even if a type implements the order relations, some values may still b
 @defproc[(comparable? [v any/c])
          boolean?]{
 
- Predicate to check if a value is comparable via the generic comparison operators @racket[<], @racket[<=], @racket[=], @racket[=~], @racket[/=], @racket[>=] and @racket[>].
+ Predicate to check if a value is comparable via the generic comparison operators @racket[<], @racket[<=], @racket[=], @racket[/=], @racket[>=] and @racket[>].
 
 @examples[
     #:eval eval-for-docs
