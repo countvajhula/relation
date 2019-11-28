@@ -22,14 +22,16 @@ Build steps
 Drafting a New Release
 ======================
 
-1. Tag the release commit
+1. As part of the release commit, bump the version in info.rkt
+
+2. Tag the release commit
 
 .. code-block:: bash
 
   git tag -n  # list existing tags and annotations
   git tag -a <new version number> -m "<release message>"  # or leave out -m to enter it in Vim
 
-2. Push the new tag to origin:
+3. Push the new tag to origin:
 
 .. code-block:: bash
 
