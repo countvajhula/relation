@@ -49,6 +49,30 @@ Generic algebraic operations. The built-in algebraic operators @racket[+] and @r
   ]
 }
 
+@defproc[(inverse [v group?])
+         group?]{
+
+ Produce the "inverse" of the value, based on its type. For numbers, this yields the number with the opposite sign, while for vectors this yields the inverse vector.
+
+@examples[
+    #:eval eval-for-docs
+    (inverse 3)
+    (inverse #(1 2 -3))
+  ]
+}
+
+@defproc[(- [v group?] ...)
+         group?]{
+
+ A general version of "subtraction" that works no differently than usual on numbers, but also supports any other group type, for instance, vectors. The result is computed by adding the first supplied value to the @racket[inverse] of every subsequent value.
+
+@examples[
+    #:eval eval-for-docs
+    (- 5 3)
+    (- #(3 3 3) #(0 1 0) #(0 0 2))
+  ]
+}
+
 @defproc[(group? [v any/c])
          boolean?]{
 

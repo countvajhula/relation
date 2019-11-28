@@ -110,9 +110,8 @@ Note that even if a type implements the order relations, some values may still b
 
 @deftogether[(@defproc[(/= [v comparable?] ...)
               boolean?]
-			  @defproc[(≠ [v comparable?] ...)
+              @defproc[(≠ [v comparable?] ...)
               boolean?])]{
-
 
  True if the v's are not equal. This is simply a negation of the generic @racket[=].
 

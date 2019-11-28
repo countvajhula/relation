@@ -21,7 +21,7 @@
   ;; or with `raco test`. The code here does not run when this file is
   ;; required by another module.
 
-  ;; comparable
+  ;;; comparable
   (check-true (< 1 2 3) "less than")
   (check-true (<= 1 1 3) "less than or equal to")
   (check-true (= 1 1 1) "equal to")
@@ -76,7 +76,7 @@
   (check-false (/= 1 1))
   (check-false (/= "apple" "apple"))
 
-  ;; transform
+  ;;; transform
   (check-true (->boolean 0))
   (check-false (->boolean #f))
   (check-equal? (->string 123) "123")
@@ -162,7 +162,7 @@
              (lambda ()
                (->values 'hi)))
 
-  ;; algebraic
+  ;;; algebraic
   (check-equal? (+ 97 3) 100)
   (check-equal? (->vector (+ #(1 2 3) #(1 2 3) #(1 2 3))) #(3 6 9))
   (check-equal? (.. 3 4) 12)
@@ -171,10 +171,20 @@
   (check-equal? (.. '(1 2 3) '(4 5 6)) '(1 2 3 4 5 6))
   (check-equal? (.. #(1 2 3) #(4 5 6)) #(1 2 3 4 5 6))
   (check-equal? (set-count (.. (set 1 2 3) (set 3 4 5))) 5)
-  ;; why doesn't this work?
+  ;; TODO: why doesn't this work?
   ;; (check-equal? (.. (hash 'a 1 'b 2) (hash 'c 3)) (hash 'a 1 'b 2 'c 3))
   (check-equal? (->list (.. (stream 1 2 3) (stream 4 5 6))) (list 1 2 3 4 5 6))
-  (check-equal? ((.. ->string +) 3 4) "7"))
+  (check-equal? ((.. ->string +) 3 4) "7")
+  ;; group inverse
+  (check-equal? (inverse 3) -3)
+  (check-equal? (inverse #(1 2)) #(-1 -2))
+  (check-equal? (inverse #(1 -2 3)) #(-1 2 -3))
+  ;; "subtraction" on groups
+  (check-equal? (- 4 3) 1)
+  (check-equal? (- 4 6) -2)
+  (check-equal? (- #(1 2) #(1 2)) #(0 0))
+  (check-equal? (- #(1 2) #(-1 3)) #(2 -1))
+  (check-equal? (- #(1 2 3) #(1 0 0) #(0 2 1)) #(0 0 2)))
 
 (module+ main
   ;; (Optional) main submodule. Put code here if you need it to be executed when
