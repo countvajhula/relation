@@ -87,7 +87,6 @@ Note that even if a type implements the order relations, some values may still b
     (= 1 2)
     (= "apple" "apple" "apple")
     (= 3/2 1.5)
-    (= #:key identity 1 1 1)
     (= #:key string-upcase "apple" "Apple" "APPLE")
     (= #:key ->number "42.0" "42/1" "42")
     (= #:key ->number "42" "42.1")
