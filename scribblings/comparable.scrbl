@@ -140,6 +140,34 @@ Note that even if a type implements the order relations, some values may still b
   ]
 }
 
+@defproc[(min [#:key key (-> comparable? comparable?) #f] [v comparable?] ...)
+               comparable?]{
+
+ Returns the minimum value. If @racket[key] is provided it is applied to the arguments prior to the comparison. The values are compared using the canonical comparison for their type.
+
+@examples[
+    #:eval eval-for-docs
+    (min 3 2 1)
+    (min "cherry" "banana" "apple")
+    (min (set 1 2) (set 1) (set 1 2 3))
+    (min #:key string-length "apple" "banana" "cherry")
+  ]
+}
+
+@defproc[(max [#:key key (-> comparable? comparable?) #f] [v comparable?] ...)
+               comparable?]{
+
+ Returns the maximum value. If @racket[key] is provided it is applied to the arguments prior to the comparison. The values are compared using the canonical comparison for their type.
+
+@examples[
+    #:eval eval-for-docs
+    (max 3 2 1)
+    (max "cherry" "banana" "apple")
+    (max (set 1 2) (set 1) (set 1 2 3))
+    (max #:key string-length "apple" "banana" "cherry")
+  ]
+}
+
 @defproc[(comparable? [v any/c])
          boolean?]{
 
