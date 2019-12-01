@@ -48,31 +48,33 @@ Note that even if a type implements the order relations, some values may still b
   ]
 }
 
-@defproc[(< [v comparable?] ...)
-         boolean?]{
+@defproc[(< [#:key key (-> comparable? comparable?) #f] [v comparable?] ...)
+              boolean?]{
 
- True if the v's are monotonically increasing.
+ True if the v's are monotonically increasing. If a transformation is provided via the @racket[#:key] argument, then it is applied to the arguments prior to comparing them.
 
 @examples[
     #:eval eval-for-docs
     (< 1 2 3)
     (< 2 1)
     (< "apple" "banana" "cherry")
+    (< #:key string-length "cherry" "blueberry" "abyssinian gooseberry")
   ]
 }
 
-@deftogether[(@defproc[(<= [v comparable?] ...)
+@deftogether[(@defproc[(<= [#:key key (-> comparable? comparable?) #f] [v comparable?] ...)
               boolean?]
-			  @defproc[(≤ [v comparable?] ...)
+              @defproc[(≤ [#:key key (-> comparable? comparable?) #f] [v comparable?] ...)
               boolean?])]{
 
- True if the v's are monotonically nondecreasing.
+ True if the v's are monotonically nondecreasing. If a transformation is provided via the @racket[#:key] argument, then it is applied to the arguments prior to comparing them.
 
 @examples[
     #:eval eval-for-docs
     (≤ 1 1 3)
     (≤ 2 1)
     (≤ "apple" "apple" "cherry")
+    (≤ #:key string-length "cherry" "banana" "avocado")
   ]
 }
 
@@ -96,12 +98,12 @@ Note that even if a type implements the order relations, some values may still b
   ]
 }
 
-@deftogether[(@defproc[(/= [v comparable?] ...)
+@deftogether[(@defproc[(/= [#:key key (-> comparable? comparable?) #f] [v comparable?] ...)
               boolean?]
-              @defproc[(≠ [v comparable?] ...)
+              @defproc[(≠ [#:key key (-> comparable? comparable?) #f] [v comparable?] ...)
               boolean?])]{
 
- True if the v's are not equal. This is simply a negation of the generic @racket[=].
+ True if the v's are not equal. This is simply a negation of the generic @racket[=]. If a transformation is provided via the @racket[#:key] argument, then it is applied to the arguments prior to comparing them.
 
 @examples[
     #:eval eval-for-docs
@@ -109,34 +111,37 @@ Note that even if a type implements the order relations, some values may still b
     (/= 1 1)
     (/= "apple" "Apple")
     (/= 3/2 1.5)
+    (/= #:key string-length "cherry" "banana" "avocado")
   ]
 }
 
-@deftogether[(@defproc[(>= [v comparable?] ...)
+@deftogether[(@defproc[(>= [#:key key (-> comparable? comparable?) #f] [v comparable?] ...)
               boolean?]
-			  @defproc[(≥ [v comparable?] ...)
+              @defproc[(≥ [#:key key (-> comparable? comparable?) #f] [v comparable?] ...)
               boolean?])]{
 
- True if the v's are monotonically nonincreasing.
+ True if the v's are monotonically nonincreasing. If a transformation is provided via the @racket[#:key] argument, then it is applied to the arguments prior to comparing them.
 
 @examples[
     #:eval eval-for-docs
     (≥ 3 1 1)
     (≥ 1 2)
     (≥ "banana" "apple" "apple")
+    (≥ #:key string-length "banana" "cherry" "apple")
   ]
 }
 
-@defproc[(> [v comparable?] ...)
-         boolean?]{
+@defproc[(> [#:key key (-> comparable? comparable?) #f] [v comparable?] ...)
+              boolean?]{
 
- True if the v's are monotonically decreasing.
+ True if the v's are monotonically decreasing. If a transformation is provided via the @racket[#:key] argument, then it is applied to the arguments prior to comparing them.
 
 @examples[
     #:eval eval-for-docs
     (> 3 2 1)
     (> 1 1)
     (> "cherry" "banana" "apple")
+    (> #:key string-length "abyssinian gooseberry" "blueberry" "apple")
   ]
 }
 
@@ -171,7 +176,7 @@ Note that even if a type implements the order relations, some values may still b
 @defproc[(comparable? [v any/c])
          boolean?]{
 
- Predicate to check if a value is comparable via the generic comparison operators @racket[<], @racket[<=], @racket[=], @racket[/=], @racket[>=] and @racket[>].
+ Predicate to check if a value is comparable via the generic comparison operators @racket[<], @racket[<=], @racket[=], @racket[/=], @racket[>=] and @racket[>] (and consequently also @racket[min] and @racket[max]).
 
 @examples[
     #:eval eval-for-docs
