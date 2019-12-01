@@ -46,7 +46,14 @@ docs:
 	raco docs $(PACKAGE-NAME)
 
 profile:
-	raco profile dev/profile/builtin.rkt | grep "Total cpu time"
-	raco profile dev/profile/relation.rkt | grep "Total cpu time"
+	echo "Profiling order and equivalence relations..."
+	raco profile dev/profile/comparable/builtin.rkt | grep "Total cpu time"
+	raco profile dev/profile/comparable/relation.rkt | grep "Total cpu time"
+	echo "Profiling type transformers..."
+	raco profile dev/profile/transform/builtin.rkt | grep "Total cpu time"
+	raco profile dev/profile/transform/relation.rkt | grep "Total cpu time"
+	echo "Profiling algebraic operators..."
+	raco profile dev/profile/algebraic/builtin.rkt | grep "Total cpu time"
+	raco profile dev/profile/algebraic/relation.rkt | grep "Total cpu time"
 
 .PHONY:	help setup check-deps test clean install remove docs profile
