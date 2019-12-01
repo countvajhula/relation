@@ -39,6 +39,16 @@
     (> i j)
     (/= i j)))
 
+(define (sort-numbers how-many)
+  (for ([i (take how-many (in (cycle '((4 1 3 2 7 1 3 5)))))])
+    (sort i <)))
+
+(define (sort-strings how-many)
+  (for ([i (take how-many (in (cycle '(("dragonfruit" "apple" "cherry" "banana" "guava" "apple" "cherry" "elderberry")))))])
+    (sort i <)))
+
 (check-numbers 10000)
 (check-strings 10000)
 (check-chars 10000)
+(sort-numbers 10000)
+(sort-strings 10000)
