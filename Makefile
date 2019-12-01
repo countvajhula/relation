@@ -11,6 +11,7 @@ help:
 	@echo "check-deps - check dependencies"
 	@echo "test - run tests"
 	@echo "docs - view docs in a browser"
+	@echo "profile - run some benchmarks to gauge relative performance against builtin interfaces"
 
 # Primarily for use by CI.
 # Installs dependencies as well as linking this as a package.
@@ -44,4 +45,8 @@ test:
 docs:
 	raco docs $(PACKAGE-NAME)
 
-.PHONY:	help setup check-deps test clean install remove docs
+profile:
+	raco profile dev/profile/builtin.rkt | grep "Total cpu time"
+	raco profile dev/profile/relation.rkt | grep "Total cpu time"
+
+.PHONY:	help setup check-deps test clean install remove docs profile
