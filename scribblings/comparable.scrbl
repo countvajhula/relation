@@ -150,6 +150,8 @@ Note that even if a type implements the order relations, some values may still b
 
  Returns the minimum value. If @racket[key] is provided it is applied to the arguments prior to the comparison. The values are compared using the canonical comparison for their type.
 
+@margin-note{In the case of a nonlinear order (i.e. where there is no greatest or least element), @racket[min] would return an arbitrary local minimum. You should typically only use this function when you know that a global minimum exists.}
+
 @examples[
     #:eval eval-for-docs
     (min 3 2 1)
@@ -163,6 +165,8 @@ Note that even if a type implements the order relations, some values may still b
                comparable?]{
 
  Returns the maximum value. If @racket[key] is provided it is applied to the arguments prior to the comparison. The values are compared using the canonical comparison for their type.
+
+@margin-note{In the case of a nonlinear order (i.e. where there is no greatest or least element), @racket[max] would return an arbitrary local maximum. You should typically only use this function when you know that a global maximum exists.}
 
 @examples[
     #:eval eval-for-docs
