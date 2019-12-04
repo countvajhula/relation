@@ -32,8 +32,7 @@
                   #:rest (listof comparable?)
                   boolean?)]
           [= (->* (comparable?)
-                  (#:key (-> comparable? comparable?)
-                   #:method (-> comparable? comparable? boolean?))
+                  (#:key (-> comparable? comparable?))
                   #:rest (listof comparable?)
                   boolean?)]
           [/= (->* (comparable?)
@@ -76,16 +75,16 @@
 (define-generics comparable
   (< #:key [key] comparable . others)
   (<= #:key [key] comparable . others)
-  (= #:key [key] #:method [method] comparable . others)
+  (= #:key [key] comparable . others)
   (/= #:key [key] comparable . others)
   (>= #:key [key] comparable . others)
   (> #:key [key] comparable . others)
   #:fallbacks [(define/generic generic-= =)
-               (define (= #:key [key #f] #:method [method equal?] comparable . others)
+               (define (= #:key [key #f] comparable . others)
                  (let ([vals (cons comparable others)])
                    (if key
-                       (apply generic-= #:method method (map key vals))
-                       (check-pairwise method vals))))
+                       (apply generic-= (map key vals))
+                       (check-pairwise equal? vals))))
                (define (/= #:key [key #f] comparable . others)
                  (not (apply generic-= #:key key comparable others)))
                (define (< #:key [key #f] comparable . others)
@@ -112,11 +111,11 @@
                    (if key
                        (apply generic-<= (map key vals))
                        (check-pairwise b:<= vals))))
-               (define (= #:key [key #f] #:method [method b:=] comparable . others)
+               (define (= #:key [key #f] comparable . others)
                  (let ([vals (cons comparable others)])
                    (if key
-                       (apply generic-= #:method method (map key vals))
-                       (check-pairwise method vals))))
+                       (apply generic-= (map key vals))
+                       (check-pairwise b:= vals))))
                (define (>= #:key [key #f] comparable . others)
                  (let ([vals (cons comparable others)])
                    (if key
@@ -143,11 +142,11 @@
                    (if key
                        (apply generic-<= (map key vals))
                        (check-pairwise string<=? vals))))
-               (define (= #:key [key #f] #:method [method string=?] comparable . others)
+               (define (= #:key [key #f] comparable . others)
                  (let ([vals (cons comparable others)])
                    (if key
-                       (apply generic-= #:method method (map key vals))
-                       (check-pairwise method vals))))
+                       (apply generic-= (map key vals))
+                       (check-pairwise string=? vals))))
                (define (>= #:key [key #f] comparable . others)
                  (let ([vals (cons comparable others)])
                    (if key
@@ -177,11 +176,11 @@
                                          (or (bytes=? a b)
                                              (bytes<? a b)))
                                        vals))))
-               (define (= #:key [key #f] #:method [method bytes=?] comparable . others)
+               (define (= #:key [key #f] comparable . others)
                  (let ([vals (cons comparable others)])
                    (if key
-                       (apply generic-= #:method method (map key vals))
-                       (check-pairwise method vals))))
+                       (apply generic-= (map key vals))
+                       (check-pairwise bytes=? vals))))
                (define (>= #:key [key #f] comparable . others)
                  (let ([vals (cons comparable others)])
                    (if key
@@ -211,11 +210,11 @@
                    (if key
                        (apply generic-<= (map key vals))
                        (check-pairwise char<=? vals))))
-               (define (= #:key [key #f] #:method [method char=?] comparable . others)
+               (define (= #:key [key #f] comparable . others)
                  (let ([vals (cons comparable others)])
                    (if key
-                       (apply generic-= #:method method (map key vals))
-                       (check-pairwise method vals))))
+                       (apply generic-= (map key vals))
+                       (check-pairwise char=? vals))))
                (define (>= #:key [key #f] comparable . others)
                  (let ([vals (cons comparable others)])
                    (if key
@@ -242,11 +241,11 @@
                    (if key
                        (apply generic-<= (map key vals))
                        (check-pairwise subset? vals))))
-               (define (= #:key [key #f] #:method [method equal?] comparable . others)
+               (define (= #:key [key #f] comparable . others)
                  (let ([vals (cons comparable others)])
                    (if key
-                       (apply generic-= #:method method (map key vals))
-                       (check-pairwise method vals))))
+                       (apply generic-= (map key vals))
+                       (check-pairwise equal? vals))))
                (define (>= #:key [key #f] comparable . others)
                  (let ([vals (cons comparable others)])
                    (if key
@@ -261,18 +260,18 @@
                                        (reverse vals)))))]
               [symbol?
                (define/generic generic-= =)
-               (define (= #:key [key #f] #:method [method eq?] comparable . others)
+               (define (= #:key [key #f] comparable . others)
                  (let ([vals (cons comparable others)])
                    (if key
-                       (apply generic-= #:method method (map key vals))
-                       (check-pairwise method vals))))]
+                       (apply generic-= (map key vals))
+                       (check-pairwise eq? vals))))]
               [any/c
                (define/generic generic-= =)
-               (define (= #:key [key #f] #:method [method equal?] comparable . others)
+               (define (= #:key [key #f] comparable . others)
                  (let ([vals (cons comparable others)])
                    (if key
-                       (apply generic-= #:method method (map key vals))
-                       (check-pairwise method vals))))]))
+                       (apply generic-= (map key vals))
+                       (check-pairwise equal? vals))))]))
 
 (define ≤ <=)
 (define ≥ >=)
