@@ -1,4 +1,13 @@
-Build steps
+Workflow
+========
+
+1. Add functionality and tests
+
+2. Update the contracts
+
+3. Update the docs
+
+Build Steps
 ===========
 
 1. Build package, docs, and check dependencies
@@ -19,8 +28,20 @@ Build steps
 
   make check-deps
 
-Drafting a New Release
-======================
+4. View docs
+
+.. code-block:: bash
+
+  make docs
+
+5. Run profiler
+
+.. code-block:: bash
+
+  make profile
+
+Drafting a New Release (Steps for Maintainer)
+=============================================
 
 1. When you're ready to cut a new release, bump the version in info.rkt and make a fresh commit
 
