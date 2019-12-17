@@ -10,5 +10,5 @@
 (define scribblings '(("scribblings/relation.scrbl" (multi-page))))
 (define clean '("compiled" "doc" "doc/relation"))
 (define pkg-desc "Generic interfaces and convenient utilities for relations")
-(define version "0.7")
+(define version "1.0")
 (define pkg-authors '(countvajhula))
