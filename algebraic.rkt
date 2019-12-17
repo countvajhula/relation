@@ -60,7 +60,7 @@
                  (apply set-union (cons monoid others)))]
               [dict?
                (define (.. monoid . others)
-                 (make-hash (sequence->list (apply append (cons monoid others)))))]
+                 (make-hash (->list (apply append (cons monoid others)))))]
               [sequence?
                (define (.. monoid . others)
                  (apply append (cons monoid others)))]
