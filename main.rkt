@@ -397,7 +397,9 @@
   (check-equal? (- 4 6) -2)
   (check-equal? (- #(1 2) #(1 2)) #(0 0))
   (check-equal? (- #(1 2) #(-1 3)) #(2 -1))
-  (check-equal? (- #(1 2 3) #(1 0 0) #(0 2 1)) #(0 0 2)))
+  (check-equal? (- #(1 2 3) #(1 0 0) #(0 2 1)) #(0 0 2))
+  (check-equal? (- 1) -1 "subtraction with single arg returns inverse")
+  (check-equal? (- #(1 -2)) #(-1 2) "subtraction with single arg returns inverse"))
 
 (module+ main
   ;; (Optional) main submodule. Put code here if you need it to be executed when

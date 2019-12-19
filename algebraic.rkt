@@ -71,4 +71,6 @@
 (define ∘ ..)
 
 (define (- v . others)
-  (apply + v (map inverse others)))
+  (if (empty? others)
+      (inverse v)
+      (apply + v (map inverse others))))

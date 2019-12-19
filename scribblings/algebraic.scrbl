@@ -64,12 +64,13 @@ Generic algebraic operations. The built-in algebraic operators @racket[+] and @r
 @defproc[(- [v group?] ...)
          group?]{
 
- A general version of "subtraction" that works no differently than usual on numbers, but also supports any other group type, for instance, vectors. The result is computed by adding the first supplied value to the @racket[inverse] of every subsequent value.
+ A general version of "subtraction" that works no differently than usual on numbers, but also supports any other group type, for instance, vectors. The result is computed by adding the first supplied value to the @racket[inverse] of every subsequent value. If only one argument is provided, then it simply returns the @racket[inverse].
 
 @examples[
     #:eval eval-for-docs
     (- 5 3)
     (- #(3 3 3) #(0 1 0) #(0 0 2))
+    (- 5)
   ]
 }
 
