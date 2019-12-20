@@ -35,7 +35,7 @@
                      any/c)]))
 
 (define-generics composable
-  ;; "magma"
+  ;; "Magma"
   ;; This is the most general form of composition, making no
   ;; assumptions about properties the operation must satisfy
   (>< composable other)
@@ -45,7 +45,7 @@
       (b:+ composable other))]))
 
 (define-generics appendable
-  ;; "semigroup"
+  ;; "Semigroup"
   ;; concatenation-like operation
   ;; it may make sense to define the chained operation in terms
   ;; of the composable one, as a fold
@@ -101,14 +101,14 @@
    [vector?
     (define/generic g-identity identity)
     (define (identity monoid operation)
-      (cond [(= operation ..) (vector)]
+      (cond [(= operation ..) #()]
             [(= operation *)
              (error "Operation not supported!")]
             [(= operation +)
-             (apply vector
-                    (take (length monoid)
-                          (repeat (g-identity (first monoid)
-                                              +))))]))]
+             (->vector
+              (take (length monoid)
+                    (repeat (g-identity (first monoid)
+                                        +))))]))]
    [set?
     (define (identity monoid operation)
       (set))]
