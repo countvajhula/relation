@@ -20,7 +20,7 @@ A generic interface for comparing data. By default, the built-in comparison oper
                  [sandbox-memory-limit #f])
                  (make-evaluator 'racket/base
 				                 '(require relation)
-				                 '(require racket/function)
+				                 '(require (except-in racket/function identity))
 								 '(require racket/set))))
 
 @defthing[gen:comparable any/c]{
