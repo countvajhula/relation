@@ -29,7 +29,10 @@
           [group? (-> any/c boolean?)]
           [inverse (-> group? (-> any/c any/c any/c) group?)]
           [+ (-> group? group? ... group?)]
-          [- (-> group? group? ... group?)]))
+          [- (-> group? group? ... group?)]
+          [fold (->* ((-> any/c any/c any/c) (listof any/c))
+                     (any/c)
+                     any/c)]))
 
 (define-generics composable
   ;; "magma"
@@ -155,3 +158,9 @@
                   (apply map g-+ group others)))]))
 
 (define ∘ ..)
+
+(define (fold f vs [base #f])
+  (if base
+      (foldr f base vs)
+      (let ([id (identity (first vs) f)])
+        (foldr f id vs))))
