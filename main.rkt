@@ -389,9 +389,9 @@
   (check-equal? (->list (.. (stream 1 2 3) (stream 4 5 6))) (list 1 2 3 4 5 6))
   (check-equal? ((.. ->string +) 3 4) "7")
   ;; group inverse
-  (check-equal? (inverse 3) -3)
-  (check-equal? (inverse #(1 2)) #(-1 -2))
-  (check-equal? (inverse #(1 -2 3)) #(-1 2 -3))
+  (check-equal? (inverse 3 +) -3)
+  (check-equal? (inverse #(1 2) +) #(-1 -2))
+  (check-equal? (inverse #(1 -2 3) +) #(-1 2 -3))
   ;; "subtraction" on groups
   (check-equal? (- 4 3) 1)
   (check-equal? (- 4 6) -2)
