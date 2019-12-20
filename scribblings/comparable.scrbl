@@ -148,7 +148,7 @@ Note that even if a type implements the order relations, some values may still b
 @defproc[(min [#:key key (-> comparable? comparable?) #f] [v comparable?] ...)
                comparable?]{
 
- Returns the minimum value. If @racket[key] is provided it is applied to the arguments prior to the comparison. The values are compared using the canonical comparison for their type.
+ Returns the minimum value. If @racket[key] is provided it is applied to the arguments prior to the comparison (this pattern is often referred to as "argmin" in math and programming literature). The values are compared using the canonical comparison for their type.
 
 @margin-note{In the case of a nonlinear order (i.e. where there is no greatest or least element), @racket[min] would return an arbitrary local minimum. You should typically only use this function when you know that a global minimum exists.}
 
@@ -164,7 +164,7 @@ Note that even if a type implements the order relations, some values may still b
 @defproc[(max [#:key key (-> comparable? comparable?) #f] [v comparable?] ...)
                comparable?]{
 
- Returns the maximum value. If @racket[key] is provided it is applied to the arguments prior to the comparison. The values are compared using the canonical comparison for their type.
+ Returns the maximum value. If @racket[key] is provided it is applied to the arguments prior to the comparison (this pattern is often referred to as "argmax" in math and programming literature). The values are compared using the canonical comparison for their type.
 
 @margin-note{In the case of a nonlinear order (i.e. where there is no greatest or least element), @racket[max] would return an arbitrary local maximum. You should typically only use this function when you know that a global maximum exists.}
 
