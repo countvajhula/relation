@@ -142,7 +142,8 @@
                  (cond [(= operation g-+)
                         (b:- group)]
                        [(= operation *)
-                        (b:/ 1 group)]))
+                        (b:/ 1 group)]
+                       [else (error "Unsupported group operation!")]))
                (define (+ group . others)
                  (apply b:+ group others))]
               [vector?
