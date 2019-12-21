@@ -4,7 +4,7 @@
   (require rackunit)
   (require racket/set)
   (require racket/stream)
-  (require racket/function))
+  (require (prefix-in f: racket/function)))
 
 ;; Code here
 
@@ -128,7 +128,7 @@
   (check-true (= 'hi 'hi 'hi))
 
   ;; equivalence under a mapping
-  (check-true (= #:key identity 1 1 1))
+  (check-true (= #:key f:identity 1 1 1))
   (check-true (= #:key even? 1 13 7))
   (check-true (= #:key even? 2 14 8))
   (check-false (= #:key even? 2 3))
@@ -376,8 +376,12 @@
                (->values 'hi)))
 
   ;;; algebraic
-  (check-equal? (+ 97 3) 100)
-  (check-equal? (->vector (+ #(1 2 3) #(1 2 3) #(1 2 3))) #(3 6 9))
+  ;; elementary composition
+  (check-equal? (>< 1 2) (cons 1 2))
+  (check-equal? (>< "a" "b") (cons "a" "b"))
+  (check-equal? (>< 1 "a") (cons 1 "a"))
+  (check-equal? (>< 1 '(2 3)) '(1 2 3))
+  ;; associative composition
   (check-equal? (.. 3 4) 12)
   (check-equal? (.. "hi" " " "there") "hi there")
   (check-equal? (.. #"hi" #" " #"there") #"hi there")
@@ -388,10 +392,36 @@
   ;; (check-equal? (.. (hash 'a 1 'b 2) (hash 'c 3)) (hash 'a 1 'b 2 'c 3))
   (check-equal? (->list (.. (stream 1 2 3) (stream 4 5 6))) (list 1 2 3 4 5 6))
   (check-equal? ((.. ->string +) 3 4) "7")
+  ;; identity
+  (check-equal? (identity 3 +) 0)
+  (check-equal? (identity -3 +) 0)
+  (check-equal? (identity 3 *) 1)
+  (check-equal? (identity -3 *) 1)
+  (check-equal? (identity #(1 -2) +) #(0 0))
+  (check-equal? (identity #(1 -2) ..) #())
+  (check-equal? (identity + ..) f:identity)
+  (check-equal? (identity "hello" ..) "")
+  (check-equal? (identity #"hello" ..) #"")
+  (check-equal? (identity '(1 2 3) ..) '())
+  (check-equal? (identity (set 1 2 3) ..) (set))
+  (check-equal? (identity (hash 'a 1 'b 2 'c 3) ..) (hash))
+  (check-equal? (identity (stream 1 2 3) ..) (list))
+  ;; addition
+  (check-equal? (+ 97 3) 100)
+  (check-equal? (->vector (+ #(1 2 3) #(1 2 3) #(1 2 3))) #(3 6 9))
   ;; group inverse
   (check-equal? (inverse 3 +) -3)
   (check-equal? (inverse #(1 2) +) #(-1 -2))
   (check-equal? (inverse #(1 -2 3) +) #(-1 2 -3))
+  (let ([x 3])
+    (check-equal? (+ x (inverse x +))
+                  (identity x +)))
+  (let ([x #(1 -2 3)])
+    (check-equal? (+ x (inverse x +))
+                  (identity x +)))
+  (let ([x 3])
+    (check-equal? (* x (inverse x *))
+                  (identity x *)))
   ;; "subtraction" on groups
   (check-equal? (- 4 3) 1)
   (check-equal? (- 4 6) -2)
