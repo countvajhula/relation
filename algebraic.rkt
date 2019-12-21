@@ -159,6 +159,7 @@
                  (->vector
                   (apply map g-+ group others)))]))
 
+(define : ><)
 (define ∘ ..)
 
 (define (fold f vs [base #f])
