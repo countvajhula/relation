@@ -32,9 +32,12 @@
           [inverse (-> group? (-> any/c any/c any/c) group?)]
           [+ (-> group? group? ... group?)]
           [- (-> group? group? ... group?)]
-          [fold (->* ((-> any/c any/c any/c) (listof any/c))
-                     (any/c)
-                     any/c)]))
+          [foldl (->* ((-> any/c any/c any/c) (listof any/c))
+                      (any/c)
+                      any/c)]
+          [foldr (->* ((-> any/c any/c any/c) (listof any/c))
+                      (any/c)
+                      any/c)]))
 
 (define-generics composable
   ;; "Magma"
@@ -162,8 +165,15 @@
 (define : ><)
 (define ∘ ..)
 
-(define (fold f vs [base #f])
+(define (flip f)
+  (λ (x y . args)
+    (apply f y x args)))
+
+(define (foldl f vs [base #f])
   (if base
-      (foldr f base vs)
+      (d:foldl (flip f) base vs)
       (let ([id (identity (first vs) f)])
-        (foldr f id vs))))
+        (d:foldl (flip f) id vs))))
+
+(define (foldr f vs [base #f])
+  (foldl f (reverse vs) base))
