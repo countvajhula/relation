@@ -39,10 +39,11 @@
   ;; This is the most general form of composition, making no
   ;; assumptions about properties the operation must satisfy
   (>< composable other)
+  #:fallbacks
+  [(define (>< composable other)
+     (cons composable other))]
   #:defaults
-  ([number?
-    (define (>< composable other)
-      (b:+ composable other))]))
+  ([any/c]))
 
 (define-generics appendable
   ;; "Semigroup"
