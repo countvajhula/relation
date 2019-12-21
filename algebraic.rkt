@@ -4,9 +4,11 @@
          racket/vector
          racket/set
          racket/dict
-         (prefix-in f: racket/function)
+         (rename-in racket/function
+                    (identity f:identity))
          racket/generic
-         data/collection
+         (rename-in data/collection
+                    (foldl d:foldl))
          relation/comparable
          relation/transform)
 
@@ -48,8 +50,6 @@
 (define-generics appendable
   ;; "Semigroup"
   ;; concatenation-like operation
-  ;; it may make sense to define the chained operation in terms
-  ;; of the composable one, as a fold
   (.. appendable . others)
   #:defaults ([number?
                (define (.. appendable . others)
@@ -86,7 +86,7 @@
     (define (identity monoid operation)
       (cond [(= operation +) 0]
             [(= operation *) 1]
-            [else (error "Operation not recognized!")]))]
+            [else (error "Operation not recognized!" operation)]))]
    [procedure?
     (define (identity monoid operation)
       f:identity)]
@@ -104,7 +104,7 @@
     (define (identity monoid operation)
       (cond [(= operation ..) #()]
             [(= operation *)
-             (error "Operation not supported!")]
+             (error "Operation not supported!" operation)]
             [(= operation +)
              (->vector
               (take (length monoid)
@@ -133,7 +133,7 @@
                (define (- group . others)
                  (if (empty? others)
                      (g-inverse group g-+)
-                     (let ([minus (f:curryr g-inverse g-+)])
+                     (let ([minus (curryr g-inverse g-+)])
                        (apply g-+ group (map minus others)))))]
   #:defaults ([number?
                (define/generic g-+ +)
@@ -143,7 +143,7 @@
                         (b:- group)]
                        [(= operation *)
                         (b:/ 1 group)]
-                       [else (error "Unsupported group operation!")]))
+                       [else (error "Unsupported group operation!" operation)]))
                (define (+ group . others)
                  (apply b:+ group others))]
               [vector?
@@ -153,7 +153,7 @@
                  (->vector
                   (if (empty? group)
                       group
-                      (let ([minus (f:curryr g-inverse operation)])
+                      (let ([minus (curryr g-inverse operation)])
                         (map minus group)))))
                (define (+ group . others)
                  (->vector
