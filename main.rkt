@@ -429,7 +429,14 @@
   (check-equal? (- #(1 2) #(-1 3)) #(2 -1))
   (check-equal? (- #(1 2 3) #(1 0 0) #(0 2 1)) #(0 0 2))
   (check-equal? (- 1) -1 "subtraction with single arg returns inverse")
-  (check-equal? (- #(1 -2)) #(-1 2) "subtraction with single arg returns inverse"))
+  (check-equal? (- #(1 -2)) #(-1 2) "subtraction with single arg returns inverse")
+  ;; fold
+  (check-equal? (foldr + '(1 2 3 4)) 10)
+  (check-equal? (foldr * '(1 2 3 4)) 24)
+  (check-equal? (foldl + '(1 2 3 4)) 10)
+  (check-equal? (foldl * '(1 2 3 4)) 24)
+  (check-equal? (foldr cons '(1 2 3) '()) '(1 2 3))
+  (check-equal? (foldl cons '(1 2 3) '()) '(1 2 3)))
 
 (module+ main
   ;; (Optional) main submodule. Put code here if you need it to be executed when
