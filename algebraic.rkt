@@ -9,6 +9,8 @@
          racket/generic
          (rename-in data/collection
                     (foldl d:foldl))
+         (only-in algebraic/prelude
+                  flip)
          relation/comparable
          relation/transform)
 
@@ -164,10 +166,6 @@
 
 (define : ><)
 (define ∘ ..)
-
-(define (flip f)
-  (λ (x y . args)
-    (apply f y x args)))
 
 (define (foldl f vs [base #f])
   (if base
