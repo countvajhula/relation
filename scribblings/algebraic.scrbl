@@ -34,9 +34,7 @@ Generic algebraic operations. The built-in algebraic operators @racket[+] and @r
  @item{@tech/reference{vectors}}
  @item{@tech/reference{sets}}
  @item{@tech/reference{sequences}}
- @;{would be better to link to the procedures reference instead
-    of the lambda definition}
- @item{@racketlink[lambda]{procedures}}
+ @item{@seclink["procedures" "procedures" #:doc '(lib "scribblings/reference/reference.scrbl")]}
 ]
 
 @examples[
