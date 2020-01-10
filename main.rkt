@@ -435,6 +435,7 @@
   (check-equal? (foldr * '(1 2 3 4)) 24)
   (check-equal? (foldl + '(1 2 3 4)) 10)
   (check-equal? (foldl * '(1 2 3 4)) 24)
+  (check-equal? (fold + '(1 2 3 4)) 10)
   (check-equal? (foldr cons '(1 2 3) '()) '(1 2 3))
   (check-equal? (foldl cons '(1 2 3) '()) '(3 2 1)))
 

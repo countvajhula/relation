@@ -5,7 +5,7 @@
 		 racket/sandbox
          @for-label[relation/algebraic
 		            racket/generic
-                    (except-in racket + - identity)]]
+                    (except-in racket + - identity foldl foldr)]]
 
 @title{Algebraic Operations}
 
@@ -22,9 +22,55 @@ Generic algebraic operations. The built-in algebraic operators @racket[+] and @r
 								 '(require racket/set)
 								 '(require racket/stream))))
 
-@defthing[gen:monoid any/c]{
+@defthing[gen:composable any/c]{
 
- A @tech/reference{generic interface} that represents any object for which a "composition-like" (monoid) operation can be defined. The following built-in types have implementations for @racket[gen:monoid]:
+ A @tech/reference{generic interface} that represents any object for which a basic "composition-like" (magma) operation can be defined. All built-in types use a default implementation for @racket[gen:composable], which is to simply @racket[cons] the operands together.
+
+@examples[
+    #:eval eval-for-docs
+    (>< 1 2)
+    (: 1 2)
+    (: "hi" "there")
+    (: '(1 2 3) '(4 5 6))
+  ]
+}
+
+@deftogether[(@defproc[(>< [v composable?] ...)
+              composable?]
+			  @defproc[(: [v composable?] ...)
+              composable?])]{
+
+ Performs the canonical "composition-like" operation on the data, based on its type. For all built-in types, this will simply @racket[cons] the two operands together.
+
+@examples[
+    #:eval eval-for-docs
+    (>< 1 2)
+    (: 1 2)
+    (: "hi" "there")
+    (: '(1 2 3) '(4 5 6))
+  ]
+}
+
+@defproc[(composable? [v any/c])
+         boolean?]{
+
+ Predicate to check if a value may be operated on using the generic composition operator, @racket[><] or @racket[:].
+
+@examples[
+    #:eval eval-for-docs
+    (composable? 3)
+    (composable? #\a)
+    (composable? "cherry")
+    (composable? (list))
+    (composable? (set))
+    (composable? (hash))
+    (composable? (vector))
+  ]
+}
+
+@defthing[gen:appendable any/c]{
+
+ A @tech/reference{generic interface} that represents any object for which an "append-like" operation can be defined. The following built-in types have implementations for @racket[gen:appendable]:
 
 @itemlist[
  @item{@tech/reference{numbers}}
@@ -39,18 +85,18 @@ Generic algebraic operations. The built-in algebraic operators @racket[+] and @r
 
 @examples[
     #:eval eval-for-docs
-    (.. 1 2 3 4)
-    (.. "hi" " " "there")
-    (.. '(1 2 3) '(4 5 6))
+	(.. 1 2 3 4)
+	(.. "hi" " " "there")
+	(.. '(1 2 3) '(4 5 6))
   ]
 }
 
-@deftogether[(@defproc[(.. [v monoid?] ...)
-              monoid?]
-			  @defproc[(∘ [v monoid?] ...)
-              monoid?])]{
+@deftogether[(@defproc[(.. [v appendable?] ...)
+              appendable?]
+			  @defproc[(∘ [v appendable?] ...)
+              appendable?])]{
 
- Performs the canonical "composition-like" operation on the data, based on its type. This operation is the natural operation on the data type that forms an algebraic monoid.
+ Performs the canonical "append-like" operation on the data, based on its type. This operation is the natural operation on the data type that forms an algebraic semigroup or monoid.
 
 @examples[
     #:eval eval-for-docs
@@ -59,6 +105,47 @@ Generic algebraic operations. The built-in algebraic operators @racket[+] and @r
     (.. '(1 2 3) '(4 5 6))
     (.. (hash 'a 1 'b 2) (hash 'c 3))
 	((∘ ->string +) 3 4)
+  ]
+}
+
+@defproc[(appendable? [v any/c])
+         boolean?]{
+
+ Predicate to check if a value may be operated on using the generic composition operator, @racket[..] or @racket[∘].
+
+@examples[
+    #:eval eval-for-docs
+    (appendable? 3)
+    (appendable? #\a)
+    (appendable? "cherry")
+    (appendable? (list))
+    (appendable? (set))
+    (appendable? (hash))
+    (appendable? (vector))
+  ]
+}
+
+@defthing[gen:monoid any/c]{
+
+ A @tech/reference{generic interface} that represents any object that exhibits an identity element for some operation (i.e. a monoid). The following built-in types have implementations for @racket[gen:monoid]:
+
+@itemlist[
+ @item{@tech/reference{numbers}}
+ @item{@tech/reference{strings}}
+ @item{@tech/reference{byte strings}}
+ @item{@tech/reference{lists}}
+ @item{@tech/reference{vectors}}
+ @item{@tech/reference{sets}}
+ @item{@tech/reference{sequences}}
+ @item{@seclink["procedures" "procedures" #:doc '(lib "scribblings/reference/reference.scrbl")]}
+]
+
+@examples[
+    #:eval eval-for-docs
+    (identity 3 +)
+    (identity 3 *)
+    (identity "hi" ..)
+    (identity '(1 2 3) ..)
   ]
 }
 
@@ -92,9 +179,9 @@ Generic algebraic operations. The built-in algebraic operators @racket[+] and @r
   ]
 }
 
-@defthing[gen:group any/c]{
+@defthing[gen:addable any/c]{
 
- A @tech/reference{generic interface} that represents any object for which an "addition-like" (group) operation can be defined. The following built-in types have implementations for @racket[gen:group]:
+ A @tech/reference{generic interface} that represents any object for which an "addition-like" (group) operation can be defined. The following built-in types have implementations for @racket[gen:addable]:
 
 @itemlist[
  @item{@tech/reference{numbers}}
@@ -107,8 +194,8 @@ Generic algebraic operations. The built-in algebraic operators @racket[+] and @r
   ]
 }
 
-@defproc[(+ [v group?] ...)
-         group?]{
+@defproc[(+ [v addable?] ...)
+         addable?]{
 
  Performs the canonical "addition-like" operation on the data, based on its type. This operation is the natural operation on the data type that forms an algebraic group.
 
@@ -119,8 +206,8 @@ Generic algebraic operations. The built-in algebraic operators @racket[+] and @r
   ]
 }
 
-@defproc[(inverse [v group?] [operation procedure?])
-         group?]{
+@defproc[(inverse [v addable?] [operation procedure?])
+         addable?]{
 
  Produce the "inverse" of the value, based the operation to be performed and the type of the value. For numbers and addition, this yields the number with the opposite sign, while for vectors and addition, this yields the inverse vector.
 
@@ -132,8 +219,8 @@ Generic algebraic operations. The built-in algebraic operators @racket[+] and @r
   ]
 }
 
-@defproc[(- [v group?] ...)
-         group?]{
+@defproc[(- [v addable?] ...)
+         addable?]{
 
  A general version of "subtraction" that works no differently than usual on numbers, but also supports any other group type, for instance, vectors. The result is computed by adding the first supplied value to the @racket[inverse] of every subsequent value. If only one argument is provided, then it simply returns the additive @racket[inverse].
 
@@ -145,19 +232,54 @@ Generic algebraic operations. The built-in algebraic operators @racket[+] and @r
   ]
 }
 
-@defproc[(group? [v any/c])
+@defproc[(addable? [v any/c])
          boolean?]{
 
  Predicate to check if a value may be operated on using the generic addition operator, @racket[+].
 
 @examples[
     #:eval eval-for-docs
-    (group? 3)
-    (group? #\a)
-    (group? "cherry")
-    (group? (list))
-    (group? (set))
-    (group? (hash))
-    (group? (vector))
+    (addable? 3)
+    (addable? #\a)
+    (addable? "cherry")
+    (addable? (list))
+    (addable? (set))
+    (addable? (hash))
+    (addable? (vector))
+  ]
+}
+
+@defproc[(foldl [f (-> any/c any/c any/c)] [vs (listof? any/c)] [base any/c #f])
+         any/c?]{
+
+ Similar to @racket[foldl], but infers the relevant @racket[identity] element and uses it as the base value, if none is provided. The identity element is determined by considering the first element of the input list together with the given operation.
+
+@examples[
+    #:eval eval-for-docs
+    (foldl + '(1 2 3 4))
+    (foldl * '(1 2 3 4))
+    (foldl .. '("hi" " " "there"))
+  ]
+}
+
+@deftogether[(@defproc[(foldr [f (-> any/c any/c any/c)]
+                              [vs (listof? any/c)]
+                              [base any/c #f])
+                       any/c?]
+              @defproc[(fold [f (-> any/c any/c any/c)]
+                             [vs (listof? any/c)]
+                             [base any/c #f])
+                       any/c?])]{
+
+ Similar to @racket[foldr], but infers the relevant @racket[identity] element and uses it as the base value, if none is provided. The identity element is determined by considering the first element of the input list together with the given operation.
+
+@examples[
+    #:eval eval-for-docs
+    (foldr + '(1 2 3 4))
+    (foldr * '(1 2 3 4))
+    (foldr .. '("hi" " " "there"))
+    (fold + '(1 2 3 4))
+    (fold * '(1 2 3 4))
+    (fold .. '("hi" " " "there"))
   ]
 }

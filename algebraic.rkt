@@ -20,26 +20,30 @@
          appendable/c
          gen:monoid
          monoid/c
-         gen:group
-         group/c
+         gen:addable
+         addable/c
          (contract-out
           [composable? (-> any/c boolean?)]
           [>< (-> composable? composable? composable?)]
+          [: (-> composable? composable? composable?)]
           [appendable? (-> any/c boolean?)]
           [.. (-> appendable? appendable? ... appendable?)]
           [∘ (-> appendable? appendable? ... appendable?)]
           [monoid? (-> any/c boolean?)]
           [identity (-> monoid? (-> any/c any/c any/c) monoid?)]
-          [group? (-> any/c boolean?)]
-          [inverse (-> group? (-> any/c any/c any/c) group?)]
-          [+ (-> group? group? ... group?)]
-          [- (-> group? group? ... group?)]
+          [addable? (-> any/c boolean?)]
+          [inverse (-> addable? (-> any/c any/c any/c) addable?)]
+          [+ (-> addable? addable? ... addable?)]
+          [- (-> addable? addable? ... addable?)]
           [foldl (->* ((-> any/c any/c any/c) (listof any/c))
                       (any/c)
                       any/c)]
           [foldr (->* ((-> any/c any/c any/c) (listof any/c))
                       (any/c)
-                      any/c)]))
+                      any/c)]
+          [fold (->* ((-> any/c any/c any/c) (listof any/c))
+                     (any/c)
+                     any/c)]))
 
 (define-generics composable
   ;; "Magma"
@@ -91,6 +95,7 @@
     (define (identity monoid operation)
       (cond [(= operation +) 0]
             [(= operation *) 1]
+            [(= operation ..) 1]
             [else (error "Operation not recognized!" operation)]))]
    [procedure?
     (define (identity monoid operation)
@@ -125,44 +130,44 @@
     (define (identity monoid operation)
       (list))]))
 
-(define-generics group
-  (inverse group operation)
-  (+ group . others)
-  (- group . others)
+(define-generics addable
+  (inverse addable operation)
+  (+ addable . others)
+  (- addable . others)
   #:fallbacks [(define/generic g-+ +)
                (define/generic g-inverse inverse)
-               (define (inverse group operation)
-                 (error "Unrecognized group type!" group))
-               (define (+ group . others)
-                 (error "Unrecognized group type!" group))
-               (define (- group . others)
+               (define (inverse addable operation)
+                 (error "Unrecognized addable type!" addable))
+               (define (+ addable . others)
+                 (error "Unrecognized addable type!" addable))
+               (define (- addable . others)
                  (if (empty? others)
-                     (g-inverse group g-+)
+                     (g-inverse addable g-+)
                      (let ([minus (curryr g-inverse g-+)])
-                       (apply g-+ group (map minus others)))))]
+                       (apply g-+ addable (map minus others)))))]
   #:defaults ([number?
                (define/generic g-+ +)
                (define/generic g-- -)
-               (define (inverse group operation)
+               (define (inverse addable operation)
                  (cond [(= operation g-+)
-                        (b:- group)]
+                        (b:- addable)]
                        [(= operation *)
-                        (b:/ 1 group)]
-                       [else (error "Unsupported group operation!" operation)]))
-               (define (+ group . others)
-                 (apply b:+ group others))]
+                        (b:/ 1 addable)]
+                       [else (error "Unsupported addable operation!" operation)]))
+               (define (+ addable . others)
+                 (apply b:+ addable others))]
               [vector?
                (define/generic g-+ +)
                (define/generic g-inverse inverse)
-               (define (inverse group operation)
+               (define (inverse addable operation)
                  (->vector
-                  (if (empty? group)
-                      group
+                  (if (empty? addable)
+                      addable
                       (let ([minus (curryr g-inverse operation)])
-                        (map minus group)))))
-               (define (+ group . others)
+                        (map minus addable)))))
+               (define (+ addable . others)
                  (->vector
-                  (apply map g-+ group others)))]))
+                  (apply map g-+ addable others)))]))
 
 (define : ><)
 (define ∘ ..)
@@ -175,3 +180,5 @@
 
 (define (foldr f vs [base #f])
   (foldl f (reverse vs) base))
+
+(define fold foldr)
