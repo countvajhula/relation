@@ -2,9 +2,9 @@
 @require[scribble/manual
          scribble-abbrevs/manual
          scribble/example
-		 racket/sandbox
+         racket/sandbox
          @for-label[relation/algebraic
-		            racket/generic
+                    racket/generic
                     (except-in racket + - identity foldl foldr)]]
 
 @title{Algebraic Operations}
@@ -18,9 +18,9 @@ Generic algebraic operations. The built-in algebraic operators @racket[+] and @r
                  [sandbox-error-output 'string]
                  [sandbox-memory-limit #f])
                  (make-evaluator 'racket/base
-				                 '(require relation)
-								 '(require racket/set)
-								 '(require racket/stream))))
+                                 '(require relation)
+                                 '(require racket/set)
+                                 '(require racket/stream))))
 
 @defthing[gen:composable any/c]{
 
@@ -37,7 +37,7 @@ Generic algebraic operations. The built-in algebraic operators @racket[+] and @r
 
 @deftogether[(@defproc[(>< [v composable?] ...)
               composable?]
-			  @defproc[(: [v composable?] ...)
+              @defproc[(: [v composable?] ...)
               composable?])]{
 
  Performs the canonical "composition-like" operation on the data, based on its type. For all built-in types, this will simply @racket[cons] the two operands together.
@@ -85,15 +85,15 @@ Generic algebraic operations. The built-in algebraic operators @racket[+] and @r
 
 @examples[
     #:eval eval-for-docs
-	(.. 1 2 3 4)
-	(.. "hi" " " "there")
-	(.. '(1 2 3) '(4 5 6))
+    (.. 1 2 3 4)
+    (.. "hi" " " "there")
+    (.. '(1 2 3) '(4 5 6))
   ]
 }
 
 @deftogether[(@defproc[(.. [v appendable?] ...)
               appendable?]
-			  @defproc[(∘ [v appendable?] ...)
+              @defproc[(∘ [v appendable?] ...)
               appendable?])]{
 
  Performs the canonical "append-like" operation on the data, based on its type. This operation is the natural operation on the data type that forms an algebraic semigroup or monoid.
@@ -104,7 +104,7 @@ Generic algebraic operations. The built-in algebraic operators @racket[+] and @r
     (.. "hi" " " "there")
     (.. '(1 2 3) '(4 5 6))
     (.. (hash 'a 1 'b 2) (hash 'c 3))
-	((∘ ->string +) 3 4)
+    ((∘ ->string +) 3 4)
   ]
 }
 
