@@ -249,7 +249,7 @@ Generic algebraic operations. The built-in algebraic operators @racket[+] and @r
   ]
 }
 
-@defproc[(foldl [f (-> any/c any/c any/c)] [vs (listof? any/c)] [base any/c #f])
+@defproc[(foldl [f (-> any/c any/c any/c)] [vs (listof any/c)] [base any/c #f])
          any/c?]{
 
  Similar to @racket[foldl], but infers the relevant @racket[identity] element and uses it as the base value, if none is provided. The identity element is determined by considering the first element of the input list together with the given operation.
@@ -263,11 +263,11 @@ Generic algebraic operations. The built-in algebraic operators @racket[+] and @r
 }
 
 @deftogether[(@defproc[(foldr [f (-> any/c any/c any/c)]
-                              [vs (listof? any/c)]
+                              [vs (listof any/c)]
                               [base any/c #f])
                        any/c?]
               @defproc[(fold [f (-> any/c any/c any/c)]
-                             [vs (listof? any/c)]
+                             [vs (listof any/c)]
                              [base any/c #f])
                        any/c?])]{
 

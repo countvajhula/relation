@@ -2,7 +2,8 @@
 (define collection "relation")
 (define deps '("base"
                "collections-lib"
-               "algebraic"))
+               "algebraic"
+               "lens-lib"))
 (define build-deps '("scribble-lib"
                      "scribble-abbrevs"
                      "racket-doc"

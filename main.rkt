@@ -8,7 +8,8 @@
 
 ;; Code here
 
-(require "comparable.rkt"
+(require (rename-in "comparable.rkt"
+                    (set r:set))
          "transform.rkt"
          "algebraic.rkt")
 
@@ -288,6 +289,64 @@
   (check-equal? (max #:key string-length "z" "yy" "xxx") "xxx")
   (check memq (max #:key string-length "xxx" "zzz" "yyy") '("xxx" "yyy" "zzz"))
   (check-equal? (max #:key string-length "xxx" "yy" "z") "xxx")
+
+  ;; =/classes
+  (check-equal? (=/classes (list 1 2 3)) '((1) (2) (3)) "monotonically increasing")
+  (check-equal? (=/classes (list 1 1 2)) '((1 1) (2)) "monotonically nondecreasing")
+  (check-equal? (=/classes (list 3 3 3)) '((3 3 3)) "equal")
+  (check-equal? (=/classes (list 3 3 1)) '((1) (3 3)) "monotonically nonincreasing")
+  (check-equal? (=/classes (list 3 2 1)) '((1) (2) (3)) "monotonically decreasing")
+  (check-equal? (=/classes (list 3 2 4)) '((2) (3) (4)) "disordered")
+  (check-equal? (=/classes (list 3)) '((3)) "trivial case")
+  (check-exn exn:fail?
+             (lambda ()
+               (=/classes)) "generic relations require at least one argument")
+  (check-equal? (=/classes (list "apple" "banana" "cherry")) '(("apple") ("banana") ("cherry")))
+  (check-equal? (=/classes (list "apple" "apple" "apple")) '(("apple" "apple" "apple")))
+  (check-equal? (=/classes (list "cherry" "banana" "apple")) '(("apple") ("banana") ("cherry")))
+  (check-equal? (=/classes (list #"apple" #"banana" #"cherry")) '((#"apple") (#"banana") (#"cherry")))
+  (check-equal? (=/classes (list #"apple" #"apple" #"apple")) '((#"apple" #"apple" #"apple")))
+  (check-equal? (=/classes (list #"cherry" #"banana" #"apple")) '((#"apple") (#"banana") (#"cherry")))
+  (check-equal? (=/classes (list #\a #\b #\c)) '((#\a) (#\b) (#\c)))
+  (check-equal? (=/classes (list #\a #\a #\a)) '((#\a #\a #\a)))
+  (check-equal? (=/classes (list #\c #\b #\a)) '((#\a) (#\b) (#\c)))
+  (check-equal? (=/classes (list (set) (set 1) (set 1 2))) (list (list (set)) (list (set 1)) (list (set 1 2))))
+  (check-equal? (=/classes (list (set 1 2) (set 1 2) (set 1 2))) (list (list (set 1 2) (set 1 2) (set 1 2))))
+  (check-equal? (=/classes (list (set 1 2) (set 1) (set))) (list (list (set)) (list (set 1)) (list (set 1 2))))
+  (check-equal? (=/classes (list (set 1 2) (set 1 3))) (list (list (set 1 2)) (list (set 1 3))) "incomparable sets")
+  (check-equal? (=/classes (list (set 1 2) (set 3 4))) (list (list (set 1 2)) (list (set 3 4))) "incomparable sets")
+  (check-equal? (=/classes #:key string-length (list "z" "yy" "xxx")) '(("z") ("yy") ("xxx")))
+  (check-equal? (=/classes #:key string-length (list "xxx" "zzz" "yyy")) '(("xxx" "zzz" "yyy")))
+  (check-equal? (=/classes #:key string-length (list "xxx" "yy" "z")) '(("z") ("yy") ("xxx")))
+
+  ;; set
+  (check-equal? (->list (r:set 1 2 3)) '(1 2 3) "monotonically increasing")
+  (check-equal? (->list (r:set 1 1 2)) '(1 2) "monotonically nondecreasing")
+  (check-equal? (->list (r:set 3 3 3)) '(3) "equal")
+  (check-equal? (->list (r:set 3 3 1)) '(1 3) "monotonically nonincreasing")
+  (check-equal? (->list (r:set 3 2 1)) '(1 2 3) "monotonically decreasing")
+  (check-equal? (->list (r:set 3 2 4)) '(2 3 4) "disordered")
+  (check-equal? (->list (r:set 3)) '(3) "trivial case")
+  (check-exn exn:fail?
+             (lambda ()
+               (r:set)) "generic relations require at least one argument")
+  (check-equal? (->list (r:set "apple" "banana" "cherry")) '("apple" "banana" "cherry"))
+  (check-equal? (->list (r:set "apple" "apple" "apple")) '("apple"))
+  (check-equal? (->list (r:set "cherry" "banana" "apple")) '("apple" "banana" "cherry"))
+  (check-equal? (->list (r:set #"apple" #"banana" #"cherry")) '(#"apple" #"banana" #"cherry"))
+  (check-equal? (->list (r:set #"apple" #"apple" #"apple")) '(#"apple"))
+  (check-equal? (->list (r:set #"cherry" #"banana" #"apple")) '(#"apple" #"banana" #"cherry"))
+  (check-equal? (->list (r:set #\a #\b #\c)) '(#\a #\b #\c))
+  (check-equal? (->list (r:set #\a #\a #\a)) '(#\a))
+  (check-equal? (->list (r:set #\c #\b #\a)) '(#\a #\b #\c))
+  (check-equal? (->list (r:set (set) (set 1) (set 1 2))) (list (set) (set 1) (set 1 2)))
+  (check-equal? (->list (r:set (set 1 2) (set 1 2) (set 1 2))) (list (set 1 2)))
+  (check-equal? (->list (r:set (set 1 2) (set 1) (set))) (list (set) (set 1) (set 1 2)))
+  (check-equal? (->list (r:set (set 1 2) (set 1 3))) (list (set 1 2) (set 1 3)) "incomparable sets")
+  (check-equal? (->list (r:set (set 1 2) (set 3 4))) (list (set 1 2) (set 3 4)) "incomparable sets")
+  (check-equal? (->list (r:set #:key string-length "z" "yy" "xxx")) '("z" "yy" "xxx"))
+  (check-equal? (->list (r:set #:key string-length "xxx" "zzz" "yyy")) '("xxx"))
+  (check-equal? (->list (r:set #:key string-length "xxx" "yy" "z")) '("z" "yy" "xxx"))
 
   ;;; transform
   (check-true (->boolean 0))

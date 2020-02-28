@@ -3,7 +3,8 @@
 (require (prefix-in b: racket/base)
          racket/generic
          racket/function
-         data/collection)
+         data/collection
+         lens)
 
 ;; There is a lot of redundancy in this module that should ideally be addressed:
 ;;   1. contracts are duplicated across aliases
@@ -59,11 +60,20 @@
                                 #f))
                    #:rest (listof comparable?)
                    boolean?)]
+          [=/classes (->* ((listof comparable?))
+                          (#:key (or/c (-> comparable? comparable?)
+                                       #f))
+                          (listof list?))]
           [≠ (->* (comparable?)
                   (#:key (or/c (-> comparable? comparable?)
                                #f))
                   #:rest (listof comparable?)
                   boolean?)]
+          (set (->* (comparable?)
+                    (#:key (or/c (-> comparable? comparable?)
+                                 #f))
+                    #:rest (listof comparable?)
+                    sequence?))
           (min (->* (comparable?)
                     (#:key (or/c (-> comparable? comparable?)
                                  #f))
@@ -283,6 +293,31 @@
 
 (define (/= #:key [key #f] . args)
   (not (apply = #:key key args)))
+
+(define (classify #:key [key #f] value classes)
+  (if (empty? classes)
+      (cons (list value) classes)
+      (if (= #:key key value (first (first classes)))
+          (lens-set first-lens
+                    classes
+                    (cons value
+                          (lens-view first-lens
+                                     classes)))
+          (cons (list value) classes))))
+
+(define (=/classes #:key [key #f] collection)
+  (let ([sorted-collection
+         (sort collection
+               (curry < #:key key))])
+    (foldr (curry classify #:key key)
+           null
+           sorted-collection)))
+
+(define (set #:key [key #f] . args)
+  (let ([classes (=/classes #:key key args)])
+    (if (empty? classes)
+        (list)
+        (map first classes))))
 
 (define (min #:key [key #f] . args)
   (first (sort args

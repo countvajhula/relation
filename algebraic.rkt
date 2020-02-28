@@ -11,7 +11,8 @@
                     (foldl d:foldl))
          (only-in algebraic/prelude
                   flip)
-         relation/comparable
+         (rename-in relation/comparable
+                    (set r:set))
          relation/transform)
 
 (provide gen:composable

@@ -3,7 +3,7 @@
          scribble-abbrevs/manual
          scribble/example
 		 racket/sandbox
-         @for-label[relation/comparable
+         @for-label[(except-in relation/comparable set)
                     relation/transform
 		            racket/generic
                     (except-in racket < <= = >= > min max)]]
@@ -175,6 +175,40 @@ Note that even if a type implements the order relations, some values may still b
     (max (set 1 2) (set 1) (set 1 2 3))
     (max #:key string-length "apple" "banana" "cherry")
   ]
+}
+
+@defproc[(=/classes [#:key key (-> comparable? comparable?) #f] [vs (listof comparable?)])
+                     (listof list?)]{
+
+ Returns equivalence classes induced on the input values by the specified equivalence relation (by default, @racket[=] is applied directly unless a key is specified).
+
+@examples[
+    #:eval eval-for-docs
+    (=/classes (list 1 2 1))
+    (=/classes (list 1 2 3))
+    (=/classes (list 1 1 1))
+    (=/classes (list 1 1 2 2 3 3 3))
+    (=/classes (list "cherry" "banana" "apple"))
+    (=/classes #:key string-length (list "apple" "banana" "cherry"))
+  ]
+}
+
+@;{ Resolve set/set imports and uncomment this
+@defproc[(set [#:key key (-> comparable? comparable?) #f] [v comparable?] ...)
+               sequence?]{
+
+ Returns a sequence containing deduplicated input values using the provided equivalence relation as the test for equality (by default, @racket[=] is applied directly unless a key is specified).
+
+@examples[
+    #:eval eval-for-docs
+    (set 1 2 1)
+    (set 1 2 3)
+    (set 1 1 1)
+    (set 1 1 2 2 3 3 3)
+    (set "cherry" "banana" "apple")
+    (set #:key string-length "apple" "banana" "cherry")
+  ]
+}
 }
 
 @defproc[(comparable? [v any/c])
