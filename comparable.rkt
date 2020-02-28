@@ -20,47 +20,58 @@
          (contract-out
           [comparable? (-> any/c boolean?)]
           [< (->* (comparable?)
-                  (#:key (-> comparable? comparable?))
+                  (#:key (or/c (-> comparable? comparable?)
+                               #f))
                   #:rest (listof comparable?)
                   boolean?)]
           [<= (->* (comparable?)
-                   (#:key (-> comparable? comparable?))
+                   (#:key (or/c (-> comparable? comparable?)
+                                #f))
                    #:rest (listof comparable?)
                    boolean?)]
           [≤ (->* (comparable?)
-                  (#:key (-> comparable? comparable?))
+                  (#:key (or/c (-> comparable? comparable?)
+                               #f))
                   #:rest (listof comparable?)
                   boolean?)]
           [= (->* (comparable?)
-                  (#:key (-> comparable? comparable?))
+                  (#:key (or/c (-> comparable? comparable?)
+                               #f))
                   #:rest (listof comparable?)
                   boolean?)]
           [>= (->* (comparable?)
-                   (#:key (-> comparable? comparable?))
+                   (#:key (or/c (-> comparable? comparable?)
+                                #f))
                    #:rest (listof comparable?)
                    boolean?)]
           [≥ (->* (comparable?)
-                  (#:key (-> comparable? comparable?))
+                  (#:key (or/c (-> comparable? comparable?)
+                               #f))
                   #:rest (listof comparable?)
                   boolean?)]
           [> (->* (comparable?)
-                  (#:key (-> comparable? comparable?))
+                  (#:key (or/c (-> comparable? comparable?)
+                               #f))
                   #:rest (listof comparable?)
                   boolean?)]
           [/= (->* (comparable?)
-                  (#:key (-> comparable? comparable?))
-                  #:rest (listof comparable?)
-                  boolean?)]
+                   (#:key (or/c (-> comparable? comparable?)
+                                #f))
+                   #:rest (listof comparable?)
+                   boolean?)]
           [≠ (->* (comparable?)
-                  (#:key (-> comparable? comparable?))
+                  (#:key (or/c (-> comparable? comparable?)
+                               #f))
                   #:rest (listof comparable?)
                   boolean?)]
           (min (->* (comparable?)
-                    (#:key (-> comparable? comparable?))
+                    (#:key (or/c (-> comparable? comparable?)
+                                 #f))
                     #:rest (listof comparable?)
                     comparable?))
           (max (->* (comparable?)
-                    (#:key (-> comparable? comparable?))
+                    (#:key (or/c (-> comparable? comparable?)
+                                 #f))
                     #:rest (listof comparable?)
                     comparable?))))
 
@@ -275,15 +286,11 @@
 
 (define (min #:key [key #f] . args)
   (first (sort args
-               (if key
-                   (curry < #:key key)
-                   <))))
+               (curry < #:key key))))
 
 (define (max #:key [key #f] . args)
   (first (sort args
-               (if key
-                   (curry > #:key key)
-                   >))))
+               (curry > #:key key))))
 
 (define ≤ <=)
 (define ≥ >=)
