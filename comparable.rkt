@@ -35,14 +35,6 @@
                   (#:key (-> comparable? comparable?))
                   #:rest (listof comparable?)
                   boolean?)]
-          [/= (->* (comparable?)
-                  (#:key (-> comparable? comparable?))
-                  #:rest (listof comparable?)
-                  boolean?)]
-          [≠ (->* (comparable?)
-                  (#:key (-> comparable? comparable?))
-                  #:rest (listof comparable?)
-                  boolean?)]
           [>= (->* (comparable?)
                    (#:key (-> comparable? comparable?))
                    #:rest (listof comparable?)
@@ -52,6 +44,14 @@
                   #:rest (listof comparable?)
                   boolean?)]
           [> (->* (comparable?)
+                  (#:key (-> comparable? comparable?))
+                  #:rest (listof comparable?)
+                  boolean?)]
+          [/= (->* (comparable?)
+                  (#:key (-> comparable? comparable?))
+                  #:rest (listof comparable?)
+                  boolean?)]
+          [≠ (->* (comparable?)
                   (#:key (-> comparable? comparable?))
                   #:rest (listof comparable?)
                   boolean?)]
@@ -76,7 +76,6 @@
   (< #:key [key] comparable . others)
   (<= #:key [key] comparable . others)
   (= #:key [key] comparable . others)
-  (/= #:key [key] comparable . others)
   (>= #:key [key] comparable . others)
   (> #:key [key] comparable . others)
   #:fallbacks [(define/generic generic-= =)
@@ -85,8 +84,6 @@
                    (if key
                        (apply generic-= (map key vals))
                        (check-pairwise equal? vals))))
-               (define (/= #:key [key #f] comparable . others)
-                 (not (apply generic-= #:key key comparable others)))
                (define (< #:key [key #f] comparable . others)
                  (error "Type is not orderable!" comparable))
                (define (<= #:key [key #f] comparable . others)
@@ -273,9 +270,8 @@
                        (apply generic-= (map key vals))
                        (check-pairwise equal? vals))))]))
 
-(define ≤ <=)
-(define ≥ >=)
-(define ≠ /=)
+(define (/= #:key [key #f] . args)
+  (not (apply = #:key key args)))
 
 (define (min #:key [key #f] . args)
   (first (sort args
@@ -288,3 +284,8 @@
                (if key
                    (curry > #:key key)
                    >))))
+
+(define ≤ <=)
+(define ≥ >=)
+(define ≠ /=)
+(define != /=)
