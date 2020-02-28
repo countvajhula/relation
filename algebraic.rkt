@@ -1,6 +1,7 @@
-#lang racket
+#lang racket/base
 
 (require (prefix-in b: racket/base)
+         racket/contract/base
          racket/vector
          racket/set
          racket/dict
@@ -11,8 +12,7 @@
                     (foldl d:foldl))
          (only-in algebraic/prelude
                   flip)
-         (rename-in relation/comparable
-                    (set r:set))
+         relation/comparable
          relation/transform)
 
 (provide gen:composable

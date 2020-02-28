@@ -3,7 +3,7 @@
          scribble-abbrevs/manual
          scribble/example
 		 racket/sandbox
-         @for-label[(except-in relation/comparable set)
+         @for-label[relation/comparable
                     relation/transform
 		            racket/generic
                     (except-in racket < <= = >= > min max)]]
@@ -194,19 +194,19 @@ Note that even if a type implements the order relations, some values may still b
 }
 
 @;{ Resolve set/set imports and uncomment this
-@defproc[(set [#:key key (-> comparable? comparable?) #f] [v comparable?] ...)
-               sequence?]{
+@defproc[(generic-set [#:key key (-> comparable? comparable?) #f] [v comparable?] ...)
+                       sequence?]{
 
  Returns a sequence containing deduplicated input values using the provided equivalence relation as the test for equality (by default, @racket[=] is applied directly unless a key is specified).
 
 @examples[
     #:eval eval-for-docs
-    (set 1 2 1)
-    (set 1 2 3)
-    (set 1 1 1)
-    (set 1 1 2 2 3 3 3)
-    (set "cherry" "banana" "apple")
-    (set #:key string-length "apple" "banana" "cherry")
+    (generic-set 1 2 1)
+    (generic-set 1 2 3)
+    (generic-set 1 1 1)
+    (generic-set 1 1 2 2 3 3 3)
+    (generic-set "cherry" "banana" "apple")
+    (generic-set #:key string-length "apple" "banana" "cherry")
   ]
 }
 }

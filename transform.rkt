@@ -1,9 +1,10 @@
-#lang racket
+#lang racket/base
 
 (require (rename-in racket/base
                     (round b:round))
          racket/contract/base
          racket/format
+         racket/string
          racket/set
          racket/dict
          racket/stream

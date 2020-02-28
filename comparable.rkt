@@ -1,6 +1,8 @@
-#lang racket
+#lang racket/base
 
 (require (prefix-in b: racket/base)
+         racket/set
+         racket/contract/base
          racket/generic
          racket/function
          data/collection
@@ -64,16 +66,21 @@
                           (#:key (or/c (-> comparable? comparable?)
                                        #f))
                           (listof list?))]
+          (generic-set (->* (comparable?)
+                            (#:key (or/c (-> comparable? comparable?)
+                                         #f))
+                            #:rest (listof comparable?)
+                            sequence?))
           [≠ (->* (comparable?)
                   (#:key (or/c (-> comparable? comparable?)
                                #f))
                   #:rest (listof comparable?)
                   boolean?)]
-          (set (->* (comparable?)
-                    (#:key (or/c (-> comparable? comparable?)
-                                 #f))
-                    #:rest (listof comparable?)
-                    sequence?))
+          [!= (->* (comparable?)
+                   (#:key (or/c (-> comparable? comparable?)
+                                #f))
+                   #:rest (listof comparable?)
+                   boolean?)]
           (min (->* (comparable?)
                     (#:key (or/c (-> comparable? comparable?)
                                  #f))
@@ -313,7 +320,7 @@
            null
            sorted-collection)))
 
-(define (set #:key [key #f] . args)
+(define (generic-set #:key [key #f] . args)
   (let ([classes (=/classes #:key key args)])
     (if (empty? classes)
         (list)
