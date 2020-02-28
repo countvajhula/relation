@@ -193,9 +193,8 @@ Note that even if a type implements the order relations, some values may still b
   ]
 }
 
-@;{ Resolve set/set imports and uncomment this
 @defproc[(generic-set [#:key key (-> comparable? comparable?) #f] [v comparable?] ...)
-                       sequence?]{
+                       list?]{
 
  Returns a sequence containing deduplicated input values using the provided equivalence relation as the test for equality (by default, @racket[=] is applied directly unless a key is specified).
 
@@ -208,7 +207,6 @@ Note that even if a type implements the order relations, some values may still b
     (generic-set "cherry" "banana" "apple")
     (generic-set #:key string-length "apple" "banana" "cherry")
   ]
-}
 }
 
 @defproc[(comparable? [v any/c])

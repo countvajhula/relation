@@ -5,6 +5,7 @@
          racket/contract/base
          racket/generic
          racket/function
+         racket/stream
          data/collection
          lens)
 
@@ -70,7 +71,7 @@
                             (#:key (or/c (-> comparable? comparable?)
                                          #f))
                             #:rest (listof comparable?)
-                            sequence?))
+                            list?))
           [≠ (->* (comparable?)
                   (#:key (or/c (-> comparable? comparable?)
                                #f))
@@ -324,7 +325,7 @@
   (let ([classes (=/classes #:key key args)])
     (if (empty? classes)
         (list)
-        (map first classes))))
+        (stream->list (map first classes)))))
 
 (define (min #:key [key #f] . args)
   (first (sort args
