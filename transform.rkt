@@ -81,6 +81,7 @@
         [(syntax? v) (syntax->list v)]
         [(bytes? v) (bytes->list v)]
         [(sequence? v) (sequence->list v)]
+        [(generic-set? v) (set->list v)]
         [else (error "Unsupported type!" v)]))
 
 (define (->vector v)

@@ -6,6 +6,9 @@
          racket/generic
          racket/function
          racket/stream
+         (only-in racket/list
+                  group-by
+                  splitf-at)
          data/collection
          lens)
 
@@ -71,7 +74,7 @@
                             (#:key (or/c (-> comparable? comparable?)
                                          #f))
                             #:rest (listof comparable?)
-                            list?))
+                            generic-set?))
           [≠ (->* (comparable?)
                   (#:key (or/c (-> comparable? comparable?)
                                #f))
@@ -302,30 +305,46 @@
 (define (/= #:key [key #f] . args)
   (not (apply = #:key key args)))
 
-(define (classify #:key [key #f] value classes)
-  (if (empty? classes)
-      (cons (list value) classes)
-      (if (= #:key key value (first (first classes)))
-          (lens-set first-lens
-                    classes
-                    (cons value
-                          (lens-view first-lens
-                                     classes)))
-          (cons (list value) classes))))
-
 (define (=/classes #:key [key #f] collection)
-  (let ([sorted-collection
-         (sort collection
-               (curry < #:key key))])
-    (foldr (curry classify #:key key)
-           null
-           sorted-collection)))
+  (let ([key (or key identity)])
+    (group-by key collection =)))
+
+(struct gset (contents key)
+  #:transparent
+  #:guard
+  (λ (contents key type-name)
+    (let ([classes (=/classes #:key key contents)])
+      (if (empty? classes)
+          (values (list) key)
+          (values (stream->list (map first classes))
+                  key))))
+  #:methods gen:set
+  [(define (set-member? st v)
+     (let ([result (member v (gset-contents st) =)])
+       (and result #t)))
+   (define (set-add st v)
+     (let ([contents (gset-contents st)]
+           [key (gset-key st)])
+       (apply generic-set #:key key v contents)))
+   (define (set-remove st v)
+     (let ([contents (gset-contents st)]
+           [key (gset-key st)])
+       (if (empty? contents)
+           (apply generic-set #:key key contents)
+           (let-values ([(before after)
+                         (splitf-at contents
+                                    (λ (x)
+                                      (/= x v)))])
+             (apply generic-set
+                    #:key key
+                    (append before (rest after)))))))
+   (define (set->list st)
+     (gset-contents st))
+   (define (set->stream st)
+     (sequence->stream (gset-contents st)))])
 
 (define (generic-set #:key [key #f] . args)
-  (let ([classes (=/classes #:key key args)])
-    (if (empty? classes)
-        (list)
-        (stream->list (map first classes)))))
+  (gset args key))
 
 (define (min #:key [key #f] . args)
   (first (sort args
