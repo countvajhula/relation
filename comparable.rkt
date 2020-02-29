@@ -66,15 +66,6 @@
                                 #f))
                    #:rest (listof comparable?)
                    boolean?)]
-          [=/classes (->* ((listof comparable?))
-                          (#:key (or/c (-> comparable? comparable?)
-                                       #f))
-                          (listof list?))]
-          (generic-set (->* (comparable?)
-                            (#:key (or/c (-> comparable? comparable?)
-                                         #f))
-                            #:rest (listof comparable?)
-                            generic-set?))
           [≠ (->* (comparable?)
                   (#:key (or/c (-> comparable? comparable?)
                                #f))
@@ -85,6 +76,15 @@
                                 #f))
                    #:rest (listof comparable?)
                    boolean?)]
+          [=/classes (->* ((listof comparable?))
+                          (#:key (or/c (-> comparable? comparable?)
+                                       #f))
+                          (listof list?))]
+          (generic-set (->* (comparable?)
+                            (#:key (or/c (-> comparable? comparable?)
+                                         #f))
+                            #:rest (listof comparable?)
+                            generic-set?))
           (min (->* (comparable?)
                     (#:key (or/c (-> comparable? comparable?)
                                  #f))
