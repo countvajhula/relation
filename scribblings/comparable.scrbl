@@ -200,15 +200,13 @@ Note that even if a type implements the order relations, some values may still b
 
 @examples[
     #:eval eval-for-docs
-    (generic-set 1 2 1)
     (generic-set 1 2 3)
-    (generic-set 1 1 1)
     (generic-set 1 1 2 2 3 3 3)
     (generic-set "cherry" "banana" "apple")
     (generic-set #:key odd? 1 2 3 4 5)
-    (generic-set #:key string-length "apple" "banana" "cherry")
-    (define my-set (generic-set #:key odd? 1 2 3 4 5))
-	(set-add my-set 13)
+    (generic-set #:key string-upcase "apple" "Apple" "APPLE" "banana" "Banana" "cherry")
+    (define my-set (generic-set #:key string-upcase "cherry" "banana" "apple"))
+	(set-add my-set "APPLE")
   ]
 }
 
