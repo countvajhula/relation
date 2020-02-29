@@ -341,7 +341,17 @@
    (define (set->list st)
      (gset-contents st))
    (define (set->stream st)
-     (sequence->stream (gset-contents st)))])
+     (sequence->stream (gset-contents st)))]
+  #:methods gen:sequence
+  [(define/generic generic-empty? empty?)
+   (define/generic generic-first first)
+   (define/generic generic-rest rest)
+   (define (empty? st)
+     (generic-empty? (set->stream st)))
+   (define (first st)
+     (generic-first (set->stream st)))
+   (define (rest st)
+     (generic-rest (set->stream st)))])
 
 (define (generic-set #:key [key #f] . args)
   (gset args key))
