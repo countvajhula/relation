@@ -345,6 +345,10 @@
   #:methods gen:collection
   [(define (conj st v)
      (set-add st v))]
+  #:methods gen:countable
+  [(define/generic generic-length length)
+   (define (length st)
+     (generic-length (set->stream st)))]
   #:methods gen:sequence
   [(define/generic generic-empty? empty?)
    (define/generic generic-first first)
