@@ -342,6 +342,9 @@
      (gset-contents st))
    (define (set->stream st)
      (sequence->stream (gset-contents st)))]
+  #:methods gen:collection
+  [(define (conj st v)
+     (set-add st v))]
   #:methods gen:sequence
   [(define/generic generic-empty? empty?)
    (define/generic generic-first first)
