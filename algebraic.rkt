@@ -36,13 +36,13 @@
           [inverse (-> addable? (-> any/c any/c any/c) addable?)]
           [+ (-> addable? addable? ... addable?)]
           [- (-> addable? addable? ... addable?)]
-          [foldl (->* ((-> any/c any/c any/c) (listof any/c))
+          [foldl (->* ((-> any/c any/c any/c) (sequenceof any/c))
                       (any/c)
                       any/c)]
-          [foldr (->* ((-> any/c any/c any/c) (listof any/c))
+          [foldr (->* ((-> any/c any/c any/c) (sequenceof any/c))
                       (any/c)
                       any/c)]
-          [fold (->* ((-> any/c any/c any/c) (listof any/c))
+          [fold (->* ((-> any/c any/c any/c) (sequenceof any/c))
                      (any/c)
                      any/c)]))
 
