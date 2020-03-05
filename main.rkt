@@ -4,6 +4,7 @@
   (require rackunit)
   (require racket/set)
   (require racket/stream)
+  (require racket/sequence)
   (require (prefix-in f: racket/function)))
 
 ;; Code here
@@ -382,6 +383,9 @@
   (check-equal? (->char 'a) #\a)
   (check-equal? (stream-first (->stream (list 1 2 3))) 1)
   (check-equal? (stream-first (->stream "apple")) #\a)
+  (check-equal? ((->generator (list 1 2 3))) 1)
+  (check-equal? ((->generator "apple")) #\a)
+  (check-equal? (sequence->list (in-producer (->generator (list 1 2 3)) (void))) '(1 2 3))
   (check-equal? (set-count (->set (list 1 2 3 1))) 3)
   (check-equal? (set-count (->set "apple")) 4)
   (check-equal? (->code (->syntax (list 1 2 3))) '(1 2 3))

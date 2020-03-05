@@ -4,7 +4,8 @@
          scribble/example
 		 racket/sandbox
          @for-label[relation/transform
-                    (except-in racket < <= = >= >)]]
+                    (except-in racket < <= = >= >)
+					racket/generator]]
 
 @title{Type Transformers}
 
@@ -183,6 +184,18 @@ Generic utilities for transforming data into different types. The type transform
     #:eval eval-for-docs
     (->stream "apple")
     (->stream '(97 112 112 108 101))
+  ]
+}
+
+@defproc[(->generator [v any/c])
+         generator?]{
+
+ Maps the input data to a @tech/reference{generator}. Any sequence can be transformed into a generator, and vice versa.
+
+@examples[
+    #:eval eval-for-docs
+    (->generator "apple")
+    (->generator '(97 112 112 108 101))
   ]
 }
 

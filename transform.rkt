@@ -8,6 +8,7 @@
          racket/set
          racket/dict
          racket/stream
+         racket/generator
          racket/sequence)
 
 (provide (contract-out
@@ -28,6 +29,7 @@
           [->bytes (-> any/c bytes?)]
           [->char (-> any/c char?)]
           [->stream (-> any/c stream?)]
+          [->generator (-> any/c generator?)]
           [->set (-> any/c set?)]
           [->syntax (-> any/c syntax?)]
           [->code (-> any/c any/c)]
@@ -118,6 +120,11 @@
 (define (->stream v)
   (cond [(stream? v) v]
         [(sequence? v) (sequence->stream v)]
+        [else (error "Unsupported type!" v)]))
+
+(define (->generator v)
+  (cond [(generator? v) v]
+        [(sequence? v) (sequence->generator v)]
         [else (error "Unsupported type!" v)]))
 
 (define (->set v)
