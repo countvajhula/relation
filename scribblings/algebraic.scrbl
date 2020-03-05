@@ -5,7 +5,10 @@
          racket/sandbox
          @for-label[relation/algebraic
                     racket/generic
-                    (except-in racket + - identity foldl foldr)]]
+                    (except-in racket + - foldl foldr)
+                    (only-in racket
+                             (foldl f:foldl)
+                             (foldr f:foldr))]]
 
 @title{Algebraic Operations}
 
@@ -142,23 +145,23 @@ Generic algebraic operations. The built-in algebraic operators @racket[+] and @r
 
 @examples[
     #:eval eval-for-docs
-    (identity 3 +)
-    (identity 3 *)
-    (identity "hi" ..)
-    (identity '(1 2 3) ..)
+    (id 3 +)
+    (id 3 *)
+    (id "hi" ..)
+    (id '(1 2 3) ..)
   ]
 }
 
-@defproc[(identity [v monoid?] [operation procedure?])
+@defproc[(id [v monoid?] [operation procedure?])
          monoid?]{
 
  Produce the "identity" element for the given value and operation. For numbers and addition, this yields 0, while for numbers and multiplication it yields 1. Likewise, for vector addition this yields the zero vector.
 
 @examples[
     #:eval eval-for-docs
-    (identity 3 +)
-    (identity 3 *)
-    (identity #(1 2 -3) +)
+    (id 3 +)
+    (id 3 *)
+    (id #(1 2 -3) +)
   ]
 }
 
@@ -252,7 +255,7 @@ Generic algebraic operations. The built-in algebraic operators @racket[+] and @r
 @defproc[(foldl [f (-> any/c any/c any/c)] [vs (sequenceof any/c)] [base any/c #f])
          any/c?]{
 
- Similar to @racket[foldl], but infers the relevant @racket[identity] element and uses it as the base value, if none is provided. The identity element is determined by considering the first element of the input list together with the given operation.
+ Similar to @racketlink[f:foldl "foldl"], but infers the relevant @racketlink[id "identity"] element and uses it as the base value, if none is provided. The identity element is determined by considering the first element of the input sequence together with the given operation.
 
 @examples[
     #:eval eval-for-docs
@@ -271,7 +274,7 @@ Generic algebraic operations. The built-in algebraic operators @racket[+] and @r
                              [base any/c #f])
                        any/c?])]{
 
- Similar to @racket[foldr], but infers the relevant @racket[identity] element and uses it as the base value, if none is provided. The identity element is determined by considering the first element of the input list together with the given operation.
+ Similar to @racketlink[f:foldr "foldr"], but infers the relevant @racketlink[id "identity"] element and uses it as the base value, if none is provided. The identity element is determined by considering the first element of the input list together with the given operation.
 
 @examples[
     #:eval eval-for-docs

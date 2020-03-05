@@ -5,8 +5,7 @@
          racket/vector
          racket/set
          racket/dict
-         (rename-in racket/function
-                    (identity f:identity))
+         racket/function
          racket/generic
          (rename-in data/collection
                     (foldl d:foldl))
@@ -31,7 +30,7 @@
           [.. (-> appendable? appendable? ... appendable?)]
           [∘ (-> appendable? appendable? ... appendable?)]
           [monoid? (-> any/c boolean?)]
-          [identity (-> monoid? (-> any/c any/c any/c) monoid?)]
+          [id (-> monoid? (-> any/c any/c any/c) monoid?)]
           [addable? (-> any/c boolean?)]
           [inverse (-> addable? (-> any/c any/c any/c) addable?)]
           [+ (-> addable? addable? ... addable?)]
@@ -90,45 +89,45 @@
                  (apply compose appendable others))]))
 
 (define-generics monoid
-  (identity monoid operation)
+  (id monoid operation)
   #:defaults
   ([number?
-    (define (identity monoid operation)
+    (define (id monoid operation)
       (cond [(= operation +) 0]
             [(= operation *) 1]
             [(= operation ..) 1]
             [else (error "Operation not recognized!" operation)]))]
    [procedure?
-    (define (identity monoid operation)
-      f:identity)]
+    (define (id monoid operation)
+      identity)]
    [string?
-    (define (identity monoid operation)
+    (define (id monoid operation)
       "")]
    [bytes?
-    (define (identity monoid operation)
+    (define (id monoid operation)
       #"")]
    [list?
-    (define (identity monoid operation)
+    (define (id monoid operation)
       (list))]
    [vector?
-    (define/generic g-identity identity)
-    (define (identity monoid operation)
+    (define/generic generic-id id)
+    (define (id monoid operation)
       (cond [(= operation ..) #()]
             [(= operation *)
              (error "Operation not supported!" operation)]
             [(= operation +)
              (->vector
               (take (length monoid)
-                    (repeat (g-identity (first monoid)
+                    (repeat (generic-id (first monoid)
                                         +))))]))]
    [set?
-    (define (identity monoid operation)
+    (define (id monoid operation)
       (set))]
    [dict?
-    (define (identity monoid operation)
+    (define (id monoid operation)
       (hash))]
    [sequence?
-    (define (identity monoid operation)
+    (define (id monoid operation)
       (list))]))
 
 (define-generics addable
@@ -176,8 +175,8 @@
 (define (foldl f vs [base #f])
   (if base
       (d:foldl (flip f) base vs)
-      (let ([id (identity (first vs) f)])
-        (d:foldl (flip f) id vs))))
+      (let ([id-element (id (first vs) f)])
+        (d:foldl (flip f) id-element vs))))
 
 (define (foldr f vs [base #f])
   (foldl f (reverse vs) base))
