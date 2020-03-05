@@ -20,6 +20,7 @@ Generic utilities for transforming data into different types. The type transform
                  (make-evaluator 'racket/base
 				                 '(require relation)
 								 '(require racket/set)
+								 '(require (only-in data/collection conj))
 								 '(require racket/stream))))
 
 @defproc[(->boolean [v any/c])
@@ -190,12 +191,13 @@ Generic utilities for transforming data into different types. The type transform
 @defproc[(->generator [v any/c])
          generator?]{
 
- Maps the input data to a @tech/reference{generator}. Any sequence can be transformed into a generator, and vice versa.
+ Maps the input data to a @tech/reference{generator}. Any sequence can be transformed into a generator, and vice versa. This allows us to leverage sequence patterns for generators in a natural way, for instance cons-ing and extending generators to produce additional values by transforming them into streams and then back again.
 
 @examples[
     #:eval eval-for-docs
     (->generator "apple")
     (->generator '(97 112 112 108 101))
+	(->list (->generator (conj (->stream (->generator '(1 2 3))) 4)))
   ]
 }
 
