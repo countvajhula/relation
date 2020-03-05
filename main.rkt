@@ -385,6 +385,7 @@
   (check-equal? (stream-first (->stream "apple")) #\a)
   (check-equal? ((->generator (list 1 2 3))) 1)
   (check-equal? ((->generator "apple")) #\a)
+  (check-equal? (->list (->generator (list 1 2 3))) '(1 2 3))
   (check-equal? (sequence->list (in-producer (->generator (list 1 2 3)) (void))) '(1 2 3))
   (check-equal? (set-count (->set (list 1 2 3 1))) 3)
   (check-equal? (set-count (->set "apple")) 4)

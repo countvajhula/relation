@@ -48,7 +48,8 @@
         [((listof char?) v) (list->string v)]
         [(bytes? v) (bytes->string/locale v)]
         [(list? v) (~a v)]
-        [(sequence? v) (list->string (->list v))]
+        [(sequence? v) (->string (->list v))]
+        [(generator? v) (->string (->list v))]
         [else (~a v)]))
 
 (define (->number v)
@@ -83,6 +84,7 @@
         [(syntax? v) (syntax->list v)]
         [(bytes? v) (bytes->list v)]
         [(sequence? v) (sequence->list v)]
+        [(generator? v) (->list (->stream v))]
         [(generic-set? v) (set->list v)]
         [else (error "Unsupported type!" v)]))
 
@@ -120,6 +122,7 @@
 (define (->stream v)
   (cond [(stream? v) v]
         [(sequence? v) (sequence->stream v)]
+        [(generator? v) (->stream (in-producer v (void)))]
         [else (error "Unsupported type!" v)]))
 
 (define (->generator v)
