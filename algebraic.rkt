@@ -1,4 +1,4 @@
-#lang racket/base
+#lang at-exp racket
 
 (require (prefix-in b: racket/base)
          racket/contract/base
@@ -175,8 +175,11 @@
 (define (foldl f vs [base #f])
   (if base
       (d:foldl (flip f) base vs)
-      (let ([id-element (id (first vs) f)])
-        (d:foldl (flip f) id-element vs))))
+      (if (empty? vs)
+          (error @~a{Input sequence is empty and no base value was provided!
+                     Available data is insufficient to compute a result.})
+          (let ([id-element (id (first vs) f)])
+            (d:foldl (flip f) id-element vs)))))
 
 (define (foldr f vs [base #f])
   (foldl f (reverse vs) base))

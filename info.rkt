@@ -8,7 +8,8 @@
                      "scribble-abbrevs"
                      "racket-doc"
                      "rackunit-lib"
-                     "sandbox-lib"))
+                     "sandbox-lib"
+                     "at-exp-lib"))
 (define scribblings '(("scribblings/relation.scrbl" (multi-page))))
 (define clean '("compiled" "doc" "doc/relation"))
 (define pkg-desc "Generic interfaces and convenient utilities for relations")
