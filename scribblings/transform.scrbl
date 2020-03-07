@@ -193,6 +193,8 @@ Generic utilities for transforming data into different types. The type transform
 
  Maps the input data to a @tech/reference{generator}. Any sequence can be transformed into a generator, and vice versa. This allows us to leverage sequence patterns for generators in a natural way, for instance cons-ing and extending generators to produce additional values by transforming them into streams and then back again.
 
+ Note that, owing to the stateful nature of the underlying generator, it's possible that a stream constructed from a generator would continue to provide lazy evaluation but not take up constant memory. On the other hand, a stream to generator conversion should not incur any additional memory overhead.
+
 @examples[
     #:eval eval-for-docs
     (->generator "apple")
