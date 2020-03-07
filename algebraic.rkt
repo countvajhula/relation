@@ -25,7 +25,6 @@
          (contract-out
           [composable? (-> any/c boolean?)]
           [>< (-> composable? composable? composable?)]
-          [: (-> composable? composable? composable?)]
           [appendable? (-> any/c boolean?)]
           [.. (-> appendable? appendable? ... appendable?)]
           [∘ (-> appendable? appendable? ... appendable?)]
@@ -49,12 +48,41 @@
   ;; "Magma"
   ;; This is the most general form of composition, making no
   ;; assumptions about properties the operation must satisfy
+  ;; except that it satisfy closure, i.e. the composition
+  ;; yields an instance of the same type as the inputs
   (>< composable other)
   #:fallbacks
   [(define (>< composable other)
      (cons composable other))]
   #:defaults
-  ([any/c]))
+  ([number?
+    (define (>< composable other)
+      (b:+ composable other))]
+   [string?
+    (define (>< composable other)
+      (string-append composable other))]
+   [bytes?
+    (define (>< composable other)
+      (bytes-append composable other))]
+   [list?
+    (define (>< composable other)
+      (b:append composable other))]
+   [vector?
+    (define (>< composable other)
+      (vector-append composable other))]
+   [set?
+    (define (>< composable other)
+      (set-union composable other))]
+   [dict?
+    (define (>< composable other)
+      (make-hash (->list (append composable other))))]
+   [sequence?
+    (define (>< composable other)
+      (append composable other))]
+   [procedure?
+    (define (>< composable other)
+      (compose composable other))]
+   [any/c]))
 
 (define-generics appendable
   ;; "Semigroup"
@@ -169,7 +197,6 @@
                  (->vector
                   (apply map g-+ addable others)))]))
 
-(define : ><)
 (define ∘ ..)
 
 (define (foldl f vs [base #f])

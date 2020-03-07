@@ -32,15 +32,13 @@ Generic algebraic operations. The built-in algebraic operators @racket[+] and @r
 @examples[
     #:eval eval-for-docs
     (>< 1 2)
-    (: 1 2)
-    (: "hi" "there")
-    (: '(1 2 3) '(4 5 6))
+    (>< 1 2)
+    (>< "hi" "there")
+    (>< '(1 2 3) '(4 5 6))
   ]
 }
 
 @deftogether[(@defproc[(>< [v composable?] ...)
-              composable?]
-              @defproc[(: [v composable?] ...)
               composable?])]{
 
  Performs the canonical "composition-like" operation on the data, based on its type. For all built-in types, this will simply @racket[cons] the two operands together.
@@ -48,16 +46,16 @@ Generic algebraic operations. The built-in algebraic operators @racket[+] and @r
 @examples[
     #:eval eval-for-docs
     (>< 1 2)
-    (: 1 2)
-    (: "hi" "there")
-    (: '(1 2 3) '(4 5 6))
+    (>< 1 2)
+    (>< "hi" "there")
+    (>< '(1 2 3) '(4 5 6))
   ]
 }
 
 @defproc[(composable? [v any/c])
          boolean?]{
 
- Predicate to check if a value may be operated on using the generic composition operator, @racket[><] or @racket[:].
+ Predicate to check if a value may be operated on using the generic composition operator, @racket[><].
 
 @examples[
     #:eval eval-for-docs
