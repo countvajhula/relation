@@ -443,10 +443,8 @@
 
   ;;; algebraic
   ;; elementary composition
-  (check-equal? (>< 1 2) (cons 1 2))
-  (check-equal? (>< "a" "b") (cons "a" "b"))
-  (check-equal? (>< 1 "a") (cons 1 "a"))
-  (check-equal? (>< 1 '(2 3)) '(1 2 3))
+  (check-equal? (>< 1 2) 3)
+  (check-equal? (>< "a" "b") "ab")
   ;; associative composition
   (check-equal? (.. 3 4) 12)
   (check-equal? (.. "hi" " " "there") "hi there")
