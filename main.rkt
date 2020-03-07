@@ -9,11 +9,13 @@
 
 ;; Code here
 
-(require "comparable.rkt"
+(require "equivalence.rkt"
+         "order.rkt"
          "transform.rkt"
          "algebraic.rkt")
 
-(provide (all-from-out "comparable.rkt"
+(provide (all-from-out "equivalence.rkt"
+                       "order.rkt"
                        "transform.rkt"
                        "algebraic.rkt"))
 

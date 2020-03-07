@@ -11,7 +11,7 @@
                     (foldl d:foldl))
          (only-in algebraic/prelude
                   flip)
-         relation/comparable
+         relation/equivalence
          relation/transform)
 
 (provide gen:composable
