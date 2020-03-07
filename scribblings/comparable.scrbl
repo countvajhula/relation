@@ -48,7 +48,7 @@ Note that even if a type implements the order relations, some values may still b
   ]
 }
 
-@defproc[(< [#:key key (-> comparable? comparable?) #f] [v comparable?] ...)
+@defproc[(< [#:key key (-> orderable? orderable?) #f] [v orderable?] ...)
               boolean?]{
 
  True if the v's are monotonically increasing. If a transformation is provided via the @racket[#:key] argument, then it is applied to the arguments prior to comparing them.
@@ -62,9 +62,9 @@ Note that even if a type implements the order relations, some values may still b
   ]
 }
 
-@deftogether[(@defproc[(<= [#:key key (-> comparable? comparable?) #f] [v comparable?] ...)
+@deftogether[(@defproc[(<= [#:key key (-> orderable? orderable?) #f] [v orderable?] ...)
               boolean?]
-              @defproc[(≤ [#:key key (-> comparable? comparable?) #f] [v comparable?] ...)
+              @defproc[(≤ [#:key key (-> orderable? orderable?) #f] [v orderable?] ...)
               boolean?])]{
 
  True if the v's are monotonically nondecreasing. If a transformation is provided via the @racket[#:key] argument, then it is applied to the arguments prior to comparing them.
@@ -115,9 +115,9 @@ Note that even if a type implements the order relations, some values may still b
   ]
 }
 
-@deftogether[(@defproc[(>= [#:key key (-> comparable? comparable?) #f] [v comparable?] ...)
+@deftogether[(@defproc[(>= [#:key key (-> orderable? orderable?) #f] [v orderable?] ...)
               boolean?]
-              @defproc[(≥ [#:key key (-> comparable? comparable?) #f] [v comparable?] ...)
+              @defproc[(≥ [#:key key (-> orderable? orderable?) #f] [v orderable?] ...)
               boolean?])]{
 
  True if the v's are monotonically nonincreasing. If a transformation is provided via the @racket[#:key] argument, then it is applied to the arguments prior to comparing them.
@@ -131,7 +131,7 @@ Note that even if a type implements the order relations, some values may still b
   ]
 }
 
-@defproc[(> [#:key key (-> comparable? comparable?) #f] [v comparable?] ...)
+@defproc[(> [#:key key (-> orderable? orderable?) #f] [v orderable?] ...)
               boolean?]{
 
  True if the v's are monotonically decreasing. If a transformation is provided via the @racket[#:key] argument, then it is applied to the arguments prior to comparing them.
@@ -145,8 +145,8 @@ Note that even if a type implements the order relations, some values may still b
   ]
 }
 
-@defproc[(min [#:key key (-> comparable? comparable?) #f] [v comparable?] ...)
-               comparable?]{
+@defproc[(min [#:key key (-> orderable? orderable?) #f] [v orderable?] ...)
+               orderable?]{
 
  Returns the minimum value. If @racket[key] is provided it is applied to the arguments prior to the comparison (this pattern is often referred to as "argmin" in math and programming literature). The values are compared using the canonical comparison for their type.
 
@@ -161,8 +161,8 @@ Note that even if a type implements the order relations, some values may still b
   ]
 }
 
-@defproc[(max [#:key key (-> comparable? comparable?) #f] [v comparable?] ...)
-               comparable?]{
+@defproc[(max [#:key key (-> orderable? orderable?) #f] [v orderable?] ...)
+               orderable?]{
 
  Returns the maximum value. If @racket[key] is provided it is applied to the arguments prior to the comparison (this pattern is often referred to as "argmax" in math and programming literature). The values are compared using the canonical comparison for their type.
 
