@@ -195,6 +195,8 @@ Generic utilities for transforming data into different types. The type transform
 
  Note that, owing to the stateful nature of the underlying generator, it's possible that a stream constructed from a generator would continue to provide lazy evaluation but not take up constant memory. On the other hand, a stream to generator conversion should not incur any additional memory overhead.
 
+ Another thing to be wary of with a generator to stream conversion is that since the underlying generator is mutable, independent invocations of the generator after the stream has been constructed would affect the sequence represented by the stream, which is likely to result in unexpected behavior. In general it is advisable to manipulate stateful entities such as generators via a single common interface, whether that is, in the present case, the generator itself directly, or the stream representation of it -- but not both.
+
 @examples[
     #:eval eval-for-docs
     (->generator "apple")

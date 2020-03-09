@@ -23,19 +23,34 @@ A generic interface and utilities for comparing data. By default, the built-in e
 				                 '(require racket/function)
 								 '(require racket/set))))
 
+@section{Interface}
+
 @defthing[gen:comparable any/c]{
 
  A @tech/reference{generic interface} that represents any object that can be compared with other objects of the same type in terms of equivalence, that is, in cases where we seek to know, "are these values equal, for some definition of equality?" All built-in types have a default implementation for @racket[gen:comparable].
 
-@examples[
+ @examples[
     #:eval eval-for-docs
     (= 1 1)
     (= 1 2)
+    (= 1 (void))
     (= "apple" "APPLE")
     (= #:key string-upcase "apple" "APPLE")
     (= #:key ->number "42.0" "42/1")
   ]
+
+ To implement this interface for custom types, the following method needs to be implemented:
+
+ @defproc[(equal? [v comparable?] ...)
+                  boolean?]{
+
+ A function taking an arbitrary number of arguments (i.e. a "variadic" function) that tests whether the arguments are equal, where all arguments are instances of the structure type to which the generic interface is associated (or a subtype of the structure type). The function must return true if the arguments are to be considered equal, and false if not.
+ }
 }
+
+@section{Utilities}
+
+ The following utilities are provided which work with any type that implements the @racket[gen:comparable] interface.
 
 @defproc[(= [#:key key (-> comparable? comparable?) #f] [v comparable?] ...)
               boolean?]{
@@ -60,6 +75,8 @@ A generic interface and utilities for comparing data. By default, the built-in e
 @deftogether[(@defproc[(/= [#:key key (-> comparable? comparable?) #f] [v comparable?] ...)
               boolean?]
               @defproc[(≠ [#:key key (-> comparable? comparable?) #f] [v comparable?] ...)
+              boolean?]
+			  @defproc[(!= [#:key key (-> comparable? comparable?) #f] [v comparable?] ...)
               boolean?])]{
 
  True if the v's are not equal. This is simply a negation of the generic @racket[=]. If a transformation is provided via the @racket[#:key] argument, then it is applied to the arguments prior to comparing them.
