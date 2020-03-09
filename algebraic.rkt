@@ -53,107 +53,107 @@
   (>< composable other)
   #:fallbacks [(define (>< composable other)
                  (cons composable other))]
-  #:defaults ([number?
-               (define (>< composable other)
-                 (b:+ composable other))]
-              [string?
-               (define (>< composable other)
-                 (string-append composable other))]
-              [bytes?
-               (define (>< composable other)
-                 (bytes-append composable other))]
-              [list?
-               (define (>< composable other)
-                 (b:append composable other))]
-              [vector?
-               (define (>< composable other)
-                 (vector-append composable other))]
-              [set?
-               (define (>< composable other)
-                 (set-union composable other))]
-              [dict?
-               (define (>< composable other)
-                 (make-hash (->list (append composable other))))]
-              [sequence?
-               (define (>< composable other)
-                 (append composable other))]
-              [procedure?
-               (define (>< composable other)
-                 (compose composable other))]
-              [any/c]))
+  #:fast-defaults ([number?
+                    (define (>< composable other)
+                      (b:+ composable other))]
+                   [string?
+                    (define (>< composable other)
+                      (string-append composable other))]
+                   [bytes?
+                    (define (>< composable other)
+                      (bytes-append composable other))]
+                   [list?
+                    (define (>< composable other)
+                      (b:append composable other))]
+                   [vector?
+                    (define (>< composable other)
+                      (vector-append composable other))]
+                   [set?
+                    (define (>< composable other)
+                      (set-union composable other))]
+                   [dict?
+                    (define (>< composable other)
+                      (make-hash (->list (append composable other))))]
+                   [sequence?
+                    (define (>< composable other)
+                      (append composable other))]
+                   [procedure?
+                    (define (>< composable other)
+                      (compose composable other))])
+  #:defaults ([any/c]))
 
 (define-generics appendable
   ;; "Semigroup"
   ;; concatenation-like operation
   (.. appendable . others)
-  #:defaults ([number?
-               (define (.. appendable . others)
-                 (apply b:* appendable others))]
-              [string?
-               (define (.. appendable . others)
-                 (apply string-append appendable others))]
-              [bytes?
-               (define (.. appendable . others)
-                 (apply bytes-append appendable others))]
-              [list?
-               (define (.. appendable . others)
-                 (apply b:append appendable others))]
-              [vector?
-               (define (.. appendable . others)
-                 (apply vector-append appendable others))]
-              [set?
-               (define (.. appendable . others)
-                 (apply set-union appendable others))]
-              [dict?
-               (define (.. appendable . others)
-                 (make-hash (->list (apply append appendable others))))]
-              [sequence?
-               (define (.. appendable . others)
-                 (apply append appendable others))]
-              [procedure?
-               (define (.. appendable . others)
-                 (apply compose appendable others))]))
+  #:fast-defaults ([number?
+                    (define (.. appendable . others)
+                      (apply b:* appendable others))]
+                   [string?
+                    (define (.. appendable . others)
+                      (apply string-append appendable others))]
+                   [bytes?
+                    (define (.. appendable . others)
+                      (apply bytes-append appendable others))]
+                   [list?
+                    (define (.. appendable . others)
+                      (apply b:append appendable others))]
+                   [vector?
+                    (define (.. appendable . others)
+                      (apply vector-append appendable others))]
+                   [set?
+                    (define (.. appendable . others)
+                      (apply set-union appendable others))]
+                   [dict?
+                    (define (.. appendable . others)
+                      (make-hash (->list (apply append appendable others))))]
+                   [sequence?
+                    (define (.. appendable . others)
+                      (apply append appendable others))]
+                   [procedure?
+                    (define (.. appendable . others)
+                      (apply compose appendable others))]))
 
 (define-generics monoid
   (id monoid operation)
-  #:defaults ([number?
-               (define (id monoid operation)
-                 (cond [(= operation +) 0]
-                       [(= operation *) 1]
-                       [(= operation ..) 1]
-                       [else (error "Operation not recognized!" operation)]))]
-              [procedure?
-               (define (id monoid operation)
-                 identity)]
-              [string?
-               (define (id monoid operation)
-                 "")]
-              [bytes?
-               (define (id monoid operation)
-                 #"")]
-              [list?
-               (define (id monoid operation)
-                 (list))]
-              [vector?
-               (define/generic generic-id id)
-               (define (id monoid operation)
-                 (cond [(= operation ..) #()]
-                       [(= operation *)
-                        (error "Operation not supported!" operation)]
-                       [(= operation +)
-                        (->vector
-                         (take (length monoid)
-                               (repeat (generic-id (first monoid)
-                                                   +))))]))]
-              [set?
-               (define (id monoid operation)
-                 (set))]
-              [dict?
-               (define (id monoid operation)
-                 (hash))]
-              [sequence?
-               (define (id monoid operation)
-                 (list))]))
+  #:fast-defaults ([number?
+                    (define (id monoid operation)
+                      (cond [(= operation +) 0]
+                            [(= operation *) 1]
+                            [(= operation ..) 1]
+                            [else (error "Operation not recognized!" operation)]))]
+                   [procedure?
+                    (define (id monoid operation)
+                      identity)]
+                   [string?
+                    (define (id monoid operation)
+                      "")]
+                   [bytes?
+                    (define (id monoid operation)
+                      #"")]
+                   [list?
+                    (define (id monoid operation)
+                      (list))]
+                   [vector?
+                    (define/generic generic-id id)
+                    (define (id monoid operation)
+                      (cond [(= operation ..) #()]
+                            [(= operation *)
+                             (error "Operation not supported!" operation)]
+                            [(= operation +)
+                             (->vector
+                              (take (length monoid)
+                                    (repeat (generic-id (first monoid)
+                                                        +))))]))]
+                   [set?
+                    (define (id monoid operation)
+                      (set))]
+                   [dict?
+                    (define (id monoid operation)
+                      (hash))]
+                   [sequence?
+                    (define (id monoid operation)
+                      (list))]))
 
 (define-generics addable
   (inverse addable operation)
@@ -170,29 +170,29 @@
                      (g-inverse addable g-+)
                      (let ([minus (curryr g-inverse g-+)])
                        (apply g-+ addable (map minus others)))))]
-  #:defaults ([number?
-               (define/generic g-+ +)
-               (define/generic g-- -)
-               (define (inverse addable operation)
-                 (cond [(= operation g-+)
-                        (b:- addable)]
-                       [(= operation *)
-                        (b:/ 1 addable)]
-                       [else (error "Unsupported addable operation!" operation)]))
-               (define (+ addable . others)
-                 (apply b:+ addable others))]
-              [vector?
-               (define/generic g-+ +)
-               (define/generic g-inverse inverse)
-               (define (inverse addable operation)
-                 (->vector
-                  (if (empty? addable)
-                      addable
-                      (let ([minus (curryr g-inverse operation)])
-                        (map minus addable)))))
-               (define (+ addable . others)
-                 (->vector
-                  (apply map g-+ addable others)))]))
+  #:fast-defaults ([number?
+                    (define/generic g-+ +)
+                    (define/generic g-- -)
+                    (define (inverse addable operation)
+                      (cond [(= operation g-+)
+                             (b:- addable)]
+                            [(= operation *)
+                             (b:/ 1 addable)]
+                            [else (error "Unsupported addable operation!" operation)]))
+                    (define (+ addable . others)
+                      (apply b:+ addable others))]
+                   [vector?
+                    (define/generic g-+ +)
+                    (define/generic g-inverse inverse)
+                    (define (inverse addable operation)
+                      (->vector
+                       (if (empty? addable)
+                           addable
+                           (let ([minus (curryr g-inverse operation)])
+                             (map minus addable)))))
+                    (define (+ addable . others)
+                      (->vector
+                       (apply map g-+ addable others)))]))
 
 (define ∘ ..)
 
