@@ -7,6 +7,7 @@
          racket/string
          racket/set
          racket/dict
+         racket/vector
          racket/stream
          racket/generator
          racket/sequence)
@@ -86,11 +87,15 @@
         [(sequence? v) (sequence->list v)]
         [(generator? v) (->list (->stream v))]
         [(generic-set? v) (set->list v)]
+        [(struct? v) (->list (->vector v))]
         [else (error "Unsupported type!" v)]))
 
 (define (->vector v)
-  (cond [(vector? v) v]
-        [(list? v) (vector->immutable-vector (list->vector v))]
+  (cond [(vector? v) (if (immutable? v)
+                         v
+                         (vector->immutable-vector v))]
+        [(list? v) (->vector (list->vector v))]
+        [(struct? v) (->vector (vector-drop (struct->vector v) 1))]
         [else (->vector (->list v))]))
 
 (define (->symbol v)
