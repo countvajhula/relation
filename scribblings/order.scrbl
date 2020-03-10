@@ -23,9 +23,11 @@ A generic interface and utilities for orderable data. By default, the built-in c
 				                 '(require racket/function)
 								 '(require racket/set))))
 
+@section[#:tag "order:interface"]{Interface}
+
 @defthing[gen:orderable any/c]{
 
- A @tech/reference{generic interface} that represents any object that can be compared with other objects of the same type in terms of order, that is, in cases where we seek to know, "is this value less than or greater than that value?" Any type implementing this interface must also implement @racket[gen:comparable] unless the latter's default fallback of @racket[equal?] is adequate. The following built-in types have implementations for the order relations @racket[<], @racket[<=], @racket[>=] and @racket[>] in addition to the equivalence relations @racket[=] and @racket[/=]:
+ A @tech/reference{generic interface} that represents any object that can be compared with other objects of the same type in terms of order, that is, in cases where we seek to know, "is this value less than or greater than that value?" Any type implementing this interface must also implement @racket[gen:comparable] unless the latter's default fallback of @racket[equal?] is adequate. The following built-in types have implementations for the order relations @racket[<], @racket[<=], @racket[>=] and @racket[>]:
 
 @itemlist[
  @item{@tech/reference{numbers}}
@@ -34,7 +36,7 @@ A generic interface and utilities for orderable data. By default, the built-in c
  @item{@tech/reference{characters}}
  @item{@tech/reference{sets}}]
 
-Note that even if a type implements the order relations, some values may still be order-incomparable (see @hyperlink["https://en.wikipedia.org/wiki/Partially_ordered_set"]{partial order}), meaning that none of the relations would return true for them. For instance, the sets {1, 2} and {1, 3} are incomparable under their canonical order relation (i.e. @racket[subset?]), while also not being equal.
+ Note that even if a type implements the order relations, some values may still be order-incomparable (see @hyperlink["https://en.wikipedia.org/wiki/Partially_ordered_set"]{partial order}), meaning that none of the relations would return true for them. For instance, the sets {1, 2} and {1, 3} are incomparable under their canonical order relation (i.e. @racket[subset?]), while also not being equal.
 
 @examples[
     #:eval eval-for-docs
@@ -45,7 +47,38 @@ Note that even if a type implements the order relations, some values may still b
     (< #:key string-upcase "apple" "APPLE")
     (< #:key ->number "42.0" "53/1")
   ]
+
+ To implement this interface for custom types, the following methods need to be implemented:
+
+ @defproc[(less-than? [v orderable?] ...)
+                      boolean?]{
+
+ A function taking an arbitrary number of arguments (i.e. a "variadic" function) that tests whether the arguments are each less than the next, i.e. whether they are monotically increasing. All arguments must be instances of the structure type to which the generic interface is associated (or a subtype of the structure type). The function must return true if the arguments form a monotonically increasing sequence, and false if not.
+ }
+
+ @defproc[(greater-than? [v orderable?] ...)
+                      boolean?]{
+
+ Similar to @racket[less-than?], but tests whether the arguments are each greater than the next, i.e. whether they are monotically decreasing.
+ }
+
+ @defproc[(less-than-or-equal? [v orderable?] ...)
+                      boolean?]{
+
+ Similar to @racket[less-than?], but tests whether the arguments are each either less than or equal to the next, i.e. whether they are monotically non-increasing.
+ }
+
+ @defproc[(greater-than-or-equal? [v orderable?] ...)
+                      boolean?]{
+
+ Similar to @racket[less-than?], but tests whether the arguments are each either greater than or equal to the next, i.e. whether they are monotically non-decreasing.
+ }
+
 }
+
+@section[#:tag "order:utilities"]{Utilities}
+
+ The following utilities are provided which work with any type that implements the @racket[gen:orderable] interface.
 
 @defproc[(< [#:key key (-> orderable? orderable?) #f] [v orderable?] ...)
               boolean?]{

@@ -105,6 +105,7 @@
   (check-exn exn:fail?
              (lambda ()
                (=)) "generic relations require at least one argument")
+  (check-false (= 3 (void)) "non-uniform types")
   (check-false (= "apple" "banana" "cherry"))
   (check-true (= "apple" "apple" "apple"))
   (check-false (= "cherry" "banana" "apple"))

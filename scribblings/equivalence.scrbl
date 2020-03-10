@@ -23,7 +23,7 @@ A generic interface and utilities for comparing data. By default, the built-in e
 				                 '(require racket/function)
 								 '(require racket/set))))
 
-@section{Interface}
+@section[#:tag "equivalence:interface"]{Interface}
 
 @defthing[gen:comparable any/c]{
 
@@ -48,7 +48,7 @@ A generic interface and utilities for comparing data. By default, the built-in e
  }
 }
 
-@section{Utilities}
+@section[#:tag "equivalence:utilities"]{Utilities}
 
  The following utilities are provided which work with any type that implements the @racket[gen:comparable] interface.
 

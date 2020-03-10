@@ -60,143 +60,103 @@
                     orderable?))))
 
 (define-generics orderable
-  (< #:key [key] orderable . others)
-  (<= #:key [key] orderable . others)
-  (>= #:key [key] orderable . others)
-  (> #:key [key] orderable . others)
+  (less-than? orderable . others)
+  (less-than-or-equal? orderable . others)
+  (greater-than-or-equal? orderable . others)
+  (greater-than? orderable . others)
   #:fast-defaults ([number?
-                    (define/generic generic-< <)
-                    (define/generic generic-<= <=)
-                    (define/generic generic->= >=)
-                    (define/generic generic-> >)
-                    (define (< #:key [key #f] orderable . others)
+                    (define (less-than? orderable . others)
                       (let ([vals (cons orderable others)])
-                        (if key
-                            (apply generic-< (map key vals))
-                            (check-pairwise b:< vals))))
-                    (define (<= #:key [key #f] orderable . others)
+                        (check-pairwise b:< vals)))
+                    (define (less-than-or-equal? orderable . others)
                       (let ([vals (cons orderable others)])
-                        (if key
-                            (apply generic-<= (map key vals))
-                            (check-pairwise b:<= vals))))
-                    (define (>= #:key [key #f] orderable . others)
+                        (check-pairwise b:<= vals)))
+                    (define (greater-than-or-equal? orderable . others)
                       (let ([vals (cons orderable others)])
-                        (if key
-                            (apply generic->= (map key vals))
-                            (check-pairwise b:>= vals))))
-                    (define (> #:key [key #f] orderable . others)
+                        (check-pairwise b:>= vals)))
+                    (define (greater-than? orderable . others)
                       (let ([vals (cons orderable others)])
-                        (if key
-                            (apply generic-> (map key vals))
-                            (check-pairwise b:> vals))))]
+                        (check-pairwise b:> vals)))]
                    [string?
-                    (define/generic generic-< <)
-                    (define/generic generic-<= <=)
-                    (define/generic generic->= >=)
-                    (define/generic generic-> >)
-                    (define (< #:key [key #f] orderable . others)
+                    (define (less-than? orderable . others)
                       (let ([vals (cons orderable others)])
-                        (if key
-                            (apply generic-< (map key vals))
-                            (check-pairwise string<? vals))))
-                    (define (<= #:key [key #f] orderable . others)
+                        (check-pairwise string<? vals)))
+                    (define (less-than-or-equal? orderable . others)
                       (let ([vals (cons orderable others)])
-                        (if key
-                            (apply generic-<= (map key vals))
-                            (check-pairwise string<=? vals))))
-                    (define (>= #:key [key #f] orderable . others)
+                        (check-pairwise string<=? vals)))
+                    (define (greater-than-or-equal? orderable . others)
                       (let ([vals (cons orderable others)])
-                        (if key
-                            (apply generic->= (map key vals))
-                            (check-pairwise string>=? vals))))
-                    (define (> #:key [key #f] orderable . others)
+                        (check-pairwise string>=? vals)))
+                    (define (greater-than? orderable . others)
                       (let ([vals (cons orderable others)])
-                        (if key
-                            (apply generic-> (map key vals))
-                            (check-pairwise string>? vals))))]
+                        (check-pairwise string>? vals)))]
                    [bytes?
-                    (define/generic generic-< <)
-                    (define/generic generic-<= <=)
-                    (define/generic generic->= >=)
-                    (define/generic generic-> >)
-                    (define (< #:key [key #f] orderable . others)
+                    (define (less-than? orderable . others)
                       (let ([vals (cons orderable others)])
-                        (if key
-                            (apply generic-< (map key vals))
-                            (check-pairwise bytes<? vals))))
-                    (define (<= #:key [key #f] orderable . others)
+                        (check-pairwise bytes<? vals)))
+                    (define (less-than-or-equal? orderable . others)
                       (let ([vals (cons orderable others)])
-                        (if key
-                            (apply generic-<= (map key vals))
-                            (check-pairwise (λ (a b)
-                                              (or (bytes=? a b)
-                                                  (bytes<? a b)))
-                                            vals))))
-                    (define (>= #:key [key #f] orderable . others)
+                        (check-pairwise (λ (a b)
+                                          (or (bytes=? a b)
+                                              (bytes<? a b)))
+                                        vals)))
+                    (define (greater-than-or-equal? orderable . others)
                       (let ([vals (cons orderable others)])
-                        (if key
-                            (apply generic->= (map key vals))
-                            (check-pairwise (λ (a b)
-                                              (or (bytes=? a b)
-                                                  (bytes>? a b)))
-                                            vals))))
-                    (define (> #:key [key #f] orderable . others)
+                        (check-pairwise (λ (a b)
+                                          (or (bytes=? a b)
+                                              (bytes>? a b)))
+                                        vals)))
+                    (define (greater-than? orderable . others)
                       (let ([vals (cons orderable others)])
-                        (if key
-                            (apply generic-> (map key vals))
-                            (check-pairwise bytes>? vals))))]
+                        (check-pairwise bytes>? vals)))]
                    [char?
-                    (define/generic generic-< <)
-                    (define/generic generic-<= <=)
-                    (define/generic generic->= >=)
-                    (define/generic generic-> >)
-                    (define (< #:key [key #f] orderable . others)
+                    (define (less-than? orderable . others)
                       (let ([vals (cons orderable others)])
-                        (if key
-                            (apply generic-< (map key vals))
-                            (check-pairwise char<? vals))))
-                    (define (<= #:key [key #f] orderable . others)
+                        (check-pairwise char<? vals)))
+                    (define (less-than-or-equal? orderable . others)
                       (let ([vals (cons orderable others)])
-                        (if key
-                            (apply generic-<= (map key vals))
-                            (check-pairwise char<=? vals))))
-                    (define (>= #:key [key #f] orderable . others)
+                        (check-pairwise char<=? vals)))
+                    (define (greater-than-or-equal? orderable . others)
                       (let ([vals (cons orderable others)])
-                        (if key
-                            (apply generic->= (map key vals))
-                            (check-pairwise char>=? vals))))
-                    (define (> #:key [key #f] orderable . others)
+                        (check-pairwise char>=? vals)))
+                    (define (greater-than? orderable . others)
                       (let ([vals (cons orderable others)])
-                        (if key
-                            (apply generic-> (map key vals))
-                            (check-pairwise char>? vals))))]
+                        (check-pairwise char>? vals)))]
                    [set?
-                    (define/generic generic-< <)
-                    (define/generic generic-<= <=)
-                    (define/generic generic->= >=)
-                    (define/generic generic-> >)
-                    (define (< #:key [key #f] orderable . others)
+                    (define (less-than? orderable . others)
                       (let ([vals (cons orderable others)])
-                        (if key
-                            (apply generic-< (map key vals))
-                            (check-pairwise proper-subset? vals))))
-                    (define (<= #:key [key #f] orderable . others)
+                        (check-pairwise proper-subset? vals)))
+                    (define (less-than-or-equal? orderable . others)
                       (let ([vals (cons orderable others)])
-                        (if key
-                            (apply generic-<= (map key vals))
-                            (check-pairwise subset? vals))))
-                    (define (>= #:key [key #f] orderable . others)
+                        (check-pairwise subset? vals)))
+                    (define (greater-than-or-equal? orderable . others)
                       (let ([vals (cons orderable others)])
-                        (if key
-                            (apply generic->= (map key vals))
-                            (check-pairwise subset?
-                                            (reverse vals)))))
-                    (define (> #:key [key #f] orderable . others)
+                        (check-pairwise subset?
+                                        (reverse vals))))
+                    (define (greater-than? orderable . others)
                       (let ([vals (cons orderable others)])
-                        (if key
-                            (apply generic-> (map key vals))
-                            (check-pairwise proper-subset?
-                                            (reverse vals)))))]))
+                        (check-pairwise proper-subset?
+                                        (reverse vals))))]))
+
+(define (< #:key [key #f] . args)
+  (if key
+      (apply < (map key args))
+      (apply less-than? args)))
+
+(define (<= #:key [key #f] . args)
+  (if key
+      (apply <= (map key args))
+      (apply less-than-or-equal? args)))
+
+(define (>= #:key [key #f] . args)
+  (if key
+      (apply >= (map key args))
+      (apply greater-than-or-equal? args)))
+
+(define (> #:key [key #f] . args)
+  (if key
+      (apply > (map key args))
+      (apply greater-than? args)))
 
 (define (min #:key [key #f] . args)
   (first (sort args
