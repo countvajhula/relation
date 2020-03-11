@@ -1,13 +1,15 @@
 #lang racket/base
 
-(require racket/list)
+(require data/collection)
 
 (provide check-pairwise)
 
 (define (check-pairwise check? vals)
-  (let ([current (car vals)]
-        [remaining (cdr vals)])
-    (if (empty? remaining)
-        #t
-        (and (check? current (car remaining))
-             (check-pairwise check? remaining)))))
+  (if (empty? vals)
+      #t
+      (let ([v (first vals)]
+            [vs (rest vals)])
+        (if (empty? vs)
+            #t
+            (and (check? v (first vs))
+                 (check-pairwise check? vs))))))
