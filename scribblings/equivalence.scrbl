@@ -41,10 +41,10 @@ A generic interface and utilities for comparing data. By default, the built-in e
 
  To implement this interface for custom types, the following method needs to be implemented:
 
- @defproc[(equal? [v comparable?] ...)
+ @defproc[(equal? [a comparable?] [b comparable?])
                   boolean?]{
 
- A function taking an arbitrary number of arguments (i.e. a "variadic" function) that tests whether the arguments are equal, where all arguments are instances of the structure type to which the generic interface is associated (or a subtype of the structure type). The function must return true if the arguments are to be considered equal, and false if not.
+ A function taking two arguments that tests whether the arguments are equal, where both arguments are instances of the structure type to which the generic interface is associated (or a subtype of the structure type). The function must return true if the arguments are to be considered equal, and false if not.
  }
 }
 

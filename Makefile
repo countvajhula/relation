@@ -31,7 +31,8 @@ build:
 # Primarily for day-to-day dev.
 # Build docs (if any).
 build-docs:
-	raco setup --no-install --no-post-install --tidy --pkgs $(PACKAGE-NAME)
+	raco setup --no-launcher --no-foreign-libs --no-info-domain --no-pkg-deps \
+	--no-install --no-post-install --tidy --pkgs $(PACKAGE-NAME)
 
 # Primarily for day-to-day dev.
 # Build libraries from source, build docs (if any), and check dependencies.

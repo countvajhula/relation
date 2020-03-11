@@ -50,28 +50,28 @@ A generic interface and utilities for orderable data. By default, the built-in c
 
  To implement this interface for custom types, the following methods need to be implemented:
 
- @defproc[(less-than? [v orderable?] ...)
+ @defproc[(less-than? [a orderable?] [b orderable?])
                       boolean?]{
 
- A function taking an arbitrary number of arguments (i.e. a "variadic" function) that tests whether the arguments are each less than the next, i.e. whether they are monotically increasing. All arguments must be instances of the structure type to which the generic interface is associated (or a subtype of the structure type). The function must return true if the arguments form a monotonically increasing sequence, and false if not.
+ A function taking two arguments that tests whether the first is less than the second. Both arguments must be instances of the structure type to which the generic interface is associated (or a subtype of the structure type). The function must return true if the first argument is less than the second, and false if not.
  }
 
- @defproc[(greater-than? [v orderable?] ...)
+ @defproc[(greater-than? [a orderable?] [b orderable?])
                       boolean?]{
 
- Similar to @racket[less-than?], but tests whether the arguments are each greater than the next, i.e. whether they are monotically decreasing.
+ Similar to @racket[less-than?], but tests whether the first argument is greater than the second one.
  }
 
- @defproc[(less-than-or-equal? [v orderable?] ...)
+ @defproc[(less-than-or-equal? [a orderable?] [b orderable?])
                       boolean?]{
 
- Similar to @racket[less-than?], but tests whether the arguments are each either less than or equal to the next, i.e. whether they are monotically non-increasing.
+ Similar to @racket[less-than?], but tests whether the first argument is either less than or equal to the second one.
  }
 
- @defproc[(greater-than-or-equal? [v orderable?] ...)
+ @defproc[(greater-than-or-equal? [a orderable?] [b orderable?])
                       boolean?]{
 
- Similar to @racket[less-than?], but tests whether the arguments are each either greater than or equal to the next, i.e. whether they are monotically non-decreasing.
+ Similar to @racket[less-than?], but tests whether the first argument is either greater than or equal to the second one.
  }
 
 }
