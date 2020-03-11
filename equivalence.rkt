@@ -50,44 +50,25 @@
                             generic-set?))))
 
 (define-generics comparable
-  (equal? #:key [key] comparable . others)
-  #:fallbacks [(define (equal? comparable . others)
-                 (let ([vals (cons comparable others)])
-                   (check-pairwise b:equal? vals)))]
+  (equal? comparable other)
   #:fast-defaults ([number?
-                    (define (equal? comparable . others)
-                      (let ([vals (cons comparable others)])
-                        (check-pairwise b:= vals)))]
+                    (define equal? b:=)]
                    [string?
-                    (define (equal? comparable . others)
-                      (let ([vals (cons comparable others)])
-                        (check-pairwise string=? vals)))]
+                    (define equal? string=?)]
                    [bytes?
-                    (define (equal? comparable . others)
-                      (let ([vals (cons comparable others)])
-                        (check-pairwise bytes=? vals)))]
+                    (define equal? bytes=?)]
                    [char?
-                    (define (equal? comparable . others)
-                      (let ([vals (cons comparable others)])
-                        (check-pairwise char=? vals)))]
-                   [set?
-                    (define (equal? comparable . others)
-                      (let ([vals (cons comparable others)])
-                        (check-pairwise b:equal? vals)))]
+                    (define equal? char=?)]
                    [symbol?
-                    (define (equal? comparable . others)
-                      (let ([vals (cons comparable others)])
-                        (check-pairwise eq? vals)))])
+                    (define equal? eq?)])
   #:defaults ([any/c
-               (define (equal? comparable . others)
-                 (let ([vals (cons comparable others)])
-                   (check-pairwise b:equal? vals)))]))
+               (define equal? b:equal?)]))
 
 (define (= #:key [key #f] . args)
   (if key
       (apply = (map key args))
       (with-handlers ([exn:fail:contract? (λ (err) #f)])
-        (apply equal? args))))
+        (check-pairwise equal? args))))
 
 (define (=/classes #:key [key #f] collection)
   (let ([key (or key identity)])

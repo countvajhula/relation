@@ -125,11 +125,18 @@
   (check-false (= #:key string-length "xxx" "yy" "z"))
 
   ;; simple type-specific equality
-  (check-true (= "banana" "banana"))
-  (check-true (= #"banana" #"banana"))
-  (check-true (= #\a #\a))
-  (check-true (= (set 1) (set 1) (set 1)))
   (check-true (= 'hi 'hi 'hi))
+
+  ;; custom types
+  ((λ ()
+     (struct amount (dollars cents)
+       #:transparent
+       #:methods gen:comparable
+       [(define (equal? comparable other)
+          (= (amount-dollars comparable)
+             (amount-dollars other)))])
+     (check-true (= (amount 5 95) (amount 5 99)))
+     (check-false (= (amount 5 95) (amount 4 95)))))
 
   ;; equivalence under a mapping
   (check-true (= #:key identity 1 1 1))
