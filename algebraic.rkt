@@ -8,7 +8,8 @@
          racket/function
          racket/generic
          (rename-in data/collection
-                    (foldl d:foldl))
+                    (foldl d:foldl)
+                    (foldl/steps d:foldl/steps))
          (only-in algebraic/prelude
                   flip)
          relation/equivalence
@@ -37,10 +38,19 @@
           [foldl (->* ((-> any/c any/c any/c) (sequenceof any/c))
                       (any/c)
                       any/c)]
+          [foldl/steps (->* ((-> any/c any/c any/c) (sequenceof any/c))
+                      (any/c)
+                      any/c)]
           [foldr (->* ((-> any/c any/c any/c) (sequenceof any/c))
                       (any/c)
                       any/c)]
+          [foldr/steps (->* ((-> any/c any/c any/c) (sequenceof any/c))
+                      (any/c)
+                      any/c)]
           [fold (->* ((-> any/c any/c any/c) (sequenceof any/c))
+                     (any/c)
+                     any/c)]
+          [fold/steps (->* ((-> any/c any/c any/c) (sequenceof any/c))
                      (any/c)
                      any/c)]))
 
@@ -205,7 +215,20 @@
           (let ([id-element (id (first vs) f)])
             (d:foldl (flip f) id-element vs)))))
 
+(define (foldl/steps f vs [base #f])
+  (if base
+      (d:foldl/steps (flip f) base vs)
+      (if (empty? vs)
+          (error @~a{Input sequence is empty and no base value was provided!
+                           Available data is insufficient to compute a result.})
+          (let ([id-element (id (first vs) f)])
+            (d:foldl/steps (flip f) id-element vs)))))
+
 (define (foldr f vs [base #f])
   (foldl f (reverse vs) base))
 
+(define (foldr/steps f vs [base #f])
+  (foldl/steps f (reverse vs) base))
+
 (define fold foldr)
+(define fold/steps foldr/steps)

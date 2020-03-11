@@ -3,7 +3,8 @@
 (require (prefix-in b: racket/base)
          racket/stream
          (except-in data/collection
-                    foldl)
+                    foldl
+                    foldl/steps)
          relation)
 
 (define (randoms n)

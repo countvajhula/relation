@@ -509,13 +509,16 @@
   (check-equal? (foldl + '(1 2 3 4)) 10)
   (check-equal? (foldl * '(1 2 3 4)) 24)
   (check-equal? (fold + '(1 2 3 4)) 10)
+  (check-equal? (fold * '(1 2 3 4)) 24)
   (check-equal? (foldr cons '(1 2 3) '()) '(1 2 3))
   (check-equal? (foldl cons '(1 2 3) '()) '(3 2 1))
   (check-equal? (fold + (stream 1 2 3 4)) 10)
   (check-equal? (fold + '() 0) 0 "empty input with base value")
   (check-exn exn:fail?
              (lambda ()
-               (fold + '())) "empty input without base value"))
+               (fold + '())) "empty input without base value")
+  (check-equal? (->list (foldl/steps + '(1 2 3 4))) '(0 1 3 6 10))
+  (check-equal? (->list (foldr/steps + '(1 2 3 4))) '(0 4 7 9 10)))
 
 (module+ main
   ;; (Optional) main submodule. Put code here if you need it to be executed when
