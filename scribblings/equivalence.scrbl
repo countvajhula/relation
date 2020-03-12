@@ -45,7 +45,24 @@ A generic interface and utilities for comparing data. By default, the built-in e
                   boolean?]{
 
  A function taking two arguments that tests whether the arguments are equal, where both arguments are instances of the structure type to which the generic interface is associated (or a subtype of the structure type). The function must return true if the arguments are to be considered equal, and false if not.
+
+ All Racket types are @racket[gen:comparable]. If a struct type does not explicitly implement @racket[gen:comparable], the built-in @racket[equal?] will be used for instances of that type.
  }
+
+@defproc[(comparable? [v any/c])
+         boolean?]{
+
+ Predicate to check if a value is comparable via the generic equivalence operators @racket[=] and @racket[/=].
+
+@examples[
+    #:eval eval-for-docs
+    (comparable? 3)
+    (comparable? #\a)
+    (comparable? "cherry")
+    (comparable? (set))
+    (comparable? (hash))
+  ]
+}
 }
 
 @section[#:tag "equivalence:utilities"]{Utilities}
@@ -121,20 +138,5 @@ A generic interface and utilities for comparing data. By default, the built-in e
     (generic-set #:key string-upcase "apple" "Apple" "APPLE" "banana" "Banana" "cherry")
     (define my-set (generic-set #:key string-upcase "cherry" "banana" "apple"))
 	(set-add my-set "APPLE")
-  ]
-}
-
-@defproc[(comparable? [v any/c])
-         boolean?]{
-
- Predicate to check if a value is comparable via the generic equivalence operators @racket[=] and @racket[/=].
-
-@examples[
-    #:eval eval-for-docs
-    (comparable? 3)
-    (comparable? #\a)
-    (comparable? "cherry")
-    (comparable? (set))
-    (comparable? (hash))
   ]
 }

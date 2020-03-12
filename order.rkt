@@ -14,7 +14,8 @@
                   group-by
                   splitf-at)
          data/collection
-         lens)
+         lens
+         relation/equivalence)
 
 (require "private/util.rkt")
 
@@ -68,6 +69,12 @@
   (less-than-or-equal? orderable other)
   (greater-than-or-equal? orderable other)
   (greater-than? orderable other)
+  #:fallbacks [(define/generic generic-lt less-than?)
+               (define/generic generic-lte less-than-or-equal?)
+               (define less-than-or-equal? (|| generic-lt
+                                               =))
+               (define greater-than-or-equal? (flip generic-lte))
+               (define greater-than? (flip generic-lt))]
   #:fast-defaults ([number?
                     (define less-than? b:<)
                     (define less-than-or-equal? b:<=)

@@ -207,6 +207,34 @@
   (check-false (> #:key string-length "xxx" "zzz" "yyy"))
   (check-true (> #:key string-length "xxx" "yy" "z"))
 
+  ;; custom types
+  ((λ ()
+     (struct amount (dollars cents)
+       #:transparent
+       #:methods gen:orderable
+       [(define (less-than? comparable other)
+          (or (< #:key amount-dollars
+                 comparable
+                 other)
+              (and (= #:key amount-dollars
+                      comparable
+                      other)
+                   (< #:key amount-cents
+                      comparable
+                      other))))])
+     (check-true (< (amount 5 95) (amount 5 99)))
+     (check-true (<= (amount 5 95) (amount 5 99)))
+     (check-false (>= (amount 5 95) (amount 5 99)))
+     (check-false (> (amount 5 95) (amount 5 99)))
+     (check-false (< (amount 5 99) (amount 5 99)))
+     (check-true (<= (amount 5 99) (amount 5 99)))
+     (check-true (>= (amount 5 99) (amount 5 99)))
+     (check-false (> (amount 5 99) (amount 5 99)))
+     (check-false (< (amount 6 10) (amount 5 99)))
+     (check-false (<= (amount 6 10) (amount 5 99)))
+     (check-true (>= (amount 6 10) (amount 5 99)))
+     (check-true (> (amount 6 10) (amount 5 99)))))
+
   ;; not equal
   (check-true (/= 1 2 3) "monotonically increasing")
   (check-true (/= 1 1 2) "monotonically nondecreasing")

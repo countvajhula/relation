@@ -48,31 +48,54 @@ A generic interface and utilities for orderable data. By default, the built-in c
     (< #:key ->number "42.0" "53/1")
   ]
 
- To implement this interface for custom types, the following methods need to be implemented:
+ To implement this interface for custom types, the following generic methods need to be implemented. Note that the only required method is @racket[less-than?] -- the others will be inferred from it if an implementation isn't explicitly specified:
 
  @defproc[(less-than? [a orderable?] [b orderable?])
                       boolean?]{
 
  A function taking two arguments that tests whether the first is less than the second. Both arguments must be instances of the structure type to which the generic interface is associated (or a subtype of the structure type). The function must return true if the first argument is less than the second, and false if not.
+
+ Every implementation of @racket[gen:orderable] must provide an implementation of @racket[less-than?].
  }
 
  @defproc[(greater-than? [a orderable?] [b orderable?])
                       boolean?]{
 
  Similar to @racket[less-than?], but tests whether the first argument is greater than the second one.
+
+ Providing an implementation of this method is optional, as one will be inferred for it from @racket[less-than?] if none is specified.
  }
 
  @defproc[(less-than-or-equal? [a orderable?] [b orderable?])
                       boolean?]{
 
  Similar to @racket[less-than?], but tests whether the first argument is either less than or equal to the second one.
+
+ Providing an implementation of this method is optional, as one will be inferred for it from @racket[less-than?] and @racket[gen:comparable] if none is specified.
  }
 
  @defproc[(greater-than-or-equal? [a orderable?] [b orderable?])
                       boolean?]{
 
  Similar to @racket[less-than?], but tests whether the first argument is either greater than or equal to the second one.
+
+ Providing an implementation of this method is optional, as one will be inferred for it from @racket[greater-than?] and @racket[gen:comparable] if none is specified.
  }
+
+@defproc[(orderable? [v any/c])
+         boolean?]{
+
+ Predicate to check if a value is comparable via the generic order operators @racket[<], @racket[<=], @racket[>=] and @racket[>] (and consequently also derived utilities such as @racket[min] and @racket[max]).
+
+@examples[
+    #:eval eval-for-docs
+    (orderable? 3)
+    (orderable? #\a)
+    (orderable? "cherry")
+    (orderable? (set))
+    (orderable? (hash))
+  ]
+}
 
 }
 
@@ -169,20 +192,5 @@ A generic interface and utilities for orderable data. By default, the built-in c
     (max "cherry" "banana" "apple")
     (max (set 1 2) (set 1) (set 1 2 3))
     (max #:key string-length "apple" "banana" "cherry")
-  ]
-}
-
-@defproc[(orderable? [v any/c])
-         boolean?]{
-
- Predicate to check if a value is comparable via the generic order operators @racket[<], @racket[<=], @racket[>=] and @racket[>] (and consequently also @racket[min] and @racket[max]).
-
-@examples[
-    #:eval eval-for-docs
-    (orderable? 3)
-    (orderable? #\a)
-    (orderable? "cherry")
-    (orderable? (set))
-    (orderable? (hash))
   ]
 }
