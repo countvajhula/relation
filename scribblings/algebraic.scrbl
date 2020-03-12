@@ -8,7 +8,9 @@
                     (except-in racket + - foldl foldr)
                     (only-in racket
                              (foldl f:foldl)
-                             (foldr f:foldr))]]
+                             (foldr f:foldr))
+                    (only-in data/collection
+                             (foldl/steps d:foldl/steps))]]
 
 @title{Algebraic Operations}
 
@@ -255,7 +257,7 @@ Generic algebraic operations. The built-in algebraic operators @racket[+] and @r
 }
 
 @defproc[(foldl [f (-> any/c any/c any/c)] [vs (sequenceof any/c)] [base any/c #f])
-         any/c?]{
+                 any/c?]{
 
  Similar to @racketlink[f:foldl "foldl"], but infers the relevant @racketlink[id "identity"] element and uses it as the base value, if none is provided. The identity element is determined by considering the first element of the input sequence together with the given operation.
 
@@ -286,5 +288,40 @@ Generic algebraic operations. The built-in algebraic operators @racket[+] and @r
     (fold + '(1 2 3 4))
     (fold * '(1 2 3 4))
     (fold .. '("hi" " " "there"))
+  ]
+}
+
+@defproc[(foldl/steps [f (-> any/c any/c any/c)]
+                      [vs (sequenceof any/c)]
+                      [base any/c #f])
+         any/c?]{
+
+ Similar to @racket[foldl/steps] from @racket[data/collection], but, like @racket[foldl], infers the relevant @racketlink[id "identity"] element and uses it as the base value, if none is provided.
+
+@examples[
+    #:eval eval-for-docs
+    (->list (foldl/steps + '(1 2 3 4)))
+    (->list (foldl/steps * '(1 2 3 4)))
+    (->list (foldl/steps .. '("hi" " " "there")))
+  ]
+}
+
+@deftogether[(
+  @defproc[(foldr/steps [f (-> any/c any/c any/c)]
+                        [vs (sequenceof any/c)]
+                        [base any/c #f])
+           any/c?]
+  @defproc[(fold/steps [f (-> any/c any/c any/c)]
+                       [vs (sequenceof any/c)]
+                       [base any/c #f])
+           any/c?])]{
+
+ Similar to @racket[foldl/steps], but corresponding to the @racket[foldr] operation, and like @racket[foldr], infers the relevant @racketlink[id "identity"] element and uses it as the base value, if none is provided.
+
+@examples[
+    #:eval eval-for-docs
+    (->list (fold/steps + '(1 2 3 4)))
+    (->list (fold/steps * '(1 2 3 4)))
+    (->list (fold/steps .. '("hi" " " "there")))
   ]
 }
