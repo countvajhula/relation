@@ -25,6 +25,8 @@ Generic algebraic operations. The built-in algebraic operators @racket[+] and @r
                                  '(require racket/set)
                                  '(require racket/stream))))
 
+@section[#:tag "algebraic:interfaces"]{Interfaces}
+
 @defthing[gen:composable any/c]{
 
  A @tech/reference{generic interface} that represents any object for which a basic "composition-like" (magma) operation can be defined. All built-in types use a default implementation for @racket[gen:composable], which is to simply @racket[cons] the operands together.
@@ -36,7 +38,6 @@ Generic algebraic operations. The built-in algebraic operators @racket[+] and @r
     (>< "hi" "there")
     (>< '(1 2 3) '(4 5 6))
   ]
-}
 
 @deftogether[(@defproc[(>< [v composable?] ...)
               composable?])]{
@@ -68,6 +69,7 @@ Generic algebraic operations. The built-in algebraic operators @racket[+] and @r
     (composable? (vector))
   ]
 }
+}
 
 @defthing[gen:appendable any/c]{
 
@@ -90,7 +92,6 @@ Generic algebraic operations. The built-in algebraic operators @racket[+] and @r
     (.. "hi" " " "there")
     (.. '(1 2 3) '(4 5 6))
   ]
-}
 
 @deftogether[(@defproc[(.. [v appendable?] ...)
               appendable?]
@@ -125,6 +126,7 @@ Generic algebraic operations. The built-in algebraic operators @racket[+] and @r
     (appendable? (vector))
   ]
 }
+}
 
 @defthing[gen:monoid any/c]{
 
@@ -148,7 +150,6 @@ Generic algebraic operations. The built-in algebraic operators @racket[+] and @r
     (id "hi" ..)
     (id '(1 2 3) ..)
   ]
-}
 
 @defproc[(id [v monoid?] [operation procedure?])
          monoid?]{
@@ -179,6 +180,7 @@ Generic algebraic operations. The built-in algebraic operators @racket[+] and @r
     (monoid? (vector))
   ]
 }
+}
 
 @defthing[gen:addable any/c]{
 
@@ -193,7 +195,6 @@ Generic algebraic operations. The built-in algebraic operators @racket[+] and @r
     (+ 1 2 3)
     (+ #(1 2 3) #(1 2 3) #(1 2 3))
   ]
-}
 
 @defproc[(+ [v addable?] ...)
          addable?]{
@@ -220,19 +221,6 @@ Generic algebraic operations. The built-in algebraic operators @racket[+] and @r
   ]
 }
 
-@defproc[(- [v addable?] ...)
-         addable?]{
-
- A general version of "subtraction" that works no differently than usual on numbers, but also supports any other group type, for instance, vectors. The result is computed by adding the first supplied value to the @racket[inverse] of every subsequent value. If only one argument is provided, then it simply returns the additive @racket[inverse].
-
-@examples[
-    #:eval eval-for-docs
-    (- 5 3)
-    (- #(3 3 3) #(0 1 0) #(0 0 2))
-    (- 5)
-  ]
-}
-
 @defproc[(addable? [v any/c])
          boolean?]{
 
@@ -247,6 +235,22 @@ Generic algebraic operations. The built-in algebraic operators @racket[+] and @r
     (addable? (set))
     (addable? (hash))
     (addable? (vector))
+  ]
+}
+}
+
+@section[#:tag "algebraic:utilities"]{Utilities}
+
+@defproc[(- [v addable?] ...)
+         addable?]{
+
+ A general version of "subtraction" that works no differently than usual on numbers, but also supports any other group type, for instance, vectors. The result is computed by adding the first supplied value to the @racket[inverse] of every subsequent value. If only one argument is provided, then it simply returns the additive @racket[inverse].
+
+@examples[
+    #:eval eval-for-docs
+    (- 5 3)
+    (- #(3 3 3) #(0 1 0) #(0 0 2))
+    (- 5)
   ]
 }
 
