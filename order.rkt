@@ -28,11 +28,21 @@
                                #f))
                   #:rest (listof orderable?)
                   boolean?)]
+          [<= (->* (orderable?)
+                   (#:key (or/c (-> orderable? orderable?)
+                                #f))
+                   #:rest (listof orderable?)
+                   boolean?)]
           [≥ (->* (orderable?)
                   (#:key (or/c (-> orderable? orderable?)
                                #f))
                   #:rest (listof orderable?)
                   boolean?)]
+          [>= (->* (orderable?)
+                   (#:key (or/c (-> orderable? orderable?)
+                                #f))
+                   #:rest (listof orderable?)
+                   boolean?)]
           [> (->* (orderable?)
                   (#:key (or/c (-> orderable? orderable?)
                                #f))
@@ -47,9 +57,7 @@
                     (#:key (or/c (-> orderable? orderable?)
                                  #f))
                     #:rest (listof orderable?)
-                    orderable?)))
-         <=
-         >=)
+                    orderable?))))
 
 (define-generics orderable
   (less-than? orderable other)

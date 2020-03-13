@@ -28,6 +28,7 @@
           [>< (-> composable? composable? composable?)]
           [appendable? (-> any/c boolean?)]
           [.. (-> appendable? appendable? ... appendable?)]
+          [∘ (-> appendable? appendable? ... appendable?)]
           [monoid? (-> any/c boolean?)]
           [id (-> monoid? (-> any/c any/c any/c) monoid?)]
           [addable? (-> any/c boolean?)]
@@ -43,12 +44,15 @@
           [foldr (->* ((-> any/c any/c any/c) (sequenceof any/c))
                       (any/c)
                       any/c)]
+          [fold (->* ((-> any/c any/c any/c) (sequenceof any/c))
+                     (any/c)
+                     any/c)]
           [foldr/steps (->* ((-> any/c any/c any/c) (sequenceof any/c))
                             (any/c)
-                            any/c)])
-         ∘
-         fold
-         fold/steps)
+                            any/c)]
+          [fold/steps (->* ((-> any/c any/c any/c) (sequenceof any/c))
+                           (any/c)
+                           any/c)]))
 
 (define-generics composable
   ;; "Magma"

@@ -27,18 +27,29 @@
                                #f))
                   #:rest (listof comparable?)
                   boolean?)]
+          [/= (->* (comparable?)
+                   (#:key (or/c (-> comparable? comparable?)
+                                #f))
+                   #:rest (listof comparable?)
+                   boolean?)]
+          [!= (->* (comparable?)
+                   (#:key (or/c (-> comparable? comparable?)
+                                #f))
+                   #:rest (listof comparable?)
+                   boolean?)]
           [group-by (->* ((listof comparable?))
                          (#:key (or/c (-> comparable? comparable?)
                                       #f))
                          (listof list?))]
+          [=/classes (->* ((listof comparable?))
+                          (#:key (or/c (-> comparable? comparable?)
+                                       #f))
+                          (listof list?))]
           (generic-set (->* (comparable?)
                             (#:key (or/c (-> comparable? comparable?)
                                          #f))
                             #:rest (listof comparable?)
-                            generic-set?)))
-         /=
-         !=
-         =/classes)
+                            generic-set?))))
 
 (define-generics comparable
   (equal? comparable other)
