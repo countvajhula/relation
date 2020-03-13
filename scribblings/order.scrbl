@@ -3,10 +3,9 @@
          scribble-abbrevs/manual
          scribble/example
 		 racket/sandbox
-         @for-label[relation/equivalence
-                    relation/order
+         @for-label[relation/order
 		            racket/generic
-                    (except-in racket < <= = >= > min max)]]
+                    (except-in racket < <= >= > min max)]]
 
 @title{Order Relations}
 

@@ -7,10 +7,9 @@
          racket/function
          racket/stream
          (only-in racket/list
-                  group-by
+                  (group-by b:group-by)
                   splitf-at)
-         data/collection
-         lens)
+         data/collection)
 
 (require "private/util.rkt")
 
@@ -43,6 +42,10 @@
                           (#:key (or/c (-> comparable? comparable?)
                                        #f))
                           (listof list?))]
+          [group-by (->* ((listof comparable?))
+                         (#:key (or/c (-> comparable? comparable?)
+                                      #f))
+                         (listof list?))]
           (generic-set (->* (comparable?)
                             (#:key (or/c (-> comparable? comparable?)
                                          #f))
@@ -72,7 +75,7 @@
 
 (define (=/classes #:key [key #f] collection)
   (let ([key (or key identity)])
-    (group-by key collection =)))
+    (b:group-by key collection =)))
 
 (define (/= #:key [key #f] . args)
   (not (apply = #:key key args)))
@@ -133,3 +136,4 @@
 
 (define ≠ /=)
 (define != /=)
+(define group-by =/classes)

@@ -4,9 +4,8 @@
          scribble/example
 		 racket/sandbox
          @for-label[relation/equivalence
-                    relation/order
 		            racket/generic
-                    (except-in racket < <= = >= > min max)]]
+                    (except-in racket = group-by)]]
 
 @title{Equivalence Relations}
 
@@ -100,27 +99,31 @@ A generic interface and utilities for comparing data. By default, the built-in e
 
 @examples[
     #:eval eval-for-docs
-    (/= 1 1 2)
-    (/= 1 1)
-    (/= "apple" "Apple")
-    (/= 3/2 1.5)
-    (/= #:key string-length "cherry" "banana" "avocado")
+    (≠ 1 1 2)
+    (≠ 1 1)
+    (≠ "apple" "Apple")
+    (≠ 3/2 1.5)
+    (≠ #:key string-length "cherry" "banana" "avocado")
   ]
 }
 
-@defproc[(=/classes [#:key key (-> comparable? comparable?) #f] [vs (listof comparable?)])
-                     (listof list?)]{
+@deftogether[(@defproc[(group-by [#:key key (-> comparable? comparable?) #f]
+                                 [vs (listof comparable?)])
+                       (listof list?)]
+              @defproc[(=/classes [#:key key (-> comparable? comparable?) #f]
+                                  [vs (listof comparable?)])
+                       (listof list?)])]{
 
- Returns equivalence classes induced on the input values by the specified equivalence relation (by default, @racket[=] is applied directly unless a key is specified).
+ Groups input values into equivalence classes induced by the specified equivalence relation (by default, @racket[=] is applied directly unless a key is specified).
 
 @examples[
     #:eval eval-for-docs
-    (=/classes (list 1 2 1))
-    (=/classes (list 1 2 3))
-    (=/classes (list 1 1 1))
-    (=/classes (list 1 1 2 2 3 3 3))
-    (=/classes (list "cherry" "banana" "apple"))
-    (=/classes #:key string-length (list "apple" "banana" "cherry"))
+    (group-by (list 1 2 1))
+    (group-by (list 1 2 3))
+    (group-by (list 1 1 1))
+    (group-by (list 1 1 2 2 3 3 3))
+    (group-by (list "cherry" "banana" "apple"))
+    (group-by #:key string-length (list "apple" "banana" "cherry"))
   ]
 }
 

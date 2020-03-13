@@ -2,12 +2,12 @@
 (define collection "relation")
 (define deps '("base"
                "collections-lib"
-               "algebraic"
-               "lens-lib"))
-(define build-deps '("scribble-lib"
+               "algebraic"))
+(define build-deps '("rackunit-lib"
+                     "scribble-lib"
                      "scribble-abbrevs"
+                     "racket-doc"
                      "collections-lib"
-                     "rackunit-lib"
                      "sandbox-lib"
                      "at-exp-lib"))
 (define scribblings '(("scribblings/relation.scrbl" (multi-page))))

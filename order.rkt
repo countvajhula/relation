@@ -9,12 +9,7 @@
                   ||
                   &&)
          racket/function
-         racket/stream
-         (only-in racket/list
-                  group-by
-                  splitf-at)
          data/collection
-         lens
          relation/equivalence)
 
 (require "private/util.rkt")
