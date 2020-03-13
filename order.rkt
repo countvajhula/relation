@@ -23,21 +23,11 @@
                                #f))
                   #:rest (listof orderable?)
                   boolean?)]
-          [<= (->* (orderable?)
-                   (#:key (or/c (-> orderable? orderable?)
-                                #f))
-                   #:rest (listof orderable?)
-                   boolean?)]
           [≤ (->* (orderable?)
                   (#:key (or/c (-> orderable? orderable?)
                                #f))
                   #:rest (listof orderable?)
                   boolean?)]
-          [>= (->* (orderable?)
-                   (#:key (or/c (-> orderable? orderable?)
-                                #f))
-                   #:rest (listof orderable?)
-                   boolean?)]
           [≥ (->* (orderable?)
                   (#:key (or/c (-> orderable? orderable?)
                                #f))
@@ -57,7 +47,9 @@
                     (#:key (or/c (-> orderable? orderable?)
                                  #f))
                     #:rest (listof orderable?)
-                    orderable?))))
+                    orderable?)))
+         <=
+         >=)
 
 (define-generics orderable
   (less-than? orderable other)
@@ -105,14 +97,14 @@
       (apply < (map key args))
       (check-pairwise less-than? args)))
 
-(define (<= #:key [key #f] . args)
+(define (≤ #:key [key #f] . args)
   (if key
-      (apply <= (map key args))
+      (apply ≤ (map key args))
       (check-pairwise less-than-or-equal? args)))
 
-(define (>= #:key [key #f] . args)
+(define (≥ #:key [key #f] . args)
   (if key
-      (apply >= (map key args))
+      (apply ≥ (map key args))
       (check-pairwise greater-than-or-equal? args)))
 
 (define (> #:key [key #f] . args)
@@ -128,5 +120,5 @@
   (first (sort args
                (curry > #:key key))))
 
-(define ≤ <=)
-(define ≥ >=)
+(define <= ≤)
+(define >= ≥)

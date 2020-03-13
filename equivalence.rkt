@@ -13,7 +13,6 @@
 
 (require "private/util.rkt")
 
-;; ideally avoid duplication of contracts across aliases here
 (provide gen:comparable
          comparable/c
          (contract-out
@@ -23,25 +22,11 @@
                                #f))
                   #:rest (listof comparable?)
                   boolean?)]
-          [/= (->* (comparable?)
-                   (#:key (or/c (-> comparable? comparable?)
-                                #f))
-                   #:rest (listof comparable?)
-                   boolean?)]
           [≠ (->* (comparable?)
                   (#:key (or/c (-> comparable? comparable?)
                                #f))
                   #:rest (listof comparable?)
                   boolean?)]
-          [!= (->* (comparable?)
-                   (#:key (or/c (-> comparable? comparable?)
-                                #f))
-                   #:rest (listof comparable?)
-                   boolean?)]
-          [=/classes (->* ((listof comparable?))
-                          (#:key (or/c (-> comparable? comparable?)
-                                       #f))
-                          (listof list?))]
           [group-by (->* ((listof comparable?))
                          (#:key (or/c (-> comparable? comparable?)
                                       #f))
@@ -50,7 +35,10 @@
                             (#:key (or/c (-> comparable? comparable?)
                                          #f))
                             #:rest (listof comparable?)
-                            generic-set?))))
+                            generic-set?)))
+         /=
+         !=
+         =/classes)
 
 (define-generics comparable
   (equal? comparable other)
@@ -73,18 +61,18 @@
       (with-handlers ([exn:fail:contract? (λ (err) #f)])
         (check-pairwise equal? args))))
 
-(define (=/classes #:key [key #f] collection)
+(define (group-by #:key [key #f] collection)
   (let ([key (or key identity)])
     (b:group-by key collection =)))
 
-(define (/= #:key [key #f] . args)
+(define (≠ #:key [key #f] . args)
   (not (apply = #:key key args)))
 
 (struct gset (contents key)
   #:transparent
   #:guard
   (λ (contents key type-name)
-    (let ([classes (=/classes #:key key contents)])
+    (let ([classes (group-by #:key key contents)])
       (if (empty? classes)
           (values (list) key)
           (values (stream->list (map first classes))
@@ -105,7 +93,7 @@
            (let-values ([(before after)
                          (splitf-at contents
                                     (λ (x)
-                                      (/= x v)))])
+                                      (≠ x v)))])
              (apply generic-set
                     #:key key
                     (append before (rest after)))))))
@@ -134,6 +122,6 @@
 (define (generic-set #:key [key #f] . args)
   (gset args key))
 
-(define ≠ /=)
-(define != /=)
-(define group-by =/classes)
+(define /= ≠)
+(define != ≠)
+(define =/classes group-by)
