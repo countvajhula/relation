@@ -6,7 +6,7 @@
                "lens-lib"))
 (define build-deps '("scribble-lib"
                      "scribble-abbrevs"
-                     "racket-doc"
+                     "collections-lib"
                      "rackunit-lib"
                      "sandbox-lib"
                      "at-exp-lib"))

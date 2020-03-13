@@ -296,7 +296,7 @@ Generic algebraic operations. The built-in algebraic operators @racket[+] and @r
                       [base any/c #f])
          any/c?]{
 
- Similar to @racket[foldl/steps] from @racket[data/collection], but, like @racket[foldl], infers the relevant @racketlink[id "identity"] element and uses it as the base value, if none is provided.
+ Similar to @racketlink[d:foldl/steps "foldl/steps"], but, like @racket[foldl], infers the relevant @racketlink[id "identity"] element and uses it as the base value, if none is provided.
 
 @examples[
     #:eval eval-for-docs
