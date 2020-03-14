@@ -2,6 +2,7 @@
 
 (module+ test
   (require rackunit)
+  (require (prefix-in b: racket/base))
   (require racket/set)
   (require racket/stream)
   (require racket/sequence)
@@ -486,11 +487,7 @@
                (->values 'hi)))
 
   ;;; algebraic
-  ;; elementary composition
-  (check-equal? (>< 1 2) 3)
-  (check-equal? (>< "a" "b") "ab")
-  ;; associative composition
-  (check-equal? (.. 3 4) 12)
+  ;; append
   (check-equal? (.. "hi" " " "there") "hi there")
   (check-equal? (.. #"hi" #" " #"there") #"hi there")
   (check-equal? (.. '(1 2 3) '(4 5 6)) '(1 2 3 4 5 6))
@@ -501,36 +498,39 @@
   (check-equal? (->list (.. (stream 1 2 3) (stream 4 5 6))) (list 1 2 3 4 5 6))
   (check-equal? ((.. ->string +) 3 4) "7")
   ;; id
-  (check-equal? (id 3 +) 0)
-  (check-equal? (id -3 +) 0)
-  (check-equal? (id 3 *) 1)
-  (check-equal? (id -3 *) 1)
-  (check-equal? (id #(1 -2) +) #(0 0))
-  (check-equal? (id #(1 -2) ..) #())
-  (check-equal? (id + ..) identity)
-  (check-equal? (id "hello" ..) "")
-  (check-equal? (id #"hello" ..) #"")
-  (check-equal? (id '(1 2 3) ..) '())
-  (check-equal? (id (set 1 2 3) ..) (set))
-  (check-equal? (id (hash 'a 1 'b 2 'c 3) ..) (hash))
-  (check-equal? (id (stream 1 2 3) ..) (list))
+  (check-equal? ((id +) 3) 0)
+  (check-equal? ((id +) -3) 0)
+  (check-equal? ((id *) 3) 1)
+  (check-equal? ((id *) -3) 1)
+  (check-equal? ((id +) #(1 -2)) #(0 0))
+  (check-equal? ((id ..) #(1 -2)) #())
+  (check-equal? ((id ..) +) identity)
+  (check-equal? ((id ..) "hello") "")
+  (check-equal? ((id ..) #"hello") #"")
+  (check-equal? ((id ..) '(1 2 3)) '())
+  (check-equal? ((id ..) (set 1 2 3)) (set))
+  (check-equal? ((id ..) (hash 'a 1 'b 2 'c 3)) (hash))
+  (check-equal? ((id ..) (stream 1 2 3)) (list))
+  ;; multiplication
+  (check-equal? (* 3 4) 12)
+  (check-equal? (* 3 -4) -12)
   ;; addition
   (check-equal? (+ 97 3) 100)
   (check-equal? (->vector (+ #(1 2 3) #(1 2 3) #(1 2 3))) #(3 6 9))
-  ;; group inverse
-  (check-equal? (inverse 3 +) -3)
-  (check-equal? (inverse #(1 2) +) #(-1 -2))
-  (check-equal? (inverse #(1 -2 3) +) #(-1 2 -3))
+  ;; inverse
+  (check-equal? ((inverse +) 3) -3)
+  (check-equal? ((inverse +) #(1 2)) #(-1 -2))
+  (check-equal? ((inverse +) #(1 -2 3)) #(-1 2 -3))
   (let ([x 3])
-    (check-equal? (+ x (inverse x +))
-                  (id x +)))
+    (check-equal? (+ x ((inverse +) x))
+                  ((id +) x)))
   (let ([x #(1 -2 3)])
-    (check-equal? (+ x (inverse x +))
-                  (id x +)))
+    (check-equal? (+ x ((inverse +) x))
+                  ((id +) x)))
   (let ([x 3])
-    (check-equal? (* x (inverse x *))
-                  (id x *)))
-  ;; "subtraction" on groups
+    (check-equal? (* x ((inverse *) x))
+                  ((id *) x)))
+  ;; "subtraction"
   (check-equal? (- 4 3) 1)
   (check-equal? (- 4 6) -2)
   (check-equal? (- #(1 2) #(1 2)) #(0 0))
@@ -538,6 +538,10 @@
   (check-equal? (- #(1 2 3) #(1 0 0) #(0 2 1)) #(0 0 2))
   (check-equal? (- 1) -1 "subtraction with single arg returns inverse")
   (check-equal? (- #(1 -2)) #(-1 2) "subtraction with single arg returns inverse")
+  ;; "division"
+  (check-equal? (/ 4 3) (b:/ 4 3))
+  (check-equal? (/ 4 6) (b:/ 4 6))
+  (check-equal? (/ 1) -1 "division with single arg returns inverse")
   ;; fold
   (check-equal? (foldr + '(1 2 3 4)) 10)
   (check-equal? (foldr * '(1 2 3 4)) 24)

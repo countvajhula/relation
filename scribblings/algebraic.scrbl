@@ -5,18 +5,23 @@
          racket/sandbox
          @for-label[relation/algebraic
                     racket/generic
-                    (except-in racket + - foldl foldr)
-                    (only-in racket
-                             (foldl f:foldl)
-                             (foldr f:foldr))
-                    (only-in data/collection
-                             (foldl/steps d:foldl/steps))]]
+                    (except-in racket +
+                                      -
+                                      *
+                                      /
+                                      foldl
+                                      foldr
+                                      append)
+                    (only-in racket (foldl f:foldl)
+                                    (foldr f:foldr)
+                                    (append b:append))
+                    (only-in data/collection (foldl/steps d:foldl/steps))]]
 
 @title{Algebraic Operations}
 
 @defmodule[relation/algebraic]
 
-Generic algebraic operations. The built-in algebraic operators @racket[+] and @racket[*] operate on numbers specifically. Often, however, we are interested in performing operations "similar" to these for datatypes that aren't numbers, for which we would resort to type-specific operators like @racket[append] for lists. This module generalizes the standard algebraic operators to work on any type that supports a "canonical" notion of addition or composition. Specifically, the operator @racket[+] performs the canonical @hyperlink["https://en.wikipedia.org/wiki/Group_(mathematics)"]{group} operation (e.g. addition, for numbers), while @racket[..] or @racket[∘] performs the canonical @hyperlink["https://en.wikipedia.org/wiki/Monoid"]{monoid} operation (e.g. concatenation, for strings and lists). This allows our intuitions about addition and composition to extend over many types via the generic operators @racket[+] and @racket[..] (or @racket[∘]).
+Generic algebraic operations. The built-in algebraic operators @racket[+] and @racket[*] operate on numbers specifically. Often, however, we are interested in performing operations "similar" to these for datatypes that aren't numbers, for which we would resort to type-specific operators like @racketlink[b:append "append"] for lists. This module generalizes the standard algebraic operators to work on any type that supports a "canonical" notion of addition or composition. Specifically, the operator @racket[+] performs the canonical @hyperlink["https://en.wikipedia.org/wiki/Group_(mathematics)"]{group} operation (e.g. addition, for numbers), while @racket[..] or @racket[∘] performs the canonical @hyperlink["https://en.wikipedia.org/wiki/Monoid"]{monoid} operation (e.g. concatenation, for strings and lists). This allows our intuitions about addition and composition to extend over many types via the generic operators @racket[+] and @racket[..] (or @racket[∘]).
 
 @(define eval-for-docs
   (parameterize ([sandbox-output 'string]
@@ -28,6 +33,10 @@ Generic algebraic operations. The built-in algebraic operators @racket[+] and @r
                                  '(require racket/stream))))
 
 @section[#:tag "algebraic:interfaces"]{Interfaces}
+
+This module provides four generic interfaces -- @racket[gen:composable], @racket[gen:appendable], @racket[gen:monoid], and @racket[gen:addable]. These correspond to the four generic operations of composition, concatenation, and invertible composition.
+@; Add some introductory remarks. Mention implementation guidelines on methods
+@; make the implementation pairwise
 
 @defthing[gen:composable any/c]{
 

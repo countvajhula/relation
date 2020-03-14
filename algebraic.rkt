@@ -9,30 +9,36 @@
          racket/generic
          (rename-in data/collection
                     (foldl d:foldl)
-                    (foldl/steps d:foldl/steps))
+                    (foldl/steps d:foldl/steps)
+                    (append d:append))
          (only-in algebraic/prelude
                   flip)
          relation/equivalence
          relation/transform)
 
-(provide gen:composable
-         composable/c
-         gen:appendable
+(provide gen:appendable
          appendable/c
-         gen:monoid
-         monoid/c
+         gen:multipliable
+         multipliable/c
          gen:addable
          addable/c
          (contract-out
-          [composable? (-> any/c boolean?)]
-          [>< (-> composable? composable? composable?)]
           [appendable? (-> any/c boolean?)]
+          [append (-> appendable? appendable? appendable?)]
+          [appendable-identity (-> appendable? appendable?)]
+          [multipliable? (-> any/c boolean?)]
+          [multiply (-> multipliable? multipliable? multipliable?)]
+          [multipliable-identity (-> multipliable? multipliable?)]
+          [multipliable-inverse (-> multipliable? multipliable?)]
+          [add (-> addable? addable? addable?)]
+          [addable-identity (-> addable? addable?)]
+          [addable-inverse (-> addable? addable?)]
+          [id (-> procedure? procedure?)]
+          [inverse (-> procedure? procedure?)]
           [.. (-> appendable? appendable? ... appendable?)]
           [∘ (-> appendable? appendable? ... appendable?)]
-          [monoid? (-> any/c boolean?)]
-          [id (-> monoid? (-> any/c any/c any/c) monoid?)]
-          [addable? (-> any/c boolean?)]
-          [inverse (-> addable? (-> any/c any/c any/c) addable?)]
+          [* (-> multipliable? multipliable? ... multipliable?)]
+          [/ (-> multipliable? multipliable? ... multipliable?)]
           [+ (-> addable? addable? ... addable?)]
           [- (-> addable? addable? ... addable?)]
           [foldl (->* ((-> any/c any/c any/c) (sequenceof any/c))
@@ -54,166 +60,137 @@
                            (any/c)
                            any/c)]))
 
-(define-generics composable
-  ;; "Magma"
-  ;; This is the most general form of composition, making no
-  ;; assumptions about properties the operation must satisfy
-  ;; except that it satisfy closure, i.e. the composition
-  ;; yields an instance of the same type as the inputs
-  (>< composable other)
-  #:fallbacks [(define (>< composable other)
-                 (cons composable other))]
-  #:fast-defaults ([number?
-                    (define (>< composable other)
-                      (b:+ composable other))]
-                   [string?
-                    (define (>< composable other)
-                      (string-append composable other))]
-                   [bytes?
-                    (define (>< composable other)
-                      (bytes-append composable other))]
-                   [list?
-                    (define (>< composable other)
-                      (b:append composable other))]
-                   [vector?
-                    (define (>< composable other)
-                      (vector-append composable other))]
-                   [set?
-                    (define (>< composable other)
-                      (set-union composable other))]
-                   [dict?
-                    (define (>< composable other)
-                      (make-hash (->list (append composable other))))]
-                   [sequence?
-                    (define (>< composable other)
-                      (append composable other))]
-                   [procedure?
-                    (define (>< composable other)
-                      (compose composable other))])
-  #:defaults ([any/c]))
+;; 5. get the current functionality working / tests to pass
 
+;; alternatively, if types differ, then still allow it by
+;; treating it as the "anekantic" type
+
+;; compose is not a good name for this since composition is elementary
+;; whereas function composition is specifically an append-like operation
 (define-generics appendable
-  ;; "Semigroup"
-  ;; concatenation-like operation
-  (.. appendable . others)
-  #:fast-defaults ([number?
-                    (define (.. appendable . others)
-                      (apply b:* appendable others))]
-                   [string?
-                    (define (.. appendable . others)
-                      (apply string-append appendable others))]
-                   [bytes?
-                    (define (.. appendable . others)
-                      (apply bytes-append appendable others))]
-                   [list?
-                    (define (.. appendable . others)
-                      (apply b:append appendable others))]
-                   [vector?
-                    (define (.. appendable . others)
-                      (apply vector-append appendable others))]
-                   [set?
-                    (define (.. appendable . others)
-                      (apply set-union appendable others))]
-                   [dict?
-                    (define (.. appendable . others)
-                      (make-hash (->list (apply append appendable others))))]
-                   [sequence?
-                    (define (.. appendable . others)
-                      (apply append appendable others))]
-                   [procedure?
-                    (define (.. appendable . others)
-                      (apply compose appendable others))]))
-
-(define-generics monoid
-  (id monoid operation)
-  #:fast-defaults ([number?
-                    (define (id monoid operation)
-                      (cond [(= operation +) 0]
-                            [(= operation *) 1]
-                            [(= operation ..) 1]
-                            [else (error "Operation not recognized!" operation)]))]
-                   [procedure?
-                    (define (id monoid operation)
-                      identity)]
-                   [string?
-                    (define (id monoid operation)
+  (append appendable other)
+  (appendable-identity appendable)
+  (appendable-inverse appendable)
+  #:fallbacks [(define (appendable-inverse appendable)
+                 (error "Type is not invertible under append!"))]
+  #:fast-defaults ([string?
+                    (define append string-append)
+                    (define (appendable-identity appendable)
                       "")]
                    [bytes?
-                    (define (id monoid operation)
+                    (define append bytes-append)
+                    (define (appendable-identity appendable)
                       #"")]
                    [list?
-                    (define (id monoid operation)
+                    (define append b:append)
+                    (define (appendable-identity appendable)
                       (list))]
                    [vector?
-                    (define/generic generic-id id)
-                    (define (id monoid operation)
-                      (cond [(= operation ..) #()]
-                            [(= operation *)
-                             (error "Operation not supported!" operation)]
-                            [(= operation +)
-                             (->vector
-                              (take (length monoid)
-                                    (repeat (generic-id (first monoid)
-                                                        +))))]))]
+                    (define append vector-append)
+                    (define (appendable-identity appendable)
+                      #())]
                    [set?
-                    (define (id monoid operation)
+                    (define append set-union)
+                    (define (appendable-identity appendable)
                       (set))]
                    [dict?
-                    (define (id monoid operation)
+                    (define append
+                      (compose make-hash
+                               ->list
+                               d:append))
+                    (define (appendable-identity appendable)
                       (hash))]
                    [sequence?
-                    (define (id monoid operation)
-                      (list))]))
+                    (define append d:append)
+                    (define (appendable-identity appendable)
+                      (list))]
+                   [procedure?
+                    (define append compose)
+                    (define (appendable-identity appendable)
+                      identity)]))
+
+(define-generics multipliable
+  (multiply multipliable other)
+  (multipliable-identity multipliable)
+  (multipliable-inverse multipliable)
+  #:fallbacks [(define (multipliable-inverse multipliable)
+                 (error "Type is not invertible under multiplication!"))]
+  #:fast-defaults ([number?
+                    (define multiply b:*)
+                    (define (multipliable-identity multipliable)
+                      1)
+                    (define multipliable-inverse (curry b:/ 1))]))
 
 (define-generics addable
-  (inverse addable operation)
-  (+ addable . others)
-  (- addable . others)
-  #:fallbacks [(define/generic g-+ +)
-               (define/generic g-inverse inverse)
-               (define (inverse addable operation)
-                 (error "Unrecognized addable type!" addable))
-               (define (+ addable . others)
-                 (error "Unrecognized addable type!" addable))
-               (define (- addable . others)
-                 (if (empty? others)
-                     (g-inverse addable g-+)
-                     (let ([minus (curryr g-inverse g-+)])
-                       (apply g-+ addable (map minus others)))))]
+  (add addable other)
+  (addable-identity addable)
+  (addable-inverse addable)
   #:fast-defaults ([number?
-                    (define/generic g-+ +)
-                    (define/generic g-- -)
-                    (define (inverse addable operation)
-                      (cond [(= operation g-+)
-                             (b:- addable)]
-                            [(= operation *)
-                             (b:/ 1 addable)]
-                            [else (error "Unsupported addable operation!" operation)]))
-                    (define (+ addable . others)
-                      (apply b:+ addable others))]
+                    (define add b:+)
+                    (define (addable-identity addable)
+                      0)
+                    (define addable-inverse b:-)]
                    [vector?
-                    (define/generic g-+ +)
-                    (define/generic g-inverse inverse)
-                    (define (inverse addable operation)
+                    (define/generic generic-add add)
+                    (define/generic generic-addable-inverse addable-inverse)
+                    (define add (compose ->vector
+                                         (curry map
+                                                generic-add)))
+                    (define (addable-identity addable)
                       (->vector
-                       (if (empty? addable)
-                           addable
-                           (let ([minus (curryr g-inverse operation)])
-                             (map minus addable)))))
-                    (define (+ addable . others)
-                      (->vector
-                       (apply map g-+ addable others)))]))
+                       (take (length addable)
+                             (repeat ((id +) (first addable))))))
+                    (define addable-inverse (compose ->vector
+                                                     (curry map
+                                                            generic-addable-inverse)))]))
+
+(define (id operation)
+  (cond [(member operation (list + add))
+         addable-identity]
+        [(member operation (list * multiply))
+         multipliable-identity]
+        [(member operation (list .. append))
+         appendable-identity]
+        [else (error "Identity not defined for operation!")]))
+
+(define (inverse operation)
+  (cond [(member operation (list + add))
+         addable-inverse]
+        [(member operation (list * multiply))
+         multipliable-inverse]
+        [(member operation (list .. append))
+         appendable-inverse]
+        [else (error "Inverse not defined for operation!")]))
+
+(define (.. v . remaining)
+  (foldl append (cons v remaining)))
+
+(define (* v . remaining)
+  (foldl multiply (cons v remaining)))
+
+(define (/ v . remaining)
+  (if (empty? remaining)
+      (multipliable-inverse v)
+      (apply * v (map multipliable-inverse remaining))))
+
+(define (+ v . remaining)
+  (foldl add (cons v remaining)))
+
+(define (- v . remaining)
+  (if (empty? remaining)
+      (addable-inverse v)
+      (apply + v (map addable-inverse remaining))))
 
 (define ∘ ..)
 
 (define (foldl f vs [base #f])
   (if base
-      (d:foldl (flip f) base vs)
+      (d:foldl f base vs)
       (if (empty? vs)
           (error @~a{Input sequence is empty and no base value was provided!
                      Available data is insufficient to compute a result.})
-          (let ([id-element (id (first vs) f)])
-            (d:foldl (flip f) id-element vs)))))
+          (let ([id-element ((id f) (first vs))])
+            (d:foldl f id-element vs)))))
 
 (define (foldl/steps f vs [base #f])
   (if base
@@ -221,7 +198,7 @@
       (if (empty? vs)
           (error @~a{Input sequence is empty and no base value was provided!
                            Available data is insufficient to compute a result.})
-          (let ([id-element (id (first vs) f)])
+          (let ([id-element ((id f) (first vs))])
             (d:foldl/steps (flip f) id-element vs)))))
 
 (define (foldr f vs [base #f])

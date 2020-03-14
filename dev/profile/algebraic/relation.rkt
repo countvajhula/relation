@@ -4,7 +4,8 @@
          racket/stream
          (except-in data/collection
                     foldl
-                    foldl/steps)
+                    foldl/steps
+                    append)
          relation)
 
 (define (randoms n)

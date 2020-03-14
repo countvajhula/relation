@@ -5,7 +5,8 @@
 		 racket/sandbox
          @for-label[relation/equivalence
 		            racket/generic
-                    (except-in racket = group-by)]]
+                    (except-in racket = equal? group-by)
+					(only-in racket (equal? b:equal?))]]
 
 @title{Equivalence Relations}
 
@@ -45,7 +46,7 @@ A generic interface and utilities for comparing data. By default, the built-in e
 
  A function taking two arguments that tests whether the arguments are equal, where both arguments are instances of the structure type to which the generic interface is associated (or a subtype of the structure type). The function must return true if the arguments are to be considered equal, and false if not.
 
- All Racket types are @racket[gen:comparable]. If a struct type does not explicitly implement @racket[gen:comparable], the built-in @racket[equal?] will be used for instances of that type.
+ All Racket types are @racket[gen:comparable]. If a struct type does not explicitly implement @racket[gen:comparable], the built-in @racketlink[b:equal? "equal?"] will be used for instances of that type, so @racket[=] may be treated as a drop-in replacement for @racketlink[b:equal? "equal?"].
  }
 
 @defproc[(comparable? [v any/c])
