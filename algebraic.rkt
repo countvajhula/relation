@@ -42,22 +42,28 @@
           [+ (-> addable? addable? ... addable?)]
           [- (-> addable? addable? ... addable?)]
           [foldl (->* ((-> any/c any/c any/c) (sequenceof any/c))
-                      (any/c)
+                      (any/c #:order (one-of/c 'abb
+                                               'bab))
                       any/c)]
           [foldl/steps (->* ((-> any/c any/c any/c) (sequenceof any/c))
-                            (any/c)
+                            (any/c #:order (one-of/c 'abb
+                                                     'bab))
                             any/c)]
           [foldr (->* ((-> any/c any/c any/c) (sequenceof any/c))
-                      (any/c)
+                      (any/c #:order (one-of/c 'abb
+                                               'bab))
                       any/c)]
           [fold (->* ((-> any/c any/c any/c) (sequenceof any/c))
-                     (any/c)
+                     (any/c #:order (one-of/c 'abb
+                                              'bab))
                      any/c)]
           [foldr/steps (->* ((-> any/c any/c any/c) (sequenceof any/c))
-                            (any/c)
+                            (any/c #:order (one-of/c 'abb
+                                                     'bab))
                             any/c)]
           [fold/steps (->* ((-> any/c any/c any/c) (sequenceof any/c))
-                           (any/c)
+                           (any/c #:order (one-of/c 'abb
+                                                    'bab))
                            any/c)]))
 
 ;; 5. get the current functionality working / tests to pass

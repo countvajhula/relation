@@ -551,6 +551,8 @@
   (check-equal? (fold * '(1 2 3 4)) 24)
   (check-equal? (foldr cons '(1 2 3) '()) '(1 2 3))
   (check-equal? (foldl cons '(1 2 3) '()) '(3 2 1))
+  (check-equal? (foldr cons '(1 2 3) '() #:order 'bab) '(((() . 3) . 2) . 1))
+  (check-equal? (foldl cons '(1 2 3) '() #:order 'bab) '(((() . 1) . 2) . 3))
   (check-equal? (fold + (stream 1 2 3 4)) 10)
   (check-equal? (fold + '() 0) 0 "empty input with base value")
   (check-exn exn:fail?
