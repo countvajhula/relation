@@ -163,10 +163,10 @@
         [else (error "Inverse not defined for operation!")]))
 
 (define (.. v . remaining)
-  (foldl append (cons v remaining)))
+  (foldl append (cons v remaining) #:order 'bab))
 
 (define (* v . remaining)
-  (foldl multiply (cons v remaining)))
+  (foldl multiply (cons v remaining) #:order 'bab))
 
 (define (/ v . remaining)
   (if (empty? remaining)
@@ -174,7 +174,7 @@
       (apply * v (map multipliable-inverse remaining))))
 
 (define (+ v . remaining)
-  (foldl add (cons v remaining)))
+  (foldl add (cons v remaining) #:order 'bab))
 
 (define (- v . remaining)
   (if (empty? remaining)
@@ -183,29 +183,53 @@
 
 (define ∘ ..)
 
-(define (foldl f vs [base #f])
-  (if base
-      (d:foldl f base vs)
-      (if (empty? vs)
-          (error @~a{Input sequence is empty and no base value was provided!
-                     Available data is insufficient to compute a result.})
-          (let ([id-element ((id f) (first vs))])
-            (d:foldl f id-element vs)))))
+(define (foldl f vs [base #f] #:order [order 'abb])
+  (let ([fold-proc (cond [(= order 'abb)
+                          (flip f)]
+                         [(= order 'bab)
+                          f]
+                         [else (error "Invalid fold argument order!")])])
+    (if base
+        (d:foldl fold-proc
+                 base
+                 vs)
+        (if (empty? vs)
+            (error @~a{Input sequence is empty and no base value was provided!
+                       Available data is insufficient to compute a result.})
+            (let ([id-element ((id f) (first vs))])
+              (d:foldl fold-proc
+                       id-element
+                       vs))))))
 
-(define (foldl/steps f vs [base #f])
-  (if base
-      (d:foldl/steps (flip f) base vs)
-      (if (empty? vs)
-          (error @~a{Input sequence is empty and no base value was provided!
-                           Available data is insufficient to compute a result.})
-          (let ([id-element ((id f) (first vs))])
-            (d:foldl/steps (flip f) id-element vs)))))
+(define (foldl/steps f vs [base #f] #:order [order 'abb])
+  (let ([fold-proc (cond [(= order 'abb)
+                          (flip f)]
+                         [(= order 'bab)
+                          f]
+                         [else (error "Invalid fold argument order!")])])
+    (if base
+        (d:foldl/steps fold-proc
+                       base
+                       vs)
+        (if (empty? vs)
+            (error @~a{Input sequence is empty and no base value was provided!
+                       Available data is insufficient to compute a result.})
+            (let ([id-element ((id f) (first vs))])
+              (d:foldl/steps fold-proc
+                             id-element
+                             vs))))))
 
-(define (foldr f vs [base #f])
-  (foldl f (reverse vs) base))
+(define (foldr f vs [base #f] #:order [order 'abb])
+  (foldl f
+         (reverse vs)
+         base
+         #:order order))
 
-(define (foldr/steps f vs [base #f])
-  (foldl/steps f (reverse vs) base))
+(define (foldr/steps f vs [base #f] #:order [order 'abb])
+  (foldl/steps f
+               (reverse vs)
+               base
+               #:order order))
 
 (define fold foldr)
 (define fold/steps foldr/steps)

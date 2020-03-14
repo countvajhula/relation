@@ -541,7 +541,7 @@
   ;; "division"
   (check-equal? (/ 4 3) (b:/ 4 3))
   (check-equal? (/ 4 6) (b:/ 4 6))
-  (check-equal? (/ 1) -1 "division with single arg returns inverse")
+  (check-equal? (/ 3) (b:/ 1 3) "division with single arg returns inverse")
   ;; fold
   (check-equal? (foldr + '(1 2 3 4)) 10)
   (check-equal? (foldr * '(1 2 3 4)) 24)
