@@ -23,6 +23,11 @@ install:
 remove:
 	raco pkg remove $(PACKAGE-NAME)
 
+# TODO: research difference between raco setup relation
+# and raco setup --pkg relation
+# Add the former as a make target if warranted, as it seems to
+# be necessary in some cases (e.g. linking to third party lib docs)
+
 # Primarily for day-to-day dev.
 # Build libraries from source.
 build:
