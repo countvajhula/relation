@@ -13,6 +13,7 @@
                     (append d:append))
          (only-in algebraic/prelude
                   flip)
+         point-free
          relation/equivalence
          relation/transform)
 
@@ -68,13 +69,10 @@
                                                     'bab))
                            any/c)]))
 
-;; 5. get the current functionality working / tests to pass
 
 ;; alternatively, if types differ, then still allow it by
 ;; treating it as the "anekantic" type
 
-;; compose is not a good name for this since composition is elementary
-;; whereas function composition is specifically an append-like operation
 (define-generics appendable
   (append appendable other)
   (appendable-identity appendable)
@@ -102,10 +100,10 @@
                     (define (appendable-identity appendable)
                       (set))]
                    [dict?
-                    (define append
-                      (compose make-immutable-hash
-                               ->list
-                               d:append))
+                    (define/thrush append
+                      d:append
+                      ->list
+                      make-immutable-hash)
                     (define (appendable-identity appendable)
                       (hash))]
                    [sequence?
@@ -141,16 +139,18 @@
                    [vector?
                     (define/generic generic-add add)
                     (define/generic generic-addable-inverse addable-inverse)
-                    (define add (compose ->vector
-                                         (curry map
-                                                generic-add)))
+                    (define/thrush add
+                      (curry map
+                             generic-add)
+                      ->vector)
                     (define (addable-identity addable)
                       (->vector
                        (take (length addable)
                              (repeat ((id +) (first addable))))))
-                    (define addable-inverse (compose ->vector
-                                                     (curry map
-                                                            generic-addable-inverse)))]))
+                    (define/thrush addable-inverse
+                      (curry map
+                             generic-addable-inverse)
+                      ->vector)]))
 
 (define (id operation)
   (cond [(member operation (list + add))
