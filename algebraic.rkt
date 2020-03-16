@@ -103,7 +103,7 @@
                       (set))]
                    [dict?
                     (define append
-                      (compose make-hash
+                      (compose make-immutable-hash
                                ->list
                                d:append))
                     (define (appendable-identity appendable)
