@@ -1,6 +1,9 @@
 #lang racket/base
 
 (require (prefix-in b: racket/base)
+         (only-in racket/list
+                  group-by)
+         racket/function
          racket/stream
          data/collection)
 
@@ -46,8 +49,23 @@
   (for ([i (take how-many (in (cycle '(("dragonfruit" "apple" "cherry" "banana" "guava" "apple" "cherry" "elderberry")))))])
     (sort i string<?)))
 
+(define (check-group-by how-many)
+  (for ([i (take how-many (in (cycle '((4 1 3 2 7 1 3 5)))))])
+    (group-by identity i)))
+
+(define (check-min how-many)
+  (for ([i (take how-many (in (cycle '((4 1 3 2 7 1 3 5)))))])
+    (apply min i)))
+
+(define (check-max how-many)
+  (for ([i (take how-many (in (cycle '((4 1 3 2 7 1 3 5)))))])
+    (apply max i)))
+
 (check-numbers 10000)
 (check-strings 10000)
 (check-chars 10000)
 (sort-numbers 10000)
 (sort-strings 10000)
+(check-group-by 10000)
+(check-min 10000)
+(check-max 10000)
