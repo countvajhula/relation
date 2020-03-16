@@ -7,7 +7,7 @@
                      "scribble-lib"
                      "scribble-abbrevs"
                      "racket-doc"
-                     "collections-lib"
+                     "collections-doc"
                      "sandbox-lib"
                      "at-exp-lib"))
 (define scribblings '(("scribblings/relation.scrbl" (multi-page))))
