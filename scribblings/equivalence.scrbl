@@ -39,16 +39,6 @@ A generic interface and utilities for comparing data. By default, the built-in e
     (= #:key ->number "42.0" "42/1")
   ]
 
- To implement this interface for custom types, the following method needs to be implemented:
-
- @defproc[(equal? [a comparable?] [b comparable?])
-                  boolean?]{
-
- A function taking two arguments that tests whether the arguments are equal, where both arguments are instances of the structure type to which the generic interface is associated (or a subtype of the structure type). The function must return true if the arguments are to be considered equal, and false if not.
-
- All Racket types are @racket[gen:comparable]. If a struct type does not explicitly implement @racket[gen:comparable], the built-in @racketlink[b:equal? "equal?"] will be used for instances of that type, so @racket[=] may be treated as a drop-in replacement for @racketlink[b:equal? "equal?"].
- }
-
 @defproc[(comparable? [v any/c])
          boolean?]{
 
@@ -63,14 +53,27 @@ A generic interface and utilities for comparing data. By default, the built-in e
     (comparable? (hash))
   ]
 }
+
+ To implement this interface for custom types, the following method needs to be implemented:
+
+ @defproc[(equal? [a comparable?]
+                  [b comparable?])
+          boolean?]{
+
+ A function taking two arguments that tests whether the arguments are equal, where both arguments are instances of the structure type to which the generic interface is associated (or a subtype of the structure type). The function must return true if the arguments are to be considered equal, and false if not.
+
+ All Racket types are @racket[gen:comparable]. If a struct type does not explicitly implement @racket[gen:comparable], the built-in @racketlink[b:equal? "equal?"] will be used for instances of that type, so @racket[=] may be treated as a drop-in replacement for @racketlink[b:equal? "equal?"].
+ }
+
 }
 
 @section[#:tag "equivalence:utilities"]{Utilities}
 
  The following utilities are provided which work with any type that implements the @racket[gen:comparable] interface.
 
-@defproc[(= [#:key key (-> comparable? comparable?) #f] [v comparable?] ...)
-              boolean?]{
+@defproc[(= [#:key key (-> comparable? comparable?) #f]
+            [v comparable?] ...)
+         boolean?]{
 
  True if the v's are equal. This uses the most appropriate equality check for the type. For instance, it uses the built-in @racket[=] operator for numeric data, and @racket[equal?] for some other types such as @tech/reference{structures}. If a transformation is provided via the @racket[#:key] argument, then this transformation is applied to the input values first, prior to performing the equality check.
 
@@ -89,12 +92,18 @@ A generic interface and utilities for comparing data. By default, the built-in e
   ]
 }
 
-@deftogether[(@defproc[(/= [#:key key (-> comparable? comparable?) #f] [v comparable?] ...)
-              boolean?]
-              @defproc[(≠ [#:key key (-> comparable? comparable?) #f] [v comparable?] ...)
-              boolean?]
-			  @defproc[(!= [#:key key (-> comparable? comparable?) #f] [v comparable?] ...)
-              boolean?])]{
+@deftogether[(@defproc[(/= [#:key key (-> comparable? comparable?) #f]
+                           [v comparable?]
+                           ...)
+                       boolean?]
+              @defproc[(≠ [#:key key (-> comparable? comparable?) #f]
+                          [v comparable?]
+                          ...)
+                       boolean?]
+              @defproc[(!= [#:key key (-> comparable? comparable?) #f]
+                           [v comparable?]
+                           ...)
+                       boolean?])]{
 
  True if the v's are not equal. This is simply a negation of the generic @racket[=]. If a transformation is provided via the @racket[#:key] argument, then it is applied to the arguments prior to comparing them.
 
@@ -128,8 +137,10 @@ A generic interface and utilities for comparing data. By default, the built-in e
   ]
 }
 
-@defproc[(generic-set [#:key key (-> comparable? comparable?) #f] [v comparable?] ...)
-                       list?]{
+@defproc[(generic-set [#:key key (-> comparable? comparable?) #f]
+                      [v comparable?]
+                      ...)
+         list?]{
 
  Returns a @tech/reference{set} containing deduplicated input values using the provided equivalence relation as the test for equality (by default, @racket[=] is applied directly unless a key is specified).
 

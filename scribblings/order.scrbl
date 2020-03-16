@@ -47,40 +47,6 @@ A generic interface and utilities for orderable data. By default, the built-in c
     (< #:key ->number "42.0" "53/1")
   ]
 
- To implement this interface for custom types, the following generic methods need to be implemented. Note that the only required method is @racket[less-than?] -- the others will be inferred from it if an implementation isn't explicitly specified:
-
- @defproc[(less-than? [a orderable?] [b orderable?])
-                      boolean?]{
-
- A function taking two arguments that tests whether the first is less than the second. Both arguments must be instances of the structure type to which the generic interface is associated (or a subtype of the structure type). The function must return true if the first argument is less than the second, and false if not.
-
- Every implementation of @racket[gen:orderable] must provide an implementation of @racket[less-than?].
- }
-
- @defproc[(greater-than? [a orderable?] [b orderable?])
-                      boolean?]{
-
- Similar to @racket[less-than?], but tests whether the first argument is greater than the second one.
-
- Providing an implementation of this method is optional, as one will be inferred for it from @racket[less-than?] if none is specified.
- }
-
- @defproc[(less-than-or-equal? [a orderable?] [b orderable?])
-                      boolean?]{
-
- Similar to @racket[less-than?], but tests whether the first argument is either less than or equal to the second one.
-
- Providing an implementation of this method is optional, as one will be inferred for it from @racket[less-than?] and @racket[gen:comparable] if none is specified.
- }
-
- @defproc[(greater-than-or-equal? [a orderable?] [b orderable?])
-                      boolean?]{
-
- Similar to @racket[less-than?], but tests whether the first argument is either greater than or equal to the second one.
-
- Providing an implementation of this method is optional, as one will be inferred for it from @racket[greater-than?] and @racket[gen:comparable] if none is specified.
- }
-
 @defproc[(orderable? [v any/c])
          boolean?]{
 
@@ -96,14 +62,54 @@ A generic interface and utilities for orderable data. By default, the built-in c
   ]
 }
 
+ To implement this interface for custom types, the following generic methods need to be implemented. Note that the only required method is @racket[less-than?] -- the others will be inferred from it if an implementation isn't explicitly specified:
+
+ @defproc[(less-than? [a orderable?]
+                      [b orderable?])
+          boolean?]{
+
+ A function taking two arguments that tests whether the first is less than the second. Both arguments must be instances of the structure type to which the generic interface is associated (or a subtype of the structure type). The function must return true if the first argument is less than the second, and false if not.
+
+ Every implementation of @racket[gen:orderable] must provide an implementation of @racket[less-than?].
+ }
+
+ @defproc[(greater-than? [a orderable?]
+                         [b orderable?])
+          boolean?]{
+
+ Similar to @racket[less-than?], but tests whether the first argument is greater than the second one.
+
+ Providing an implementation of this method is optional, as one will be inferred for it from @racket[less-than?] if none is specified.
+ }
+
+ @defproc[(less-than-or-equal? [a orderable?]
+                               [b orderable?])
+          boolean?]{
+
+ Similar to @racket[less-than?], but tests whether the first argument is either less than or equal to the second one.
+
+ Providing an implementation of this method is optional, as one will be inferred for it from @racket[less-than?] and @racket[gen:comparable] if none is specified.
+ }
+
+ @defproc[(greater-than-or-equal? [a orderable?]
+                                  [b orderable?])
+          boolean?]{
+
+ Similar to @racket[less-than?], but tests whether the first argument is either greater than or equal to the second one.
+
+ Providing an implementation of this method is optional, as one will be inferred for it from @racket[greater-than?] and @racket[gen:comparable] if none is specified.
+ }
+
 }
 
 @section[#:tag "order:utilities"]{Utilities}
 
  The following utilities are provided which work with any type that implements the @racket[gen:orderable] interface.
 
-@defproc[(< [#:key key (-> orderable? orderable?) #f] [v orderable?] ...)
-              boolean?]{
+@defproc[(< [#:key key (-> orderable? orderable?) #f]
+            [v orderable?]
+            ...)
+         boolean?]{
 
  True if the v's are monotonically increasing. If a transformation is provided via the @racket[#:key] argument, then it is applied to the arguments prior to comparing them.
 
@@ -116,10 +122,14 @@ A generic interface and utilities for orderable data. By default, the built-in c
   ]
 }
 
-@deftogether[(@defproc[(<= [#:key key (-> orderable? orderable?) #f] [v orderable?] ...)
-              boolean?]
-              @defproc[(≤ [#:key key (-> orderable? orderable?) #f] [v orderable?] ...)
-              boolean?])]{
+@deftogether[(@defproc[(<= [#:key key (-> orderable? orderable?) #f]
+                           [v orderable?]
+                           ...)
+                       boolean?]
+              @defproc[(≤ [#:key key (-> orderable? orderable?) #f]
+                          [v orderable?]
+                          ...)
+                       boolean?])]{
 
  True if the v's are monotonically nondecreasing. If a transformation is provided via the @racket[#:key] argument, then it is applied to the arguments prior to comparing them.
 
@@ -132,10 +142,14 @@ A generic interface and utilities for orderable data. By default, the built-in c
   ]
 }
 
-@deftogether[(@defproc[(>= [#:key key (-> orderable? orderable?) #f] [v orderable?] ...)
-              boolean?]
-              @defproc[(≥ [#:key key (-> orderable? orderable?) #f] [v orderable?] ...)
-              boolean?])]{
+@deftogether[(@defproc[(>= [#:key key (-> orderable? orderable?) #f]
+                           [v orderable?]
+                           ...)
+                       boolean?]
+              @defproc[(≥ [#:key key (-> orderable? orderable?) #f]
+                          [v orderable?]
+                          ...)
+                       boolean?])]{
 
  True if the v's are monotonically nonincreasing. If a transformation is provided via the @racket[#:key] argument, then it is applied to the arguments prior to comparing them.
 
@@ -148,8 +162,10 @@ A generic interface and utilities for orderable data. By default, the built-in c
   ]
 }
 
-@defproc[(> [#:key key (-> orderable? orderable?) #f] [v orderable?] ...)
-              boolean?]{
+@defproc[(> [#:key key (-> orderable? orderable?) #f]
+            [v orderable?]
+            ...)
+         boolean?]{
 
  True if the v's are monotonically decreasing. If a transformation is provided via the @racket[#:key] argument, then it is applied to the arguments prior to comparing them.
 
@@ -162,8 +178,10 @@ A generic interface and utilities for orderable data. By default, the built-in c
   ]
 }
 
-@defproc[(min [#:key key (-> orderable? orderable?) #f] [v orderable?] ...)
-               orderable?]{
+@defproc[(min [#:key key (-> orderable? orderable?) #f]
+              [v orderable?]
+              ...)
+         orderable?]{
 
  Returns the minimum value. If @racket[key] is provided it is applied to the arguments prior to the comparison (this pattern is often referred to as "argmin" in math and programming literature). The values are compared using the canonical comparison for their type.
 
@@ -178,8 +196,10 @@ A generic interface and utilities for orderable data. By default, the built-in c
   ]
 }
 
-@defproc[(max [#:key key (-> orderable? orderable?) #f] [v orderable?] ...)
-               orderable?]{
+@defproc[(max [#:key key (-> orderable? orderable?) #f]
+              [v orderable?]
+              ...)
+         orderable?]{
 
  Returns the maximum value. If @racket[key] is provided it is applied to the arguments prior to the comparison (this pattern is often referred to as "argmax" in math and programming literature). The values are compared using the canonical comparison for their type.
 
