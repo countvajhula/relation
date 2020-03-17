@@ -15,7 +15,8 @@
                     (only-in racket (foldl f:foldl)
                                     (foldr f:foldr)
                                     (append b:append))
-                    (only-in data/collection (foldl/steps d:foldl/steps))]]
+                    (only-in data/collection (foldl d:foldl)
+                                             (foldl/steps d:foldl/steps))]]
 
 @title{Algebraic Operations}
 
@@ -319,73 +320,80 @@ This module provides three generic interfaces -- @racket[gen:appendable], @racke
   ]
 }
 
-@deftogether[(@defproc[(foldl [f (-> any/c any/c any/c)]
+@deftogether[(@defproc[(fold [f (-> any/c any/c any/c)]
+                             [vs (sequenceof any/c)]
+                             [base any/c #f]
+                             [#:order order (one-of/c 'abb 'bab) 'abb]
+                             [#:direction direction (one-of/c 'left 'right) 'right]
+                             [#:with-steps with-steps boolean? #f])
+                       any/c]
+              @defproc[(foldl [f (-> any/c any/c any/c)]
                               [vs (sequenceof any/c)]
                               [base any/c #f]
                               [#:order order (one-of/c 'abb 'bab) 'abb])
-              any/c?]
+              any/c]
               @defproc[(foldr [f (-> any/c any/c any/c)]
                               [vs (sequenceof any/c)]
                               [base any/c #f]
                               [#:order order (one-of/c 'abb 'bab) 'abb])
-                       any/c?]
-              @defproc[(fold [f (-> any/c any/c any/c)]
-                             [vs (sequenceof any/c)]
-                             [base any/c #f]
-                             [#:order order (one-of/c 'abb 'bab) 'abb])
-                       any/c?])]{
+                       any/c]
+              )]{
 
- Similar to @racketlink[f:foldl "foldl"] and @racketlink[f:foldr "foldr"], but infers the relevant @racketlink[id "identity"] element and uses it as the base value, if none is provided. The identity element is determined by considering the first element of the input sequence together with the given operation. @racket[fold] is an alias for @racket[foldr].
+ Similar to @racketlink[f:foldl "foldl"] and @racketlink[f:foldr "foldr"], but infers the relevant @racketlink[id "identity"] element and uses it as the base value, if none is provided. The identity element is determined by considering the first element of the input sequence together with the given operation.
 
  With folding operations there are two parameters that one may wish to tweak. The first is the direction of the fold, either left or right, for which one may use either @racket[foldl] or @racket[foldr]. The second is the order in which arguments are supplied to the folding function @racket[f], which may be controlled by the keyword argument @racket[#:order], with a value of @racket['abb] corresponding to the accumulator always being passed second, consistent with Racket's built-in @racketlink[f:foldl "foldl"], and a value of @racket['bab] corresponding to the accumulator always being passed first, consistent with the version of @racketlink[d:foldl "foldl"] found in @racket[data/collection] and also in some other functional languages like Haskell.
 
  In many common cases, modulating the folding direction and/or the argument order does not make a difference to the result. Specifically, in those cases where the operation is @hyperlink["https://en.wikipedia.org/wiki/Commutative_property"]{commutative} and @hyperlink["https://en.wikipedia.org/wiki/Closure_(mathematics)"]{closed}, it doesn't matter whether you use @racket[foldl] or @racket[foldr], or whether you use argument order @racket['abb] or @racket['bab]. The result would be the same. However, in cases where the operation is not closed, argument order becomes significant. As a general guideline, choose between @racket[foldl] and @racket[foldr] in cases where the operation is not commutative (a relatively common case, such as string concatenation), and between the two argument orders in cases where the operation isn't closed (a less common case).
 
+ @racket[foldl] is equivalent to calling @racket[fold] with @racket[#:direction 'left], and @racket[foldr] is equivalent to calling @racket[fold] with @racket[#:direction 'right]. @racket[fold/steps] is equivalent to calling @racket[fold] with @racket[#:with-steps #t].
+
 @examples[
     #:eval eval-for-docs
-    (foldl + '(1 2 3 4))
-    (foldr + '(1 2 3 4))
-    (foldl + '(1 2 3 4) #:order 'bab)
-    (foldr + '(1 2 3 4) #:order 'bab)
-    (foldl .. '("hi" " " "there"))
-    (foldr .. '("hi" " " "there"))
-    (foldl cons '(1 2 3) '() #:order 'abb)
-    (foldr cons '(1 2 3) '() #:order 'abb)
-    (foldl cons '(1 2 3) '() #:order 'bab)
-    (foldr cons '(1 2 3) '() #:order 'bab)
     (fold + '(1 2 3 4))
     (fold * '(1 2 3 4))
     (fold .. '("hi" " " "there"))
+    (foldr + '(1 2 3 4))
+    (foldl + '(1 2 3 4))
+    (foldr + '(1 2 3 4) #:order 'bab)
+    (foldl + '(1 2 3 4) #:order 'bab)
+    (foldr .. '("hi" " " "there"))
+    (foldl .. '("hi" " " "there"))
+    (foldr cons '(1 2 3) '() #:order 'abb)
+    (foldl cons '(1 2 3) '() #:order 'abb)
+    (foldr cons '(1 2 3) '() #:order 'bab)
+    (foldl cons '(1 2 3) '() #:order 'bab)
   ]
 }
 
 @deftogether[(
+  @defproc[(fold/steps [f (-> any/c any/c any/c)]
+                       [vs (sequenceof any/c)]
+                       [base any/c #f]
+                       [#:order order (one-of/c 'abb 'bab) 'abb]
+                       [#:direction direction (one-of/c 'left 'right) 'right])
+           any/c]
   @defproc[(foldl/steps [f (-> any/c any/c any/c)]
                         [vs (sequenceof any/c)]
                         [base any/c #f]
                         [#:order order (one-of/c 'abb 'bab) 'abb])
-           any/c?]
+           any/c]
   @defproc[(foldr/steps [f (-> any/c any/c any/c)]
                         [vs (sequenceof any/c)]
                         [base any/c #f]
                         [#:order order (one-of/c 'abb 'bab) 'abb])
-           any/c?]
-  @defproc[(fold/steps [f (-> any/c any/c any/c)]
-                       [vs (sequenceof any/c)]
-                       [base any/c #f]
-                       [#:order order (one-of/c 'abb 'bab) 'abb])
-           any/c?])]{
+           any/c]
+  )]{
 
- Similar to @racketlink[d:foldl/steps "foldl/steps"], but, like @racket[fold], infers the relevant @racketlink[id "identity"] element and uses it as the base value, if none is provided.
+ Similar to @racketlink[d:foldl/steps "foldl/steps"], but, like @racket[fold], infers the relevant @racketlink[id "identity"] element and uses it as the base value, if none is provided. @racket[foldl/steps] is equivalent to calling @racket[fold/steps] with @racket[#:direction 'left], and @racket[foldr/steps] is equivalent to calling @racket[fold/steps] with @racket[#:direction 'right].
 
 @examples[
     #:eval eval-for-docs
-    (->list (foldl/steps + '(1 2 3 4)))
-    (->list (foldr/steps + '(1 2 3 4)))
-    (->list (foldl/steps * '(1 2 3 4)))
-    (->list (foldr/steps * '(1 2 3 4)))
-    (->list (foldl/steps .. '("hi" " " "there")))
-    (->list (foldr/steps .. '("hi" " " "there")))
     (->list (fold/steps + '(1 2 3 4)))
+    (->list (foldr/steps + '(1 2 3 4)))
+    (->list (foldl/steps + '(1 2 3 4)))
+    (->list (foldr/steps * '(1 2 3 4)))
+    (->list (foldl/steps * '(1 2 3 4)))
+    (->list (foldr/steps .. '("hi" " " "there")))
+    (->list (foldl/steps .. '("hi" " " "there")))
   ]
 }

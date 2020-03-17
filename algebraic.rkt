@@ -44,34 +44,35 @@
           [/ (-> multipliable? multipliable? ... multipliable?)]
           [+ (-> addable? addable? ... addable?)]
           [- (-> addable? addable? ... addable?)]
+          [fold (->* ((-> any/c any/c any/c) (sequenceof any/c))
+                     (any/c #:order (one-of/c 'abb
+                                              'bab)
+                            #:direction (one-of/c 'left
+                                                  'right)
+                            #:with-steps boolean?)
+                     any/c)]
           [foldl (->* ((-> any/c any/c any/c) (sequenceof any/c))
                       (any/c #:order (one-of/c 'abb
                                                'bab))
                       any/c)]
-          [foldl/steps (->* ((-> any/c any/c any/c) (sequenceof any/c))
-                            (any/c #:order (one-of/c 'abb
-                                                     'bab))
-                            any/c)]
           [foldr (->* ((-> any/c any/c any/c) (sequenceof any/c))
                       (any/c #:order (one-of/c 'abb
                                                'bab))
                       any/c)]
-          [fold (->* ((-> any/c any/c any/c) (sequenceof any/c))
-                     (any/c #:order (one-of/c 'abb
-                                              'bab))
-                     any/c)]
-          [foldr/steps (->* ((-> any/c any/c any/c) (sequenceof any/c))
+          [fold/steps (->* ((-> any/c any/c any/c) (sequenceof any/c))
+                           (any/c #:order (one-of/c 'abb
+                                                    'bab)
+                                  #:direction (one-of/c 'left
+                                                        'right))
+                           any/c)]
+          [foldl/steps (->* ((-> any/c any/c any/c) (sequenceof any/c))
                             (any/c #:order (one-of/c 'abb
                                                      'bab))
                             any/c)]
-          [fold/steps (->* ((-> any/c any/c any/c) (sequenceof any/c))
-                           (any/c #:order (one-of/c 'abb
-                                                    'bab))
-                           any/c)]))
-
-
-;; alternatively, if types differ, then still allow it by
-;; treating it as the "anekantic" type
+          [foldr/steps (->* ((-> any/c any/c any/c) (sequenceof any/c))
+                            (any/c #:order (one-of/c 'abb
+                                                     'bab))
+                            any/c)]))
 
 (define-generics appendable
   (append appendable other)
@@ -199,59 +200,42 @@
 
 (define ∘ ..)
 
-(define (foldl f vs [base #f] #:order [order 'abb])
-  (let ([fold-proc (cond [(= order 'abb)
-                          (flip f)]
-                         [(= order 'bab)
-                          f]
-                         [else (error 'foldl
-                                      "Invalid fold argument order ~a!"
-                                      order)])])
+(define (fold f
+              vs
+              [base #f]
+              #:order [order 'abb]
+              #:direction [direction 'right]
+              #:with-steps [with-steps #f])
+  (let ([combiner-proc (cond [(= order 'abb)
+                              (flip f)]
+                             [(= order 'bab)
+                              f]
+                             [else (error 'fold
+                                          "Invalid fold argument order ~a!"
+                                          order)])]
+        [vs (cond [(= direction 'left) vs]
+                  [(= direction 'right) (reverse vs)]
+                  (error 'fold
+                         "Invalid fold direction ~a!"
+                         direction))]
+        [fold-method (if with-steps
+                         d:foldl/steps
+                         d:foldl)])
     (if base
-        (d:foldl fold-proc
-                 base
-                 vs)
+        (fold-method combiner-proc
+                     base
+                     vs)
         (if (empty? vs)
-            (error 'foldl
+            (error 'fold
                    @~a{Input sequence is empty and no base value was provided!
                        Available data is insufficient to compute a result.})
             (let ([id-element ((id f) (first vs))])
-              (d:foldl fold-proc
-                       id-element
-                       vs))))))
+              (fold-method combiner-proc
+                           id-element
+                           vs))))))
 
-(define (foldl/steps f vs [base #f] #:order [order 'abb])
-  (let ([fold-proc (cond [(= order 'abb)
-                          (flip f)]
-                         [(= order 'bab)
-                          f]
-                         [else (error 'foldl/steps
-                                      "Invalid fold argument order ~a!"
-                                      order)])])
-    (if base
-        (d:foldl/steps fold-proc
-                       base
-                       vs)
-        (if (empty? vs)
-            (error 'foldl/steps
-                   @~a{Input sequence is empty and no base value was provided!
-                       Available data is insufficient to compute a result.})
-            (let ([id-element ((id f) (first vs))])
-              (d:foldl/steps fold-proc
-                             id-element
-                             vs))))))
-
-(define (foldr f vs [base #f] #:order [order 'abb])
-  (foldl f
-         (reverse vs)
-         base
-         #:order order))
-
-(define (foldr/steps f vs [base #f] #:order [order 'abb])
-  (foldl/steps f
-               (reverse vs)
-               base
-               #:order order))
-
-(define fold foldr)
-(define fold/steps foldr/steps)
+(define foldl (curry fold #:direction 'left))
+(define foldr (curry fold #:direction 'right))
+(define fold/steps (curry fold #:with-steps #t))
+(define foldr/steps (curry fold/steps #:direction 'right))
+(define foldl/steps (curry fold/steps #:direction 'left))
