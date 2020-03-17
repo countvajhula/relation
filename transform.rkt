@@ -57,7 +57,7 @@
   (cond [(number? v) v]
         [(string? v) (string->number v)]
         [(char? v) (char->integer v)]
-        [else (error "Unsupported type!" v)]))
+        [else (error '->number "Unsupported type ~a!" v)]))
 
 (define (->inexact v)
   (cond [((and/c number? inexact?) v) v]
@@ -88,7 +88,7 @@
         [(generator? v) (->list (->stream v))]
         [(generic-set? v) (set->list v)]
         [(struct? v) (->list (->vector v))]
-        [else (error "Unsupported type!" v)]))
+        [else (error '->list "Unsupported type ~a!" v)]))
 
 (define (->vector v)
   (cond [(vector? v) (if (immutable? v)
@@ -112,7 +112,7 @@
   (cond [(bytes? v) v]
         [(list? v) (list->bytes v)]
         [(string? v) (->bytes (map char->integer (->list v)))]
-        [else (error "Unsupported type!" v)]))
+        [else (error '->bytes "Unsupported type ~a!" v)]))
 
 (define (->char v)
   (cond [(char? v) v]
@@ -122,18 +122,18 @@
                  (property/c length (=/c 1))) v)
          (->char (list-ref v 0))]
         [(symbol? v) (->char (->string v))]
-        [else (error "Unsupported type!" v)]))
+        [else (error '->char "Unsupported type ~a!" v)]))
 
 (define (->stream v)
   (cond [(stream? v) v]
         [(sequence? v) (sequence->stream v)]
         [(generator? v) (->stream (in-producer v (void)))]
-        [else (error "Unsupported type!" v)]))
+        [else (error '->stream "Unsupported type ~a!" v)]))
 
 (define (->generator v)
   (cond [(generator? v) v]
         [(sequence? v) (sequence->generator v)]
-        [else (error "Unsupported type!" v)]))
+        [else (error '->generator "Unsupported type ~a!" v)]))
 
 (define (->set v)
   (cond [(set? v) v]

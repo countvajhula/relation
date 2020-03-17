@@ -78,7 +78,9 @@
   (appendable-identity appendable)
   (appendable-inverse appendable)
   #:fallbacks [(define (appendable-inverse appendable)
-                 (error "Type is not invertible under append!"))]
+                 (error 'appendable-inverse
+                        "~a is not invertible under the append operation!"
+                        appendable))]
   #:fast-defaults ([string?
                     (define append string-append)
                     (define (appendable-identity appendable)
@@ -120,7 +122,9 @@
   (multipliable-identity multipliable)
   (multipliable-inverse multipliable)
   #:fallbacks [(define (multipliable-inverse multipliable)
-                 (error "Type is not invertible under multiplication!"))]
+                 (error 'multipliable-inverse
+                        "~a is not invertible under the multiply operation!"
+                        multipliable))]
   #:fast-defaults ([number?
                     (define multiply b:*)
                     (define (multipliable-identity multipliable)
@@ -159,7 +163,9 @@
          multipliable-identity]
         [(member operation (list .. append))
          appendable-identity]
-        [else (error "Identity not defined for operation!")]))
+        [else (error 'id
+                     "Identity not defined for operation ~a!"
+                     operation)]))
 
 (define (inverse operation)
   (cond [(member operation (list + add))
@@ -168,7 +174,9 @@
          multipliable-inverse]
         [(member operation (list .. append))
          appendable-inverse]
-        [else (error "Inverse not defined for operation!")]))
+        [else (error 'inverse
+                     "Inverse not defined for operation ~a!"
+                     operation)]))
 
 (define (.. v . remaining)
   (foldl append (cons v remaining) #:order 'bab))
@@ -196,13 +204,16 @@
                           (flip f)]
                          [(= order 'bab)
                           f]
-                         [else (error "Invalid fold argument order!")])])
+                         [else (error 'foldl
+                                      "Invalid fold argument order ~a!"
+                                      order)])])
     (if base
         (d:foldl fold-proc
                  base
                  vs)
         (if (empty? vs)
-            (error @~a{Input sequence is empty and no base value was provided!
+            (error 'foldl
+                   @~a{Input sequence is empty and no base value was provided!
                        Available data is insufficient to compute a result.})
             (let ([id-element ((id f) (first vs))])
               (d:foldl fold-proc
@@ -214,13 +225,16 @@
                           (flip f)]
                          [(= order 'bab)
                           f]
-                         [else (error "Invalid fold argument order!")])])
+                         [else (error 'foldl/steps
+                                      "Invalid fold argument order ~a!"
+                                      order)])])
     (if base
         (d:foldl/steps fold-proc
                        base
                        vs)
         (if (empty? vs)
-            (error @~a{Input sequence is empty and no base value was provided!
+            (error 'foldl/steps
+                   @~a{Input sequence is empty and no base value was provided!
                        Available data is insufficient to compute a result.})
             (let ([id-element ((id f) (first vs))])
               (d:foldl/steps fold-proc
