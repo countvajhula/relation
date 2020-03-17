@@ -1,14 +1,13 @@
 #lang racket/base
 
-(require rackunit
-         relation
-         (prefix-in b: racket/base)
-         racket/set
-         racket/stream
-         racket/sequence
-         racket/function)
-
 (module+ test
+  (require rackunit
+           relation
+           (prefix-in b: racket/base)
+           racket/set
+           racket/stream
+           racket/sequence
+           racket/function)
 
   ;; append
   (check-equal? (.. "hi" " " "there") "hi there")

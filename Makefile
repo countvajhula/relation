@@ -58,6 +58,7 @@ clean:
 
 # Suitable for both day-to-day dev and CI
 test:
+	-rm tests/compiled/*
 	raco test -x -p $(PACKAGE-NAME)
 
 docs:
