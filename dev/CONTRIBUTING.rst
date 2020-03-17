@@ -51,6 +51,10 @@ Release Workflow (Steps for Maintainer)
 
 8. When you're ready to cut a new release, bump the version in info.rkt and make a fresh commit
 
+.. code-block:: racket
+
+  (define version "i.j.k") ; numbers corresponding to major.minor.patch
+
 9. Tag the release commit
 
 .. code-block:: bash
