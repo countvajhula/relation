@@ -57,6 +57,13 @@ clean:
 	raco setup --fast-clean --pkgs $(PACKAGE-NAME)
 
 # Suitable for both day-to-day dev and CI
+# Note: the removal of compiled test binaries before running tests is
+# needed here at the moment because raco setup appears to build the
+# test source before the library source. As a result, the compiled
+# test binaries reflect the outdated (prior to raco setup) version of
+# the library, resulting in an error. Deleting the compiled output
+# forces a re-compile at test running time against the current
+# installed version.
 test:
 	-rm tests/compiled/*
 	raco test -x -p $(PACKAGE-NAME)
