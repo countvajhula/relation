@@ -59,7 +59,7 @@ Release Workflow (Steps for Maintainer)
 
 .. code-block:: bash
 
-  git tag -n  # list existing tags and annotations
+  git tag -n<NUM>  # list existing tags and annotations; if specified, NUM configures verbosity
   git tag -a <new version number> -m "<release message>"  # or leave out -m to enter it in Vim
 
 10. Push the changes including the new tag to origin
