@@ -54,11 +54,13 @@
                      any/c)]
           [foldl (->* ((-> any/c any/c any/c) (sequenceof any/c))
                       (any/c #:order (one-of/c 'abb
-                                               'bab))
+                                               'bab)
+                             #:with-steps boolean?)
                       any/c)]
           [foldr (->* ((-> any/c any/c any/c) (sequenceof any/c))
                       (any/c #:order (one-of/c 'abb
-                                               'bab))
+                                               'bab)
+                             #:with-steps boolean?)
                       any/c)]
           [fold/steps (->* ((-> any/c any/c any/c) (sequenceof any/c))
                            (any/c #:order (one-of/c 'abb

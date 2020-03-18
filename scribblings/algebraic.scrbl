@@ -330,12 +330,14 @@ This module provides three generic interfaces -- @racket[gen:appendable], @racke
               @defproc[(foldl [f (-> any/c any/c any/c)]
                               [vs (sequenceof any/c)]
                               [base any/c #f]
-                              [#:order order (one-of/c 'abb 'bab) 'abb])
+                              [#:order order (one-of/c 'abb 'bab) 'abb]
+                              [#:with-steps with-steps boolean? #f])
               any/c]
               @defproc[(foldr [f (-> any/c any/c any/c)]
                               [vs (sequenceof any/c)]
                               [base any/c #f]
-                              [#:order order (one-of/c 'abb 'bab) 'abb])
+                              [#:order order (one-of/c 'abb 'bab) 'abb]
+                              [#:with-steps with-steps boolean? #f])
                        any/c]
               )]{
 
