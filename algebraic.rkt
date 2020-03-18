@@ -7,6 +7,7 @@
          racket/dict
          racket/function
          racket/generic
+         racket/undefined
          (rename-in data/collection
                     (foldl d:foldl)
                     (foldl/steps d:foldl/steps)
@@ -200,9 +201,12 @@
 
 (define ∘ ..)
 
+(define (undefined? v)
+  (eq? v undefined))
+
 (define (fold f
               vs
-              [base #f]
+              [base undefined]
               #:order [order 'abb]
               #:direction [direction 'right]
               #:with-steps [with-steps #f])
@@ -221,10 +225,7 @@
         [fold-method (if with-steps
                          d:foldl/steps
                          d:foldl)])
-    (if base
-        (fold-method combiner-proc
-                     base
-                     vs)
+    (if (undefined? base)
         (if (empty? vs)
             (error 'fold
                    @~a{Input sequence is empty and no base value was provided!
@@ -232,7 +233,10 @@
             (let ([id-element ((id f) (first vs))])
               (fold-method combiner-proc
                            id-element
-                           vs))))))
+                           vs)))
+        (fold-method combiner-proc
+                     base
+                     vs))))
 
 (define foldl (curry fold #:direction 'left))
 (define foldr (curry fold #:direction 'right))

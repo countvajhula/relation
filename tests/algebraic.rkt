@@ -81,4 +81,10 @@
              (lambda ()
                (fold + '())) "empty input without base value")
   (check-equal? (->list (foldl/steps + '(1 2 3 4))) '(0 1 3 6 10))
-  (check-equal? (->list (foldr/steps + '(1 2 3 4))) '(0 4 7 9 10)))
+  (check-equal? (->list (foldr/steps + '(1 2 3 4))) '(0 4 7 9 10))
+  (check-equal? (fold (λ (a b)
+                        (and a b))
+                      '(#t #t #t)
+                      #f)
+                #f
+                "boolean #f base value"))
