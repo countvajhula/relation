@@ -19,6 +19,7 @@
   ;; (check-equal? (.. (hash 'a 1 'b 2) (hash 'c 3)) (hash 'a 1 'b 2 'c 3))
   (check-equal? (->list (.. (stream 1 2 3) (stream 4 5 6))) (list 1 2 3 4 5 6))
   (check-equal? ((.. ->string +) 3 4) "7")
+  (check-equal? (..) ID)
   ;; id
   (check-equal? ((id +) 3) 0)
   (check-equal? ((id +) -3) 0)
@@ -36,9 +37,11 @@
   ;; multiplication
   (check-equal? (* 3 4) 12)
   (check-equal? (* 3 -4) -12)
+  (check-equal? (*) ID)
   ;; addition
   (check-equal? (+ 97 3) 100)
   (check-equal? (->vector (+ #(1 2 3) #(1 2 3) #(1 2 3))) #(3 6 9))
+  (check-equal? (+) ID)
   ;; inverse
   (check-equal? ((inverse +) 3) -3)
   (check-equal? ((inverse +) #(1 2)) #(-1 -2))
@@ -77,9 +80,7 @@
   (check-equal? (foldl cons '(1 2 3) '() #:order 'bab) '(((() . 1) . 2) . 3))
   (check-equal? (fold + (stream 1 2 3 4)) 10)
   (check-equal? (fold + '() 0) 0 "empty input with base value")
-  (check-exn exn:fail?
-             (lambda ()
-               (fold + '())) "empty input without base value")
+  (check-equal? (fold + '()) ID "empty input without base value")
   (check-equal? (->list (foldl/steps + '(1 2 3 4))) '(0 1 3 6 10))
   (check-equal? (->list (foldr/steps + '(1 2 3 4))) '(0 4 7 9 10))
   (check-equal? (fold (λ (a b)
@@ -87,4 +88,18 @@
                       '(#t #t #t)
                       #f)
                 #f
-                "boolean #f base value"))
+                "boolean #f base value")
+  ;; composition identity
+  (check-equal? (.. ID) ID)
+  (check-equal? (.. '(1 2 3) ID) '(1 2 3))
+  (check-equal? (.. ID '(1 2 3)) '(1 2 3))
+  (check-equal? (.. "hi" ID) "hi")
+  (check-equal? (.. ID "hi") "hi")
+  (check-equal? (* ID) ID)
+  (check-equal? (* 3 ID) 3)
+  (check-equal? (* ID 3) 3)
+  (check-equal? (+ ID) ID)
+  (check-equal? (+ 3 ID) 3)
+  (check-equal? (+ ID 3) 3)
+  (check-equal? (+ #(1 2 3) ID) #(1 2 3))
+  (check-equal? (+ ID #(1 2 3)) #(1 2 3)))

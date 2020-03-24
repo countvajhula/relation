@@ -24,6 +24,7 @@
          multipliable/c
          gen:addable
          addable/c
+         ID
          (contract-out
           [appendable? (-> any/c boolean?)]
           [append (-> appendable? appendable? appendable?)]
@@ -39,11 +40,11 @@
           [addable-inverse (-> addable? addable?)]
           [id (-> procedure? procedure?)]
           [inverse (-> procedure? procedure?)]
-          [.. (-> appendable? appendable? ... appendable?)]
-          [∘ (-> appendable? appendable? ... appendable?)]
-          [* (-> multipliable? multipliable? ... multipliable?)]
+          [.. (-> appendable? ... appendable?)]
+          [∘ (-> appendable? ... appendable?)]
+          [* (-> multipliable? ... multipliable?)]
           [/ (-> multipliable? multipliable? ... multipliable?)]
-          [+ (-> addable? addable? ... addable?)]
+          [+ (-> addable? ... addable?)]
           [- (-> addable? addable? ... addable?)]
           [fold (->* ((-> any/c any/c any/c) (sequenceof any/c))
                      (any/c #:order (one-of/c 'abb
@@ -86,38 +87,62 @@
                         "~a is not invertible under the append operation!"
                         appendable))]
   #:fast-defaults ([string?
-                    (define append string-append)
+                    (define (append appendable other)
+                      (if (eq? other ID)
+                          appendable
+                          (string-append appendable other)))
                     (define (appendable-identity appendable)
                       "")]
                    [bytes?
-                    (define append bytes-append)
+                    (define (append appendable other)
+                      (if (eq? other ID)
+                          appendable
+                          (bytes-append appendable other)))
                     (define (appendable-identity appendable)
                       #"")]
                    [list?
-                    (define append b:append)
+                    (define (append appendable other)
+                      (if (eq? other ID)
+                          appendable
+                          (b:append appendable other)))
                     (define (appendable-identity appendable)
                       (list))]
                    [vector?
-                    (define append vector-append)
+                    (define (append appendable other)
+                      (if (eq? other ID)
+                          appendable
+                          (vector-append appendable other)))
                     (define (appendable-identity appendable)
                       #())]
                    [set?
-                    (define append set-union)
+                    (define (append appendable other)
+                      (if (eq? other ID)
+                          appendable
+                          (set-union appendable other)))
                     (define (appendable-identity appendable)
                       (set))]
                    [dict?
-                    (define/thrush append
-                      d:append
-                      ->list
-                      make-immutable-hash)
+                    (define (append appendable other)
+                      (if (eq? other ID)
+                          appendable
+                          ((.. make-immutable-hash
+                               ->list
+                               d:append)
+                           appendable other)))
                     (define (appendable-identity appendable)
                       (hash))]
                    [sequence?
-                    (define append d:append)
+                    (define (append appendable other)
+                      (if (eq? other ID)
+                          appendable
+                          (d:append appendable other)))
                     (define (appendable-identity appendable)
                       (list))]
                    [procedure?
-                    (define append compose)
+                    (define (append appendable other)
+                      (if (eq? other ID)
+                          appendable
+                          (compose appendable other)))
                     (define (appendable-identity appendable)
                       identity)]))
 
@@ -130,7 +155,10 @@
                         "~a is not invertible under the multiply operation!"
                         multipliable))]
   #:fast-defaults ([number?
-                    (define multiply b:*)
+                    (define (multiply multipliable other)
+                      (if (eq? other ID)
+                          multipliable
+                          (b:* multipliable other)))
                     (define (multipliable-identity multipliable)
                       1)
                     (define multipliable-inverse (curry b:/ 1))]))
@@ -140,17 +168,23 @@
   (addable-identity addable)
   (addable-inverse addable)
   #:fast-defaults ([number?
-                    (define add b:+)
+                    (define (add addable other)
+                      (if (eq? other ID)
+                          addable
+                          (b:+ addable other)))
                     (define (addable-identity addable)
                       0)
                     (define addable-inverse b:-)]
                    [vector?
                     (define/generic generic-add add)
                     (define/generic generic-addable-inverse addable-inverse)
-                    (define/thrush add
-                      (curry map
-                             generic-add)
-                      ->vector)
+                    (define (add addable other)
+                      (if (eq? other ID)
+                          addable
+                          ((.. ->vector
+                               (curry map
+                                      generic-add))
+                           addable other)))
                     (define (addable-identity addable)
                       (->vector
                        (take (length addable)
@@ -159,6 +193,32 @@
                       (curry map
                              generic-addable-inverse)
                       ->vector)]))
+
+(struct composition-identity ()
+  #:transparent
+  #:methods gen:appendable
+  [(define (append appendable other)
+     other)
+   (define (appendable-identity appendable)
+     appendable)
+   (define (appendable-inverse appendable)
+     appendable)]
+  #:methods gen:multipliable
+  [(define (multiply multipliable other)
+     other)
+   (define (multipliable-identity multipliable)
+     multipliable)
+   (define (multipliable-inverse multipliable)
+     multipliable)]
+  #:methods gen:addable
+  [(define (add addable other)
+     other)
+   (define (addable-identity addable)
+     addable)
+   (define (addable-inverse addable)
+     addable)])
+
+(define ID (composition-identity))
 
 (define (id operation)
   (cond [(member operation (list + add))
@@ -182,19 +242,25 @@
                      "Inverse not defined for operation ~a!"
                      operation)]))
 
-(define (.. v . remaining)
-  (foldl append (cons v remaining) #:order 'bab))
+(define (.. . vs)
+  (if (empty? vs)
+      ID
+      (foldl append vs #:order 'bab)))
 
-(define (* v . remaining)
-  (foldl multiply (cons v remaining) #:order 'bab))
+(define (* . vs)
+  (if (empty? vs)
+      ID
+      (foldl multiply vs #:order 'bab)))
 
 (define (/ v . remaining)
   (if (empty? remaining)
       (multipliable-inverse v)
       (apply * v (map multipliable-inverse remaining))))
 
-(define (+ v . remaining)
-  (foldl add (cons v remaining) #:order 'bab))
+(define (+ . vs)
+  (if (empty? vs)
+      ID
+      (foldl add vs #:order 'bab)))
 
 (define (- v . remaining)
   (if (empty? remaining)
@@ -229,9 +295,7 @@
                          d:foldl)])
     (if (undefined? base)
         (if (empty? vs)
-            (error 'fold
-                   @~a{Input sequence is empty and no base value was provided!
-                       Available data is insufficient to compute a result.})
+            ID
             (let ([id-element ((id f) (first vs))])
               (fold-method combiner-proc
                            id-element
