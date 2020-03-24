@@ -135,9 +135,7 @@
   (check-equal? (->set (generic-set 3 2 1)) (set 1 2 3) "monotonically decreasing")
   (check-equal? (->set (generic-set 3 2 4)) (set 2 3 4) "disordered")
   (check-equal? (->set (generic-set 3)) (set 3) "trivial case")
-  (check-exn exn:fail?
-             (lambda ()
-               (generic-set)) "generic relations require at least one argument")
+  (check-equal? (->set (generic-set)) (set) "empty set OK")
   (check-equal? (->set (generic-set "apple" "banana" "cherry")) (set "apple" "banana" "cherry"))
   (check-equal? (->set (generic-set "apple" "apple" "apple")) (set "apple"))
   (check-equal? (->set (generic-set "cherry" "banana" "apple")) (set "apple" "banana" "cherry"))

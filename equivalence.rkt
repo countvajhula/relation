@@ -45,7 +45,7 @@
                           (#:key (or/c (-> comparable? comparable?)
                                        #f))
                           (listof list?))]
-          (generic-set (->* (comparable?)
+          (generic-set (->* ()
                             (#:key (or/c (-> comparable? comparable?)
                                          #f))
                             #:rest (listof comparable?)
