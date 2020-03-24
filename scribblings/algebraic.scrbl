@@ -22,7 +22,7 @@
 
 @defmodule[relation/algebraic]
 
-Generic algebraic operations. The built-in algebraic operators @racket[+] and @racket[*] operate on numbers specifically. Often, however, we are interested in performing operations "similar" to these for datatypes that aren't numbers, for which we would resort to type-specific operators like @racketlink[b:append "append"] for lists. This module generalizes the standard algebraic operators to work on any type that supports a "canonical" notion of addition, multiplication, or concatenation. Specifically, the operator @racket[+] performs the canonical @hyperlink["https://en.wikipedia.org/wiki/Group_(mathematics)"]{group} operation (e.g. addition, for numbers), while @racket[..] or @racket[∘] performs the canonical @hyperlink["https://en.wikipedia.org/wiki/Monoid"]{monoid} operation (e.g. concatenation, for strings and lists). This allows our intuitions about addition and composition to extend over many types via the generic operators @racket[+] and @racket[..] (or @racket[∘]).
+Generic algebraic operations. The built-in algebraic operators @racket[+] and @racket[*] operate on numbers specifically. Often, however, we are interested in performing operations "similar" to these for datatypes that aren't numbers, for which we would resort to type-specific operators like @racketlink[b:append "append"] for lists. This module generalizes the standard algebraic operators to work on any type that supports a "canonical" notion of addition, multiplication, or concatenation. Specifically, the operator @racket[+] performs the canonical @hyperlink["https://en.wikipedia.org/wiki/Group_(mathematics)"]{group} operation (e.g. addition, for numbers), while @racket[..] or @racket[∘] performs the canonical @hyperlink["https://en.wikipedia.org/wiki/Monoid"]{monoid} operation (e.g. concatenation, for strings and lists). This allows our intuitions about addition and other forms of composition to extend over all appropriate types via the use of common generic operators.
 
 @(define eval-for-docs
   (parameterize ([sandbox-output 'string]
@@ -41,6 +41,14 @@ In order to support generic composition seamlessly, all of the composition inter
 
 @defthing[ID composition-identity?]{
  The special value @racket[ID] serves as the generic identity value for all composition operations when the type of the operands is not known. It may appear at intermediate stages of a computation when there isn't sufficient information to infer a type-specific identity. Any value when composed with @racket[ID] yields itself.
+
+@examples[
+    #:eval eval-for-docs
+    (+ 5 ID)
+    (* ID 5)
+    (+)
+    (apply * '())
+  ]
 }
 
 @subsection{Concatenation}
@@ -91,7 +99,7 @@ In order to support generic composition seamlessly, all of the composition inter
 
  A function taking two arguments that composes them in the natural "append-like" operation for the type. Both arguments are expected to be instances of the structure type to which the generic interface is associated (or a subtype of the structure type).
 
- In addition to providing a definition of concatenation appropriate to the type, implementations of this interface must also handle the special value @racket[ID] in the following way: if the operand @racket[b] is @racket[eq?] to @racket[ID], then the result of the function must be @racket[a].
+ In addition to providing a definition of concatenation appropriate to the type, implementations of this method must also handle the special value @racket[ID] in the following way: if the operand @racket[b] is @racket[eq?] to @racket[ID], then the result of the function must be @racket[a].
  }
 
  @defproc[(appendable-identity [a appendable?])
@@ -149,7 +157,7 @@ In order to support generic composition seamlessly, all of the composition inter
 
  A function taking two arguments that composes them in the natural "multiplication-like" operation for the type. Both arguments are expected to be instances of the structure type to which the generic interface is associated (or a subtype of the structure type).
 
- In addition to providing a definition of multiplication appropriate to the type, implementations of this interface must also handle the special value @racket[ID] in the following way: if the operand @racket[b] is @racket[eq?] to @racket[ID], then the result of the function must be @racket[a].
+ In addition to providing a definition of multiplication appropriate to the type, implementations of this method must also handle the special value @racket[ID] in the following way: if the operand @racket[b] is @racket[eq?] to @racket[ID], then the result of the function must be @racket[a].
  }
 
  @defproc[(multipliable-identity [a multipliable?])
@@ -209,7 +217,7 @@ In order to support generic composition seamlessly, all of the composition inter
 
  A function taking two arguments that composes them in the natural "addition-like" operation for the type. Both arguments are expected to be instances of the structure type to which the generic interface is associated (or a subtype of the structure type).
 
- In addition to providing a definition of addition appropriate to the type, implementations of this interface must also handle the special value @racket[ID] in the following way: if the operand @racket[b] is @racket[eq?] to @racket[ID], then the result of the function must be @racket[a].
+ In addition to providing a definition of addition appropriate to the type, implementations of this method must also handle the special value @racket[ID] in the following way: if the operand @racket[b] is @racket[eq?] to @racket[ID], then the result of the function must be @racket[a].
  }
 
  @defproc[(addable-identity [a addable?])
@@ -357,7 +365,7 @@ In order to support generic composition seamlessly, all of the composition inter
 
  With folding operations there are two parameters that one may wish to tweak. The first is the direction of the fold, either left or right, for which one may use either @racket[foldl] or @racket[foldr]. The second is the order in which arguments are supplied to the folding function @racket[f], which may be controlled by the keyword argument @racket[#:order], with a value of @racket['abb] corresponding to the accumulator always being passed second, consistent with Racket's built-in @racketlink[f:foldl "foldl"], and a value of @racket['bab] corresponding to the accumulator always being passed first, consistent with the version of @racketlink[d:foldl "foldl"] found in @racket[data/collection] and also in some other functional languages like Haskell.
 
- In many common cases, modulating the folding direction and/or the argument order does not make a difference to the result. Specifically, in those cases where the operation is @hyperlink["https://en.wikipedia.org/wiki/Commutative_property"]{commutative} and @hyperlink["https://en.wikipedia.org/wiki/Closure_(mathematics)"]{closed}, it doesn't matter whether you use @racket[foldl] or @racket[foldr], or whether you use argument order @racket['abb] or @racket['bab]. The result would be the same. However, in cases where the operation is not closed, argument order becomes significant. As a general guideline, choose between @racket[foldl] and @racket[foldr] in cases where the operation is not commutative (a relatively common case, such as string concatenation), and between the two argument orders in cases where the operation isn't closed (a less common case).
+ In many common cases, modulating the folding direction and/or the argument order does not make a difference to the result. Specifically, in those cases where the operation is @hyperlink["https://en.wikipedia.org/wiki/Commutative_property"]{commutative} and @hyperlink["https://en.wikipedia.org/wiki/Closure_(mathematics)"]{closed}, it doesn't matter whether you use @racket[foldl] or @racket[foldr], or whether you use argument order @racket['abb] or @racket['bab]. The result would be the same. However, in cases where the operation is not closed, argument order becomes significant. As a general guideline, choose between @racket[foldl] and @racket[foldr] in cases where the operation is not commutative (a relatively common case, such as string concatenation), and between the two argument orders in cases where the operation isn't closed (a less common case, such as type constructors).
 
  @racket[foldl] is equivalent to calling @racket[fold] with @racket[#:direction 'left], and @racket[foldr] is equivalent to calling @racket[fold] with @racket[#:direction 'right]. @racket[fold/steps] is equivalent to calling @racket[fold] with @racket[#:with-steps #t].
 
