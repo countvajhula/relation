@@ -37,6 +37,12 @@ Generic algebraic operations. The built-in algebraic operators @racket[+] and @r
 
 This module provides three generic interfaces -- @racket[gen:appendable], @racket[gen:multipliable], and @racket[gen:addable]. These are meant to represent the canonical "idea" of the operations of concatenation, multiplication and addition, respectively, whose behavior may be customized for each type via these generic interfaces, and used via the common operators @racket[..] (concatenation), @racket[*] (multiplication), and @racket[+] (addition).
 
+In order to support generic composition seamlessly, all of the composition interfaces support a generic (rather than type- and operation-specific) @hyperlink["https://en.wikipedia.org/wiki/Identity_element"]{identity} value that is employed in cases where type information is not available.
+
+@defthing[ID composition-identity?]{
+ The special value @racket[ID] serves as the generic identity value for all composition operations when the type of the operands is not known. It may appear at intermediate stages of a computation when there isn't sufficient information to infer a type-specific identity. Any value when composed with @racket[ID] yields itself.
+}
+
 @subsection{Concatenation}
 
 @defthing[gen:appendable any/c]{
@@ -84,6 +90,8 @@ This module provides three generic interfaces -- @racket[gen:appendable], @racke
           appendable?]{
 
  A function taking two arguments that composes them in the natural "append-like" operation for the type. Both arguments are expected to be instances of the structure type to which the generic interface is associated (or a subtype of the structure type).
+
+ In addition to providing a definition of concatenation appropriate to the type, implementations of this interface must also handle the special value @racket[ID] in the following way: if the operand @racket[b] is @racket[eq?] to @racket[ID], then the result of the function must be @racket[a].
  }
 
  @defproc[(appendable-identity [a appendable?])
@@ -140,6 +148,8 @@ This module provides three generic interfaces -- @racket[gen:appendable], @racke
           multipliable?]{
 
  A function taking two arguments that composes them in the natural "multiplication-like" operation for the type. Both arguments are expected to be instances of the structure type to which the generic interface is associated (or a subtype of the structure type).
+
+ In addition to providing a definition of multiplication appropriate to the type, implementations of this interface must also handle the special value @racket[ID] in the following way: if the operand @racket[b] is @racket[eq?] to @racket[ID], then the result of the function must be @racket[a].
  }
 
  @defproc[(multipliable-identity [a multipliable?])
@@ -198,6 +208,8 @@ This module provides three generic interfaces -- @racket[gen:appendable], @racke
           addable?]{
 
  A function taking two arguments that composes them in the natural "addition-like" operation for the type. Both arguments are expected to be instances of the structure type to which the generic interface is associated (or a subtype of the structure type).
+
+ In addition to providing a definition of addition appropriate to the type, implementations of this interface must also handle the special value @racket[ID] in the following way: if the operand @racket[b] is @racket[eq?] to @racket[ID], then the result of the function must be @racket[a].
  }
 
  @defproc[(addable-identity [a addable?])
@@ -225,7 +237,7 @@ This module provides three generic interfaces -- @racket[gen:appendable], @racke
                           ...)
                        appendable?])]{
 
- Performs the canonical "append-like" operation on the data, based on its type. This operation is the natural operation on the data type that forms an algebraic semigroup or monoid.
+ Performs the canonical "append-like" operation on the data, based on its type. This operation is the natural operation on the data type that forms an algebraic semigroup or monoid. The special value @racket[ID] serves as the generic identity value for all composition operations when the type of the operands is not known. In particular, this value is the result when no operands are provided.
 
 @examples[
     #:eval eval-for-docs
@@ -241,7 +253,7 @@ This module provides three generic interfaces -- @racket[gen:appendable], @racke
             ...)
          multipliable?]{
 
- Performs the canonical "multiplication-like" operation on the data, based on its type.
+ Performs the canonical "multiplication-like" operation on the data, based on its type. The special value @racket[ID] serves as the generic identity value for all composition operations when the type of the operands is not known. In particular, this value is the result when no operands are provided.
 
 @examples[
     #:eval eval-for-docs
@@ -253,7 +265,7 @@ This module provides three generic interfaces -- @racket[gen:appendable], @racke
             ...)
          addable?]{
 
- Performs the canonical "addition-like" operation on the data, based on its type. This operation is the natural operation on the data type that forms an algebraic group.
+ Performs the canonical "addition-like" operation on the data, based on its type. This operation is the natural operation on the data type that forms an algebraic group. The special value @racket[ID] serves as the generic identity value for all composition operations when the type of the operands is not known. In particular, this value is the result when no operands are provided.
 
 @examples[
     #:eval eval-for-docs
@@ -265,7 +277,7 @@ This module provides three generic interfaces -- @racket[gen:appendable], @racke
 @defproc[(id [operation procedure?])
          procedure?]{
 
- Produce the "identity" procedure for the given canonical operation. For numbers and addition, this yields 0, while for numbers and multiplication it yields 1. Likewise, for vector addition this yields the zero vector.
+ Produces the "identity" procedure for the given canonical operation, which, when evaluated for a particular value, yields the @hyperlink["https://en.wikipedia.org/wiki/Identity_element"]{identity} value for that type under the indicated operation.
 
 @examples[
     #:eval eval-for-docs
@@ -283,7 +295,7 @@ This module provides three generic interfaces -- @racket[gen:appendable], @racke
 @defproc[(inverse [operation procedure?])
          procedure?]{
 
- Produce the "inverse" of the value, based the operation to be performed and the type of the value. For numbers and addition, this yields the number with the opposite sign, while for vectors and addition, this yields the inverse vector.
+ Produces the "inverse" procedure for the given canonical operation, which, when evaluated for a particular value, yields the @hyperlink["https://en.wikipedia.org/wiki/Inverse_element"]{inverse} value for that type under the indicated operation.
 
 @examples[
     #:eval eval-for-docs
