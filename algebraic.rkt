@@ -87,38 +87,62 @@
                         "~a is not invertible under the append operation!"
                         appendable))]
   #:fast-defaults ([string?
-                    (define append string-append)
+                    (define (append appendable other)
+                      (if (eq? other ID)
+                          appendable
+                          (string-append appendable other)))
                     (define (appendable-identity appendable)
                       "")]
                    [bytes?
-                    (define append bytes-append)
+                    (define (append appendable other)
+                      (if (eq? other ID)
+                          appendable
+                          (bytes-append appendable other)))
                     (define (appendable-identity appendable)
                       #"")]
                    [list?
-                    (define append b:append)
+                    (define (append appendable other)
+                      (if (eq? other ID)
+                          appendable
+                          (b:append appendable other)))
                     (define (appendable-identity appendable)
                       (list))]
                    [vector?
-                    (define append vector-append)
+                    (define (append appendable other)
+                      (if (eq? other ID)
+                          appendable
+                          (vector-append appendable other)))
                     (define (appendable-identity appendable)
                       #())]
                    [set?
-                    (define append set-union)
+                    (define (append appendable other)
+                      (if (eq? other ID)
+                          appendable
+                          (set-union appendable other)))
                     (define (appendable-identity appendable)
                       (set))]
                    [dict?
-                    (define/thrush append
-                      d:append
-                      ->list
-                      make-immutable-hash)
+                    (define (append appendable other)
+                      (if (eq? other ID)
+                          appendable
+                          ((.. make-immutable-hash
+                               ->list
+                               d:append)
+                           appendable other)))
                     (define (appendable-identity appendable)
                       (hash))]
                    [sequence?
-                    (define append d:append)
+                    (define (append appendable other)
+                      (if (eq? other ID)
+                          appendable
+                          (d:append appendable other)))
                     (define (appendable-identity appendable)
                       (list))]
                    [procedure?
-                    (define append compose)
+                    (define (append appendable other)
+                      (if (eq? other ID)
+                          appendable
+                          (compose appendable other)))
                     (define (appendable-identity appendable)
                       identity)]))
 
@@ -131,7 +155,10 @@
                         "~a is not invertible under the multiply operation!"
                         multipliable))]
   #:fast-defaults ([number?
-                    (define multiply b:*)
+                    (define (multiply multipliable other)
+                      (if (eq? other ID)
+                          multipliable
+                          (b:* multipliable other)))
                     (define (multipliable-identity multipliable)
                       1)
                     (define multipliable-inverse (curry b:/ 1))]))
@@ -141,17 +168,23 @@
   (addable-identity addable)
   (addable-inverse addable)
   #:fast-defaults ([number?
-                    (define add b:+)
+                    (define (add addable other)
+                      (if (eq? other ID)
+                          addable
+                          (b:+ addable other)))
                     (define (addable-identity addable)
                       0)
                     (define addable-inverse b:-)]
                    [vector?
                     (define/generic generic-add add)
                     (define/generic generic-addable-inverse addable-inverse)
-                    (define/thrush add
-                      (curry map
-                             generic-add)
-                      ->vector)
+                    (define (add addable other)
+                      (if (eq? other ID)
+                          addable
+                          ((.. ->vector
+                               (curry map
+                                      generic-add))
+                           addable other)))
                     (define (addable-identity addable)
                       (->vector
                        (take (length addable)
@@ -212,20 +245,12 @@
 (define (.. . vs)
   (if (empty? vs)
       ID
-      (foldl append
-             (filter (λ (v)
-                       (not (eq? v ID)))
-                     vs)
-             #:order 'bab)))
+      (foldl append vs #:order 'bab)))
 
 (define (* . vs)
   (if (empty? vs)
       ID
-      (foldl multiply
-             (filter (λ (v)
-                       (not (eq? v ID)))
-                     vs)
-             #:order 'bab)))
+      (foldl multiply vs #:order 'bab)))
 
 (define (/ v . remaining)
   (if (empty? remaining)
@@ -235,11 +260,7 @@
 (define (+ . vs)
   (if (empty? vs)
       ID
-      (foldl add
-             (filter (λ (v)
-                       (not (eq? v ID)))
-                     vs)
-             #:order 'bab)))
+      (foldl add vs #:order 'bab)))
 
 (define (- v . remaining)
   (if (empty? remaining)
