@@ -169,4 +169,4 @@
 (define (->procedure v)
   (cond [(procedure? v) v]
         [(eq? v ID) (reify v identity)]
-        [else (error '->procedure "Unsupported type ~a!" v)]))
+        [else (λ () v)]))

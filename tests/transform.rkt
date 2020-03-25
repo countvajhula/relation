@@ -144,6 +144,4 @@
 
   (check-equal? (->procedure ID) identity)
   (check-equal? (->procedure add1) add1)
-  (check-exn exn:fail?
-             (lambda ()
-               (->procedure 5))))
+  (check-equal? ((->procedure 5)) 5))
