@@ -25,6 +25,7 @@
          addable/c
          ID
          (contract-out
+          [reify (-> any/c any/c any/c)]
           [appendable? (-> any/c boolean?)]
           [append (-> appendable? appendable? appendable?)]
           [appendable-identity (-> appendable? appendable?)]

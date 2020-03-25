@@ -55,14 +55,14 @@
         [(list? v) (~a v)]
         [(sequence? v) (->string (->list v))]
         [(generator? v) (->string (->list v))]
-        [(eq? v ID) ""]
+        [(eq? v ID) (reify v "")]
         [else (~a v)]))
 
 (define (->number v)
   (cond [(number? v) v]
         [(string? v) (string->number v)]
         [(char? v) (char->integer v)]
-        [(eq? v ID) 0]
+        [(eq? v ID) (reify v 0)]
         [else (error '->number "Unsupported type ~a!" v)]))
 
 (define (->inexact v)
@@ -94,7 +94,7 @@
         [(generator? v) (->list (->stream v))]
         [(generic-set? v) (set->list v)]
         [(struct? v) (->list (->vector v))]
-        [(eq? v ID) '()]
+        [(eq? v ID) (reify v '())]
         [else (error '->list "Unsupported type ~a!" v)]))
 
 (define (->vector v)
@@ -135,7 +135,7 @@
   (cond [(stream? v) v]
         [(sequence? v) (sequence->stream v)]
         [(generator? v) (->stream (in-producer v (void)))]
-        [(eq? v ID) (stream)]
+        [(eq? v ID) (reify v (stream))]
         [else (error '->stream "Unsupported type ~a!" v)]))
 
 (define (->generator v)
@@ -163,10 +163,10 @@
 
 (define (->dict v)
   (cond [(dict? v) v]
-        [(eq? v ID) (hash)]
+        [(eq? v ID) (reify v (hash))]
         [else (error '->dict "Unsupported type ~a!" v)]))
 
 (define (->procedure v)
   (cond [(procedure? v) v]
-        [(eq? v ID) identity]
+        [(eq? v ID) (reify v identity)]
         [else (error '->procedure "Unsupported type ~a!" v)]))
