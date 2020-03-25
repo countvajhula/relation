@@ -234,36 +234,10 @@
 
 (define ID (composition-identity))
 
-(define (reify v type)
+(define (reify v example)
   (if (eq? v ID)
-      (cond [(eq? type string?)
-             ""]
-            [(eq? type list?)
-             (list)]
-            [(eq? type vector?)
-             #()]
-            [(eq? type bytes?)
-             #""]
-            [(eq? type set?)
-             (set)]
-            [(eq? type dict?)
-             (hash)]
-            [(eq? type sequence?)
-             (list)]
-            [(eq? type procedure?)
-             identity]
-            [(eq? type number?)
-             0]
-            [else
-             (error 'reify
-                    "Unknown type ~a!"
-                    type)])
-      (if (type v)
-          v
-          (error 'reify
-                 "Can't reify tangible value ~a as type ~a!"
-                 v
-                 type))))
+      ((id append) example)
+      v))
 
 (define (id operation)
   (cond [(member operation (list + add))
