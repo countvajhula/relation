@@ -131,6 +131,13 @@
                            appendable other)))
                     (define (appendable-identity appendable)
                       (hash))]
+                   [number?
+                    (define (append appendable other)
+                      (if (eq? other ID)
+                          appendable
+                          (b:+ appendable other)))
+                    (define (appendable-identity appendable)
+                      0)]
                    [sequence?
                     (define (append appendable other)
                       (if (eq? other ID)
