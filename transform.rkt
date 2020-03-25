@@ -1,7 +1,7 @@
 #lang racket/base
 
-(require (rename-in racket/base
-                    (round b:round))
+(require (only-in racket/base
+                  (round b:round))
          racket/contract/base
          racket/format
          racket/string
@@ -10,7 +10,9 @@
          racket/vector
          racket/stream
          racket/generator
-         racket/sequence)
+         racket/sequence
+         racket/function
+         relation/algebraic)
 
 (provide (contract-out
           [->boolean (-> any/c boolean?)]
@@ -34,7 +36,9 @@
           [->set (-> any/c set?)]
           [->syntax (-> any/c syntax?)]
           [->code (-> any/c any/c)]
-          [->values (-> any/c any)]))
+          [->values (-> any/c any)]
+          [->dict (-> any/c dict?)]
+          [->procedure (-> any/c procedure?)]))
 
 (define (->boolean v)
   (if v
@@ -51,12 +55,14 @@
         [(list? v) (~a v)]
         [(sequence? v) (->string (->list v))]
         [(generator? v) (->string (->list v))]
+        [(eq? v ID) ""]
         [else (~a v)]))
 
 (define (->number v)
   (cond [(number? v) v]
         [(string? v) (string->number v)]
         [(char? v) (char->integer v)]
+        [(eq? v ID) 0]
         [else (error '->number "Unsupported type ~a!" v)]))
 
 (define (->inexact v)
@@ -88,6 +94,7 @@
         [(generator? v) (->list (->stream v))]
         [(generic-set? v) (set->list v)]
         [(struct? v) (->list (->vector v))]
+        [(eq? v ID) '()]
         [else (error '->list "Unsupported type ~a!" v)]))
 
 (define (->vector v)
@@ -112,7 +119,7 @@
   (cond [(bytes? v) v]
         [(list? v) (list->bytes v)]
         [(string? v) (->bytes (map char->integer (->list v)))]
-        [else (error '->bytes "Unsupported type ~a!" v)]))
+        [else (->bytes (->string v))]))
 
 (define (->char v)
   (cond [(char? v) v]
@@ -128,11 +135,13 @@
   (cond [(stream? v) v]
         [(sequence? v) (sequence->stream v)]
         [(generator? v) (->stream (in-producer v (void)))]
+        [(eq? v ID) (stream)]
         [else (error '->stream "Unsupported type ~a!" v)]))
 
 (define (->generator v)
   (cond [(generator? v) v]
         [(sequence? v) (sequence->generator v)]
+        [(eq? v ID) (->generator (->list v))]
         [else (error '->generator "Unsupported type ~a!" v)]))
 
 (define (->set v)
@@ -151,3 +160,13 @@
 (define (->values v)
   (cond [(vector? v) (vector->values v)]
         [else (->values (->vector v))]))
+
+(define (->dict v)
+  (cond [(dict? v) v]
+        [(eq? v ID) (hash)]
+        [else (error '->dict "Unsupported type ~a!" v)]))
+
+(define (->procedure v)
+  (cond [(procedure? v) v]
+        [(eq? v ID) identity]
+        [else (error '->procedure "Unsupported type ~a!" v)]))

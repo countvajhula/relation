@@ -15,8 +15,7 @@
          (only-in algebraic/prelude
                   flip)
          point-free
-         relation/equivalence
-         relation/transform)
+         relation/equivalence)
 
 (provide gen:appendable
          appendable/c
@@ -126,7 +125,7 @@
                       (if (eq? other ID)
                           appendable
                           ((.. make-immutable-hash
-                               ->list
+                               sequence->list
                                d:append)
                            appendable other)))
                     (define (appendable-identity appendable)
@@ -177,6 +176,11 @@
                       1)
                     (define multipliable-inverse (curry b:/ 1))]))
 
+(define/thrush sequence->vector
+  sequence->list
+  list->vector
+  vector->immutable-vector)
+
 (define-generics addable
   (add addable other)
   (addable-identity addable)
@@ -195,18 +199,18 @@
                     (define (add addable other)
                       (if (eq? other ID)
                           addable
-                          ((.. ->vector
+                          ((.. sequence->vector
                                (curry map
                                       generic-add))
                            addable other)))
                     (define (addable-identity addable)
-                      (->vector
+                      (sequence->vector
                        (take (length addable)
                              (repeat ((id +) (first addable))))))
                     (define/thrush addable-inverse
                       (curry map
                              generic-addable-inverse)
-                      ->vector)]))
+                      sequence->vector)]))
 
 (struct composition-identity ()
   #:transparent
