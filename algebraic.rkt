@@ -138,6 +138,13 @@
                           (b:+ appendable other)))
                     (define (appendable-identity appendable)
                       0)]
+                   [stream?
+                    (define (append appendable other)
+                      (if (eq? other ID)
+                          appendable
+                          (d:append appendable other)))
+                    (define (appendable-identity appendable)
+                      (stream))]
                    [sequence?
                     (define (append appendable other)
                       (if (eq? other ID)
