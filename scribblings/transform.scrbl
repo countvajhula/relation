@@ -46,6 +46,7 @@ Generic utilities for transforming data into different types. The type transform
     (->string 42)
     (->string 'apple)
     (->string '(1 2 3))
+    (->string ID)
   ]
 }
 

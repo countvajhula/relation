@@ -4,6 +4,7 @@
          scribble/example
          racket/sandbox
          @for-label[relation/algebraic
+                    relation/transform
                     racket/generic
                     (except-in racket +
                                       -
@@ -22,7 +23,7 @@
 
 @defmodule[relation/algebraic]
 
-Generic algebraic operations. The built-in algebraic operators @racket[+] and @racket[*] operate on numbers specifically. Often, however, we are interested in performing operations "similar" to these for datatypes that aren't numbers, for which we would resort to type-specific operators like @racketlink[b:append "append"] for lists. This module generalizes the standard algebraic operators to work on any type that supports a "canonical" notion of addition, multiplication, or concatenation. Specifically, the operator @racket[+] performs the canonical @hyperlink["https://en.wikipedia.org/wiki/Group_(mathematics)"]{group} operation (e.g. addition, for numbers), while @racket[..] or @racket[∘] performs the canonical @hyperlink["https://en.wikipedia.org/wiki/Monoid"]{monoid} operation (e.g. concatenation, for strings and lists). This allows our intuitions about addition and other forms of composition to extend over all appropriate types via the use of common generic operators.
+Generic algebraic operations. The built-in algebraic operators @racket[+] and @racket[*] operate on numbers specifically. Often, however, we are interested in performing operations "similar" to these for datatypes that aren't numbers, for which we would resort to type-specific operators like @racketlink[b:append "append"] for lists. This module generalizes the standard algebraic operators to work on any type that supports a "canonical" notion of addition, multiplication, or concatenation. This allows our intuitions about addition and other forms of composition to extend over all appropriate types via the use of the common generic operators @racket[+], @racket[*] and @racket[..].
 
 @(define eval-for-docs
   (parameterize ([sandbox-output 'string]
@@ -48,6 +49,23 @@ In order to support generic composition seamlessly, all of the composition inter
     (* ID 5)
     (+)
     (apply * '())
+  ]
+}
+
+In the event no operands are received in the course of a computation, the result of composition would be @racket[ID], which would not be a usable result in utilities that are expecting a specific type such as a string. In such cases, the result could be converted to the expected type using one of the transformers in @seclink["Type_Transformers" #:doc '(lib "relation/scribblings/relation.scrbl")]{relation/transform} such as @racket[->string]. If you are not using a built-in type but rather a @seclink["define-struct" #:doc '(lib "scribblings/guide/guide.scrbl")]{custom type}, however, you could use the following more general utility to "reify" the generic identity value to a type of your choosing:
+
+@defproc[(reify [v any/c] [example any/c])
+         any/c]{
+
+ "Reifies" a value to a specific type. If the value is already a tangible value (i.e. anything other than @racket[ID]), then it is returned without modification. Otherwise, the appropriate nullary value for the type is returned. The nullary value is defined as the identity value for the @racket[append] operation for the type, so custom types are expected to implement the @racket[gen:appendable] interface in order to leverage this utility.
+
+@examples[
+    #:eval eval-for-docs
+    (reify ID 3)
+    (reify ID "cherry")
+    (reify ID (list))
+    (reify "hi" (list))
+    (reify '(1 2 3) "")
   ]
 }
 
@@ -113,7 +131,7 @@ In order to support generic composition seamlessly, all of the composition inter
 
  A function that returns the inverse value for the type, for the @racket[append] operation. The inverse value is that value which, when composed with other values of the same type under the @racket[append] operation, yields the identity value. The inverse value is expected to be an instance of the structure type to which the generic interface is associated (or a subtype of the structure type).
 
- Providing an implementation for this method is optional, and most types would usually not define an inverse for an append-like operation.
+ Providing an implementation for this method is optional, and most types would usually not define an inverse for an append-like operation. That is, in mathematical terms, append-like operations typically form an algebraic @hyperlink["https://en.wikipedia.org/wiki/Semigroup"]{semigroup} or @hyperlink["https://en.wikipedia.org/wiki/Monoid"]{monoid} rather than a @hyperlink["https://en.wikipedia.org/wiki/Group_(mathematics)"]{group}.
  }
 
 }
@@ -231,7 +249,7 @@ In order to support generic composition seamlessly, all of the composition inter
 
  A function that returns the inverse value for the type, for the @racket[add] operation. The inverse value is that value which, when composed with other values of the same type under the @racket[add] operation, yields the identity value. The inverse value is expected to be an instance of the structure type to which the generic interface is associated (or a subtype of the structure type).
 
- Providing an implementation for this method is required; an addition operation must admit an inverse.
+ Providing an implementation for this method is required; an addition operation must admit an inverse. That is, in mathematical terms, addition-like operations are expected to form an algebraic @hyperlink["https://en.wikipedia.org/wiki/Group_(mathematics)"]{group}.
  }
 
 }
@@ -245,7 +263,7 @@ In order to support generic composition seamlessly, all of the composition inter
                           ...)
                        appendable?])]{
 
- Performs the canonical "append-like" operation on the data, based on its type. This operation is the natural operation on the data type that forms an algebraic semigroup or monoid. The special value @racket[ID] serves as the generic identity value for all composition operations when the type of the operands is not known. In particular, this value is the result when no operands are provided.
+ Performs the canonical "append-like" operation on the data based on its type, taking an arbitrary number of arguments. The special value @racket[ID] serves as the generic identity value for all composition operations when the type of the operands is not known. In particular, this value is the result when no operands are provided.
 
 @examples[
     #:eval eval-for-docs
@@ -261,7 +279,7 @@ In order to support generic composition seamlessly, all of the composition inter
             ...)
          multipliable?]{
 
- Performs the canonical "multiplication-like" operation on the data, based on its type. The special value @racket[ID] serves as the generic identity value for all composition operations when the type of the operands is not known. In particular, this value is the result when no operands are provided.
+ Performs the canonical "multiplication-like" operation on the data based on its type, taking an arbitrary number of arguments. The special value @racket[ID] serves as the generic identity value for all composition operations when the type of the operands is not known. In particular, this value is the result when no operands are provided.
 
 @examples[
     #:eval eval-for-docs
@@ -273,7 +291,7 @@ In order to support generic composition seamlessly, all of the composition inter
             ...)
          addable?]{
 
- Performs the canonical "addition-like" operation on the data, based on its type. This operation is the natural operation on the data type that forms an algebraic group. The special value @racket[ID] serves as the generic identity value for all composition operations when the type of the operands is not known. In particular, this value is the result when no operands are provided.
+ Performs the canonical "addition-like" operation on the data based on its type, taking an arbitrary number of arguments. The special value @racket[ID] serves as the generic identity value for all composition operations when the type of the operands is not known. In particular, this value is the result when no operands are provided.
 
 @examples[
     #:eval eval-for-docs
