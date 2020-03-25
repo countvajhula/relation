@@ -3,7 +3,8 @@
 (define deps '("base"
                "collections-lib"
                "algebraic"
-               "point-free"))
+               "point-free"
+               "threading-lib"))
 (define build-deps '("rackunit-lib"
                      "scribble-lib"
                      "scribble-abbrevs"

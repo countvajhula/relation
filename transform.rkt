@@ -12,6 +12,7 @@
          racket/generator
          racket/sequence
          racket/function
+         threading
          relation/algebraic)
 
 (provide (contract-out
@@ -53,8 +54,12 @@
         [((listof char?) v) (list->string v)]
         [(bytes? v) (bytes->string/locale v)]
         [(list? v) (~a v)]
-        [(sequence? v) (->string (->list v))]
-        [(generator? v) (->string (->list v))]
+        [(sequence? v) (~> v
+                           ->list
+                           ->string)]
+        [(generator? v) (~> v
+                            ->list
+                            ->string)]
         [(eq? v ID) (reify v "")]
         [else (~a v)]))
 
@@ -68,19 +73,34 @@
 (define (->inexact v)
   (cond [((and/c number? inexact?) v) v]
         [(number? v) (exact->inexact v)]
-        [else (->inexact (->number v))]))
+        [else (~> v
+                  ->number
+                  ->inexact)]))
 
 (define (->exact v)
   (cond [((and/c number? exact?) v) v]
         [(number? v) (inexact->exact v)]
-        [else (->exact (->number v))]))
+        [else (~> v
+                  ->number
+                  ->exact)]))
 
 (define (->integer v #:round [round 'down])
   (cond [(integer? v) v]
-        [(number? v) (cond [(eq? round 'down) (->exact (floor v))]
-                           [(eq? round 'up) (->exact (ceiling v))]
-                           [(eq? round 'nearest) (->exact (b:round v))])]
-        [else (->integer (->number v))]))
+        [(number? v) (cond [(eq? round 'down)
+                            (~> v
+                                floor
+                                ->exact)]
+                           [(eq? round 'up)
+                            (~> v
+                                ceiling
+                                ->exact)]
+                           [(eq? round 'nearest)
+                            (~> v
+                                b:round
+                                ->exact)])]
+        [else (~> v
+                  ->number
+                  ->integer)]))
 
 (define (->list v)
   (cond [(list? v) v]
@@ -91,9 +111,13 @@
         [(syntax? v) (syntax->list v)]
         [(bytes? v) (bytes->list v)]
         [(sequence? v) (sequence->list v)]
-        [(generator? v) (->list (->stream v))]
+        [(generator? v) (~> v
+                            ->stream
+                            ->list)]
         [(generic-set? v) (set->list v)]
-        [(struct? v) (->list (->vector v))]
+        [(struct? v) (~> v
+                         ->vector
+                         ->list)]
         [(eq? v ID) (reify v '())]
         [else (error '->list "Unsupported type ~a!" v)]))
 
@@ -101,25 +125,41 @@
   (cond [(vector? v) (if (immutable? v)
                          v
                          (vector->immutable-vector v))]
-        [(list? v) (->vector (list->vector v))]
-        [(struct? v) (->vector (vector-drop (struct->vector v) 1))]
-        [else (->vector (->list v))]))
+        [(list? v) (~> v
+                       list->vector
+                       ->vector)]
+        [(struct? v) (~> v
+                         struct->vector
+                         (vector-drop 1)
+                         ->vector)]
+        [else (~> v
+                  ->list
+                  ->vector)]))
 
 (define (->symbol v)
   (cond [(symbol? v) v]
         [(string? v) (string->symbol v)]
-        [else (->symbol (->string v))]))
+        [else (~> v
+                  ->string
+                  ->symbol)]))
 
 (define (->keyword v)
   (cond [(keyword? v) v]
         [(string? v) (string->keyword v)]
-        [else (->keyword (->string v))]))
+        [else (~> v
+                  ->string
+                  ->keyword)]))
 
 (define (->bytes v)
   (cond [(bytes? v) v]
         [(list? v) (list->bytes v)]
-        [(string? v) (->bytes (map char->integer (->list v)))]
-        [else (->bytes (->string v))]))
+        [(string? v) (~> v
+                         ->list
+                         (map char->integer _)
+                         ->bytes)]
+        [else (~> v
+                  ->string
+                  ->bytes)]))
 
 (define (->char v)
   (cond [(char? v) v]
@@ -127,27 +167,37 @@
         [((and/c non-empty-string? (string-len/c 2)) v) (string-ref v 0)]
         [((and/c (non-empty-listof any/c)
                  (property/c length (=/c 1))) v)
-         (->char (list-ref v 0))]
-        [(symbol? v) (->char (->string v))]
+         (~> v
+             (list-ref 0)
+             ->char)]
+        [(symbol? v) (~> v
+                         ->string
+                         ->char)]
         [else (error '->char "Unsupported type ~a!" v)]))
 
 (define (->stream v)
   (cond [(stream? v) v]
         [(sequence? v) (sequence->stream v)]
-        [(generator? v) (->stream (in-producer v (void)))]
+        [(generator? v) (~> v
+                            (in-producer (void))
+                            ->stream)]
         [(eq? v ID) (reify v (stream))]
         [else (error '->stream "Unsupported type ~a!" v)]))
 
 (define (->generator v)
   (cond [(generator? v) v]
         [(sequence? v) (sequence->generator v)]
-        [(eq? v ID) (->generator (->list v))]
+        [(eq? v ID) (~> v
+                        ->list
+                        ->generator)]
         [else (error '->generator "Unsupported type ~a!" v)]))
 
 (define (->set v)
   (cond [(set? v) v]
         [(list? v) (list->set v)]
-        [else (->set (->list v))]))
+        [else (~> v
+                  ->list
+                  ->set)]))
 
 (define (->syntax v)
   (cond [(syntax? v) v]
@@ -159,7 +209,9 @@
 
 (define (->values v)
   (cond [(vector? v) (vector->values v)]
-        [else (->values (->vector v))]))
+        [else (~> v
+                  ->vector
+                  ->values)]))
 
 (define (->dict v)
   (cond [(dict? v) v]
