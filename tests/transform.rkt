@@ -10,14 +10,20 @@
            racket/function)
 
   (check-true (->boolean 0))
+  (check-true (->boolean (list 1 2)))
+  (check-true (->boolean '()))
+  (check-true (->boolean ""))
   (check-false (->boolean #f))
 
   (check-equal? (->string 123) "123")
   (check-equal? (->string '(#\a #\p #\p #\l #\e)) "apple")
   (check-equal? (->string '(1 2 3)) "(1 2 3)")
+  (check-equal? (->string '()) "")
+  (check-equal? (->string ID) "")
 
   (check-equal? (->number "123") 123)
   (check-equal? (->number #\a) 97)
+  (check-equal? (->number ID) 0)
   (check-exn exn:fail?
              (lambda ()
                (->number 'hi)))
@@ -36,6 +42,7 @@
 
   (check-equal? (->exact 1.5) 3/2)
   (check-equal? (->exact 1.0) 1)
+  (check-equal? (->exact ID) 0)
   (check-exn exn:fail?
              (lambda ()
                (->exact 'hi)))
@@ -49,6 +56,7 @@
   (check-equal? (->integer 1.6 #:round 'nearest) 2)
   (check-equal? (->integer #\a) 97)
   (check-equal? (->integer "123") 123)
+  (check-equal? (->integer ID) 0)
   (check-exn exn:fail?
              (lambda ()
                (->integer 'hi)))
@@ -64,6 +72,7 @@
                            (struct amount (dollars cents) #:transparent)
                            (amount 5 95))))
                 '(5 95))
+  (check-equal? (->list ID) '())
   (check-exn exn:fail?
              (lambda ()
                (->list eval)))
@@ -74,6 +83,7 @@
                              (amount 5 95))))
                 #(5 95))
   (check-equal? (->vector "abc") #(#\a #\b #\c))
+  (check-equal? (->vector ID) #())
   (check-exn exn:fail?
              (lambda ()
                (->vector eval)))
@@ -84,6 +94,7 @@
 
   (check-equal? (->bytes (list 97 98 99)) #"abc")
   (check-equal? (->bytes "abc") #"abc")
+  (check-equal? (->bytes ID) #"")
   (check-exn exn:fail?
              (lambda ()
                (->bytes "λ")))
@@ -98,6 +109,7 @@
 
   (check-equal? (stream-first (->stream (list 1 2 3))) 1)
   (check-equal? (stream-first (->stream "apple")) #\a)
+  (check-equal? (->stream ID) (stream))
   (check-exn exn:fail?
              (lambda ()
                (->stream 'hi)))
@@ -106,9 +118,11 @@
   (check-equal? ((->generator "apple")) #\a)
   (check-equal? (->list (->generator (list 1 2 3))) '(1 2 3))
   (check-equal? (sequence->list (in-producer (->generator (list 1 2 3)) (void))) '(1 2 3))
+  (check-equal? (->list (->generator ID)) '())
 
   (check-equal? (set-count (->set (list 1 2 3 1))) 3)
   (check-equal? (set-count (->set "apple")) 4)
+  (check-equal? (->set ID) (set))
   (check-exn exn:fail?
              (lambda ()
                (->set 'hi)))
@@ -119,4 +133,17 @@
                   (list a b c)) (list 1 2 3))
   (check-exn exn:fail?
              (lambda ()
-               (->values 'hi))))
+               (->values 'hi)))
+
+  (check-equal? (->dict ID) (hash))
+  (check-equal? (->dict (hash 'a 1)) (hash 'a 1))
+  (check-equal? (->dict (list (cons 'a 1) (cons 'b 2))) (list (cons 'a 1) (cons 'b 2)))
+  (check-exn exn:fail?
+             (lambda ()
+               (->dict (list 1 2))))
+
+  (check-equal? (->procedure ID) identity)
+  (check-equal? (->procedure add1) add1)
+  (check-exn exn:fail?
+             (lambda ()
+               (->procedure 5))))
