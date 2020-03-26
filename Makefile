@@ -68,6 +68,22 @@ test:
 	-rm tests/compiled/*
 	raco test -x -p $(PACKAGE-NAME)
 
+test-equivalence:
+	-rm tests/compiled/*
+	raco test -x tests/equivalence.rkt
+
+test-order:
+	-rm tests/compiled/*
+	raco test -x tests/order.rkt
+
+test-transform:
+	-rm tests/compiled/*
+	raco test -x tests/transform.rkt
+
+test-algebraic:
+	-rm tests/compiled/*
+	raco test -x tests/algebraic.rkt
+
 docs:
 	raco docs $(PACKAGE-NAME)
 
