@@ -11,7 +11,8 @@
                      "racket-doc"
                      "collections-doc"
                      "sandbox-lib"
-                     "at-exp-lib"))
+                     "at-exp-lib"
+                     "string-util"))
 (define scribblings '(("scribblings/relation.scrbl" (multi-page))))
 (define test-include-paths '("tests"))
 (define clean '("compiled" "doc" "doc/relation" "tests/compiled"))

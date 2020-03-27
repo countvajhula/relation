@@ -2,12 +2,15 @@
 
 (module+ test
   (require rackunit
-           relation
            (prefix-in b: racket/base)
            racket/set
            racket/stream
-           racket/sequence
-           racket/function)
+           racket/function
+           (except-in data/collection
+                      foldl
+                      foldl/steps
+                      append)
+           relation)
 
   ;; equal / equivalence
   (check-false (= 1 2 3) "monotonically increasing")
@@ -156,3 +159,19 @@
   (check-false (set-member? (generic-set "xxx" "yy" "z") "YY"))
   (check-true (set-member? (generic-set #:key string-upcase "xxx" "yy" "z") "YY"))
   (check-false (set-member? (generic-set) 5))
+
+  ;; member?
+  (check-false (member? 5 (set 1 2 3)))
+  (check-true (member? 5 (set 1 5 3)))
+  (check-false (member? 5 (set)))
+  (check-false (member? 10 (generic-set #:key (curryr > 4) 1 2 3 4)))
+  (check-true (member? 10 (generic-set #:key (curryr > 4) 1 2 5 4)))
+  (check-false (member? "HI" (generic-set "hi" "there")))
+  (check-true (member? "HI" (generic-set #:key string-upcase "hi" "there")))
+  (check-true (member? "HI" (generic-set #:key string? "hi" "there")))
+  (check-true (member? #:key string? "HI" (generic-set "hi" "there")) "key conjoined for generic sets")
+  (check-true (member? "to" (generic-set #:key string-length "hi" "there")) "generic set key used as is")
+  (check-false (member? #:key (.. (curry = #\t) first) "to" (generic-set #:key string-length "hi" "there")) "key conjoined for generic sets")
+  (check-true (member? #:key (.. (curry = #\h) first) "ho" (generic-set #:key string-length "hi" "there")) "key conjoined for generic sets")
+  (check-true (member? #:key string-upcase "HI" (set "hi" "there")))
+  (check-true (member? #:key string-upcase "HI" (list "hi" "there"))))

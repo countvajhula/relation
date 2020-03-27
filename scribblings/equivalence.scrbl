@@ -2,11 +2,12 @@
 @require[scribble/manual
          scribble-abbrevs/manual
          scribble/example
-		 racket/sandbox
+         racket/sandbox
          @for-label[relation/equivalence
-		            racket/generic
+                    racket/generic
                     (except-in racket = equal? group-by)
-					(only-in racket (equal? b:equal?))]]
+                    (only-in racket (equal? b:equal?))
+                    string-util]]
 
 @title{Equivalence Relations}
 
@@ -21,7 +22,9 @@ A generic interface and utilities for comparing data. By default, the built-in e
                  (make-evaluator 'racket/base
 				                 '(require relation)
 				                 '(require racket/function)
-								 '(require racket/set))))
+								 '(require racket/set)
+								 '(require racket/stream)
+								 '(require string-util))))
 
 @section[#:tag "equivalence:interface"]{Interface}
 
@@ -153,5 +156,26 @@ A generic interface and utilities for comparing data. By default, the built-in e
     (generic-set #:key string-upcase "apple" "Apple" "APPLE" "banana" "Banana" "cherry")
     (define my-set (generic-set #:key string-upcase "cherry" "banana" "apple"))
 	(set-add my-set "APPLE")
+  ]
+}
+
+@defproc[(member? [#:key key (-> comparable? comparable?) #f]
+                  [elem comparable?]
+                  [col sequence?])
+         boolean?]{
+
+ A generic version of @racket[member] that operates on any sequence rather than lists specifically, and employs the generic @racket[=] relation rather than the built-in @racketlink[b:equal?]{equal?}. In the special case where @racket[col] is a @racket[generic-set], the @racket[key] provided to @racket[member?], if any, is @racketlink[conjoin]{conjoined} to the existing @racket[key] defining the equivalence relation in the generic set.
+
+@examples[
+    #:eval eval-for-docs
+    (member? 4 (list 1 2 3))
+    (member? 4 (list 1 4 3))
+    (member? "cherry" (stream "apple" "banana" "cherry"))
+    (member? "BANANA" (list "apple" "banana" "cherry"))
+    (member? #:key string-upcase "BANANA" (list "apple" "banana" "cherry"))
+    (member? "BANANA" (generic-set #:key string-upcase "apple" "banana" "cherry"))
+    (member? "tomato" (generic-set #:key string-length "apple" "banana" "grape"))
+    (member? #:key (curryr starts-with? "t") "tomato" (generic-set #:key string-length "apple" "banana" "grape"))
+    (member? #:key (curryr starts-with? "g") "guava" (generic-set #:key string-length "apple" "banana" "grape"))
   ]
 }

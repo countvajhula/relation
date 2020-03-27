@@ -9,7 +9,10 @@
          (only-in racket/list
                   (group-by b:group-by)
                   splitf-at)
-         data/collection)
+         data/collection
+         (only-in algebraic/prelude
+                  &&
+                  ||))
 
 (require "private/util.rkt")
 
@@ -49,7 +52,11 @@
                             (#:key (or/c (-> comparable? comparable?)
                                          #f))
                             #:rest (listof comparable?)
-                            generic-set?))))
+                            generic-set?))
+          (member? (->* (comparable? sequence?)
+                        (#:key (or/c (-> comparable? comparable?)
+                                     #f))
+                        boolean?))))
 
 (define-generics comparable
   (equal? comparable other)
@@ -135,6 +142,25 @@
 
 (define (generic-set #:key [key #f] . args)
   (gset args key))
+
+(define (member? #:key [key #f] elem col)
+  (if (gset? col)
+      (let ([col (if key
+                     (apply generic-set
+                            #:key (&& key
+                                      (or (gset-key col)
+                                          identity))
+                            (gset-contents col))
+                     col)])
+        (set-member? col elem))
+      (if (empty? col)
+          #f
+          (or (= #:key key
+                 elem
+                 (first col))
+              (member? #:key key
+                       elem
+                       (rest col))))))
 
 (define /= ≠)
 (define != ≠)
