@@ -47,13 +47,27 @@
       #f))
 
 (define (->string v)
-  (cond [(string? v) v]
-        [(symbol? v) (symbol->string v)]
-        [(number? v) (number->string v)]
-        [(keyword? v) (keyword->string v)]
-        [((listof char?) v) (list->string v)]
-        [(bytes? v) (bytes->string/locale v)]
-        [(list? v) (~a v)]
+  (cond [(string? v) (if (immutable? v)
+                         v
+                         (string->immutable-string v))]
+        [(symbol? v) (~> v
+                         symbol->string
+                         ->string)]
+        [(number? v) (~> v
+                         number->string
+                         ->string)]
+        [(keyword? v) (~> v
+                          keyword->string
+                          ->string)]
+        [((listof char?) v) (~> v
+                                list->string
+                                ->string)]
+        [(bytes? v) (~> v
+                        bytes->string/locale
+                        ->string)]
+        [(list? v) (~> v
+                       ~a
+                       ->string)]
         [(sequence? v) (~> v
                            ->list
                            ->string)]
@@ -61,7 +75,9 @@
                             ->list
                             ->string)]
         [(eq? v ID) (reify v "")]
-        [else (~a v)]))
+        [else (~> v
+                  ~a
+                  ->string)]))
 
 (define (->number v)
   (cond [(number? v) v]
