@@ -5,8 +5,9 @@
          racket/sandbox
          @for-label[relation/equivalence
                     racket/generic
-                    (except-in racket = equal? group-by)
-                    (only-in racket (= b:=) (equal? b:equal?))]]
+                    (except-in racket = equal? group-by drop)
+                    (only-in racket (= b:=) (equal? b:equal?))
+                    (only-in data/collection drop)]]
 
 @title{Equivalence Relations}
 
@@ -166,13 +167,13 @@ This module provides a generic interface that overrides the standard @racketlink
                [col sequence?])
          sequence?]{
 
- A generic version of @racket[member] that operates on any sequence rather than lists specifically, and employs the generic @racket[=] relation rather than the built-in @racketlink[b:equal?]{equal?}. The result of invocation is the tail of the sequence beginning at the value that is @racket[=] to @racket[elem], under the transformation @racket[key] (if provided), or the empty list if @racket[elem] isn't found. If a boolean value is desired, use @racket[member?] instead.
+ A generic version of @racket[member] that operates on any sequence rather than lists specifically, and employs the generic @racket[=] relation rather than the built-in @racketlink[b:equal?]{equal?}. The result of invocation is the tail of the sequence beginning at the value that is @racket[=] to @racket[elem], under the transformation @racket[key] (if provided), or the empty list if @racket[elem] isn't found. If a boolean value is desired, use @racket[member?] instead. If a tail @italic{by position} is desired, use @racket[drop].
 
 @examples[
     #:eval eval-for-docs
     (tail 4 (list 1 2 3))
     (tail 4 (list 1 4 3))
-    (tail "cherry" (stream "apple" "banana" "cherry"))
+    (stream->list (tail "cherry" (stream "apple" "banana" "cherry")))
     (tail "BANANA" (list "apple" "banana" "cherry"))
     (tail #:key string-upcase "BANANA" (list "apple" "banana" "cherry"))
   ]
