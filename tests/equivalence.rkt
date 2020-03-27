@@ -152,4 +152,7 @@
   (check-equal? (->set (generic-set (set 1 2) (set 3 4))) (set (set 1 2) (set 3 4)) "incomparable sets")
   (check-equal? (->set (generic-set #:key string-length "z" "yy" "xxx")) (set "z" "yy" "xxx"))
   (check-equal? (->set (generic-set #:key string-length "xxx" "zzz" "yyy")) (set "xxx"))
-  (check-equal? (->set (generic-set #:key string-length "xxx" "yy" "z")) (set "z" "yy" "xxx")))
+  (check-equal? (->set (generic-set #:key string-length "xxx" "yy" "z")) (set "z" "yy" "xxx"))
+  (check-false (set-member? (generic-set "xxx" "yy" "z") "YY"))
+  (check-true (set-member? (generic-set #:key string-upcase "xxx" "yy" "z") "YY"))
+  (check-false (set-member? (generic-set) 5))

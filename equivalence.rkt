@@ -90,7 +90,10 @@
                   key))))
   #:methods gen:set
   [(define (set-member? st v)
-     (let ([result (member v (gset-contents st) =)])
+     (let* ([key (gset-key st)]
+            [result (member v
+                            (gset-contents st)
+                            (curry = #:key key))])
        (and result #t)))
    (define (set-add st v)
      (let ([contents (gset-contents st)]
