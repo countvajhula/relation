@@ -53,6 +53,10 @@
                                          #f))
                             #:rest (listof comparable?)
                             generic-set?))
+          (tail (->* (comparable? sequence?)
+                     (#:key (or/c (-> comparable? comparable?)
+                                  #f))
+                     sequence?))
           (member? (->* (comparable? sequence?)
                         (#:key (or/c (-> comparable? comparable?)
                                      #f))
@@ -143,17 +147,28 @@
 (define (generic-set #:key [key #f] . args)
   (gset args key))
 
+(define (tail #:key [key #f] elem col)
+  (if ((|| set?
+           gset?) col)
+      (raise-argument-error 'tail
+                            "sequence? that is not a pure set"
+                            col)
+      (if (empty? col)
+          null
+          (if (= #:key key
+                 elem
+                 (first col))
+              col
+              (tail #:key key
+                    elem
+                    (rest col))))))
+
 (define (member? #:key [key #f] elem col)
   (if (gset? col)
       (set-member? col elem)
-      (if (empty? col)
-          #f
-          (or (= #:key key
-                 elem
-                 (first col))
-              (member? #:key key
-                       elem
-                       (rest col))))))
+      (not (null? (tail #:key key
+                        elem
+                        (in col))))))
 
 (define /= ≠)
 (define != ≠)

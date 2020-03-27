@@ -157,12 +157,29 @@ A generic interface and utilities for comparing data. By default, the built-in e
   ]
 }
 
+@defproc[(tail [#:key key (-> comparable? comparable?) #f]
+               [elem comparable?]
+               [col sequence?])
+         sequence?]{
+
+ A generic version of @racket[member] that operates on any sequence rather than lists specifically, and employs the generic @racket[=] relation rather than the built-in @racketlink[b:equal?]{equal?}. The result of invocation is the tail of the sequence beginning at the value that is @racket[=] to @racket[elem], under the transformation @racket[key] (if provided), or the empty list if @racket[elem] isn't found. If a boolean value is desired, use @racket[member?] instead.
+
+@examples[
+    #:eval eval-for-docs
+    (tail 4 (list 1 2 3))
+    (tail 4 (list 1 4 3))
+    (tail "cherry" (stream "apple" "banana" "cherry"))
+    (tail "BANANA" (list "apple" "banana" "cherry"))
+    (tail #:key string-upcase "BANANA" (list "apple" "banana" "cherry"))
+  ]
+}
+
 @defproc[(member? [#:key key (-> comparable? comparable?) #f]
                   [elem comparable?]
                   [col sequence?])
          boolean?]{
 
- A generic version of @racket[member] that operates on any sequence rather than lists specifically, and employs the generic @racket[=] relation rather than the built-in @racketlink[b:equal?]{equal?}. In the special case where @racket[col] is a @racket[generic-set], the @racket[key] provided to @racket[member?], if any, is ignored as it may conflict with the existing @racket[key] defining the equivalence relation in the generic set.
+ A generic version of @racket[member] similar to @racket[tail] that checks if a value is present in a collection. Unlike @racket[tail], this returns a boolean value and supports non-ordered collections like @racketlink[set]{sets} where a tail is not well-defined. In the special case where @racket[col] is a @racket[generic-set], the @racket[key] provided to @racket[member?], if any, is ignored as it may conflict with the existing @racket[key] defining the equivalence relation in the generic set.
 
 @examples[
     #:eval eval-for-docs

@@ -160,6 +160,19 @@
   (check-true (set-member? (generic-set #:key string-upcase "xxx" "yy" "z") "YY"))
   (check-false (set-member? (generic-set) 5))
 
+  ;; tail
+  (check-equal? (tail 5 (list 1 2 3)) '())
+  (check-equal? (tail 5 (list 1 5 3)) (list 5 3))
+  (check-equal? (tail 5 (list)) (list))
+  (check-equal? (->list (tail 5 (stream 1 5 3))) (list 5 3))
+  (check-equal? (tail #:key string-upcase "HI" (list "hi" "there")) (list "hi" "there"))
+  (check-exn exn:fail:contract?
+             (λ ()
+               (tail 5 (set 1 5 3))))
+  (check-exn exn:fail:contract?
+             (λ ()
+               (tail 10 (generic-set #:key (curryr > 4) 1 2 5 4))))
+
   ;; member?
   (check-false (member? 5 (set 1 2 3)))
   (check-true (member? 5 (set 1 5 3)))
