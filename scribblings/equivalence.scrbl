@@ -6,8 +6,7 @@
          @for-label[relation/equivalence
                     racket/generic
                     (except-in racket = equal? group-by)
-                    (only-in racket (equal? b:equal?))
-                    string-util]]
+                    (only-in racket (equal? b:equal?))]]
 
 @title{Equivalence Relations}
 
@@ -23,8 +22,7 @@ A generic interface and utilities for comparing data. By default, the built-in e
 				                 '(require relation)
 				                 '(require racket/function)
 								 '(require racket/set)
-								 '(require racket/stream)
-								 '(require string-util))))
+								 '(require racket/stream))))
 
 @section[#:tag "equivalence:interface"]{Interface}
 
@@ -164,7 +162,7 @@ A generic interface and utilities for comparing data. By default, the built-in e
                   [col sequence?])
          boolean?]{
 
- A generic version of @racket[member] that operates on any sequence rather than lists specifically, and employs the generic @racket[=] relation rather than the built-in @racketlink[b:equal?]{equal?}. In the special case where @racket[col] is a @racket[generic-set], the @racket[key] provided to @racket[member?], if any, is @racketlink[conjoin]{conjoined} to the existing @racket[key] defining the equivalence relation in the generic set.
+ A generic version of @racket[member] that operates on any sequence rather than lists specifically, and employs the generic @racket[=] relation rather than the built-in @racketlink[b:equal?]{equal?}. In the special case where @racket[col] is a @racket[generic-set], the @racket[key] provided to @racket[member?], if any, is ignored as it may conflict with the existing @racket[key] defining the equivalence relation in the generic set.
 
 @examples[
     #:eval eval-for-docs
@@ -175,7 +173,5 @@ A generic interface and utilities for comparing data. By default, the built-in e
     (member? #:key string-upcase "BANANA" (list "apple" "banana" "cherry"))
     (member? "BANANA" (generic-set #:key string-upcase "apple" "banana" "cherry"))
     (member? "tomato" (generic-set #:key string-length "apple" "banana" "grape"))
-    (member? #:key (curryr starts-with? "t") "tomato" (generic-set #:key string-length "apple" "banana" "grape"))
-    (member? #:key (curryr starts-with? "g") "guava" (generic-set #:key string-length "apple" "banana" "grape"))
   ]
 }

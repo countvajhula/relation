@@ -145,14 +145,7 @@
 
 (define (member? #:key [key #f] elem col)
   (if (gset? col)
-      (let ([col (if key
-                     (apply generic-set
-                            #:key (&& key
-                                      (or (gset-key col)
-                                          identity))
-                            (gset-contents col))
-                     col)])
-        (set-member? col elem))
+      (set-member? col elem)
       (if (empty? col)
           #f
           (or (= #:key key
