@@ -19,11 +19,15 @@
                     (only-in data/collection (foldl d:foldl)
                                              (foldl/steps d:foldl/steps))]]
 
-@title{Algebraic Operations}
+@title{Algebraic Operators}
 
 @defmodule[relation/algebraic]
 
-Generic algebraic operations. The built-in algebraic operators @racket[+] and @racket[*] operate on numbers specifically. Often, however, we are interested in performing operations "similar" to these for datatypes that aren't numbers, for which we would resort to type-specific operators like @racketlink[b:append "append"] for lists. This module generalizes the standard algebraic operators to work on any type that supports a "canonical" notion of addition, multiplication, or concatenation. This allows our intuitions about addition and other forms of composition to extend over all appropriate types via the use of the common generic operators @racket[+], @racket[*] and @racket[..].
+Generic algebraic operators for composing data.
+
+The built-in operators @racket[+] and @racket[*] operate on numbers specifically. Often, however, we are interested in performing operations "similar" to these for datatypes that aren't numbers, for which we would resort to type-specific operators like @racketlink[b:append "append"] for lists.
+
+This module generalizes the standard algebraic operators to work on any type that supports a "canonical" notion of addition, multiplication, or concatenation. This allows our intuitions about addition and other forms of composition to extend over all appropriate types via the use of the common generic operators @racket[+], @racket[*] and @racket[..].
 
 @(define eval-for-docs
   (parameterize ([sandbox-output 'string]

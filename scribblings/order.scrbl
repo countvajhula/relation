@@ -2,16 +2,22 @@
 @require[scribble/manual
          scribble-abbrevs/manual
          scribble/example
-		 racket/sandbox
+         racket/sandbox
          @for-label[relation/order
-		            racket/generic
-                    (except-in racket < <= >= > min max)]]
+                    relation/equivalence
+                    racket/generic
+                    (except-in racket < <= >= > min max = equal? group-by)
+                    (only-in racket (equal? b:equal?))]]
 
 @title{Order Relations}
 
 @defmodule[relation/order]
 
-A generic interface and utilities for orderable data. By default, the built-in comparison operators @racket[<], @racket[<=], @racket[=], @racket[>=] and @racket[>] operate on @tech/reference{numbers} specifically, while other comparable types like characters and strings have their own type-specific comparison operators, for instance @racket[char<?] and @racket[string<?]. This module provides a generic interface that overrides these standard operators to allow their use for any orderable type and not only numbers, and also provides additional utilities to support working with orderable data in a type-agnostic way. You can also provide an implementation for the interface in custom types so that they can be compared and reasoned about by using the same standard operators as well as the generic utilities provided here.
+A generic interface and utilities for defining and working with orderable data.
+
+By default, the built-in comparison operators @racket[<], @racket[<=], @racket[=], @racket[>=] and @racket[>] operate on @tech/reference{numbers} specifically, while other comparable types like characters and strings have their own type-specific comparison operators, for instance @racket[char<?] and @racket[string<?].
+
+This module provides a generic interface that overrides these standard operators to allow their use with any orderable type and not only numbers, and also provides additional utilities to support working with orderable data in a type-agnostic way. You can also provide an implementation for the interface in custom types so that they can be compared and reasoned about by using the same standard operators as well as the generic utilities provided here.
 
 @(define eval-for-docs
   (parameterize ([sandbox-output 'string]
@@ -26,7 +32,7 @@ A generic interface and utilities for orderable data. By default, the built-in c
 
 @defthing[gen:orderable any/c]{
 
- A @tech/reference{generic interface} that represents any object that can be compared with other objects of the same type in terms of order, that is, in cases where we seek to know, "is this value less than or greater than that value?" Any type implementing this interface must also implement @racket[gen:comparable] unless the latter's default fallback of @racket[equal?] is adequate. The following built-in types have implementations for the order relations @racket[<], @racket[<=], @racket[>=] and @racket[>]:
+ A @tech/reference{generic interface} that represents any object that can be compared with other objects of the same type in terms of order, that is, in cases where we seek to know, "is this value less than or greater than that value?" Any type implementing this interface must also implement @racket[gen:comparable] unless the latter's default fallback of @racketlink[b:equal?]{equal?} is adequate. The following built-in types have implementations for the order relations @racket[<], @racket[<=], @racket[>=] and @racket[>]:
 
 @itemlist[
  @item{@tech/reference{numbers}}

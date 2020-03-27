@@ -6,13 +6,17 @@
          @for-label[relation/equivalence
                     racket/generic
                     (except-in racket = equal? group-by)
-                    (only-in racket (equal? b:equal?))]]
+                    (only-in racket (= b:=) (equal? b:equal?))]]
 
 @title{Equivalence Relations}
 
 @defmodule[relation/equivalence]
 
-A generic interface and utilities for comparing data. By default, the built-in equivalence operator @racket[=] operates on @tech/reference{numbers} specifically, while the operators @racket[eq?], @racket[eqv?] and @racket[equal?] are more suitable for other comparisons depending on the type of the values being compared. Additionally, there are type-specific comparison operators, for instance @racket[char=?] and @racket[string=?], that could be used if the type is known. This module provides a generic interface that overrides the standard @racket[=] operator to allow its use for any comparable type and not only numbers, performing the most appropriate comparison depending on the type of the values being compared. It also supports additional parameters to express broader notions of equivalence than simple equality. You can also provide an implementation for the interface in custom types so that they can be compared using the same standard equality operator and the generic utilities available in this module.
+A generic interface and utilities for comparing data.
+
+By default, the built-in equivalence operator @racketlink[b:=]{=} operates on @tech/reference{numbers} specifically, while the operators @racket[eq?], @racket[eqv?] and @racketlink[b:equal?]{equal?} are more suitable for other comparisons depending on the type of the values being compared. Additionally, there are type-specific comparison operators, for instance @racket[char=?] and @racket[string=?], that may be used if the type is known.
+
+This module provides a generic interface that overrides the standard @racketlink[b:=]{=} operator to allow its use with any comparable type and not only numbers, performing the most appropriate comparison depending on the type of the values being compared. It also supports additional parameters to express broader notions of equivalence than simple equality. You can also provide an implementation for the interface in custom types so that they can be compared using the same standard equality operator and the generic utilities available in this module.
 
 @(define eval-for-docs
   (parameterize ([sandbox-output 'string]
@@ -28,7 +32,7 @@ A generic interface and utilities for comparing data. By default, the built-in e
 
 @defthing[gen:comparable any/c]{
 
- A @tech/reference{generic interface} that represents any object that can be compared with other objects of the same type in terms of equivalence, that is, in cases where we seek to know, "are these values equal, for some definition of equality?" All built-in types have a default implementation for @racket[gen:comparable].
+ A @tech/reference{generic interface} that represents any object that can be compared with other objects of the same type in terms of equivalence, that is, in cases where we seek to know, "are these values equal, for some definition of equality?" All built-in as well as @seclink["define-struct" #:doc '(lib "scribblings/guide/guide.scrbl")]{custom} types are @racket[gen:comparable]. For custom types, the implementation falls back to the built-in @racketlink[b:equal?]{equal?} by default.
 
  @examples[
     #:eval eval-for-docs
