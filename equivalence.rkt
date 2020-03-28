@@ -20,6 +20,7 @@
          comparable/c
          (contract-out
           [comparable? (-> any/c boolean?)]
+          [gset? (-> any/c boolean?)]
           [= (->* (comparable?)
                   (#:key (or/c (-> comparable? comparable?)
                                #f))
@@ -73,7 +74,9 @@
                    [char?
                     (define equal? char=?)]
                    [symbol?
-                    (define equal? eq?)])
+                    (define equal? eq?)]
+                   [generic-set?
+                    (define equal? set=?)])
   #:defaults ([any/c
                (define equal? b:equal?)]))
 
@@ -118,10 +121,25 @@
            (let-values ([(before after)
                          (splitf-at contents
                                     (λ (x)
-                                      (≠ x v)))])
+                                      (≠ #:key key x v)))])
              (apply generic-set
                     #:key key
-                    (append before (rest after)))))))
+                    (append before
+                            (if (empty? after)
+                                after
+                                (rest after))))))))
+   (define (set=? st st2)
+     (let ([key (gset-key st)]
+           [contents (gset-contents st)]
+           [key2 (gset-key st2)]
+           [contents2 (gset-contents st2)])
+       (and (= key key2)
+            (= #:key (compose (curry apply set)
+                              (if key
+                                  (curry map key)
+                                  identity))
+               contents
+               contents2))))
    (define (set->list st)
      (gset-contents st))
    (define (set->stream st)
