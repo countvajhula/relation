@@ -109,7 +109,7 @@
 
   (check-equal? (stream-first (->stream (list 1 2 3))) 1)
   (check-equal? (stream-first (->stream "apple")) #\a)
-  (check-equal? (->stream ID) (stream))
+  (check-true (stream-empty? (->stream ID)))
   (check-exn exn:fail?
              (lambda ()
                (->stream 'hi)))
@@ -144,4 +144,5 @@
 
   (check-equal? (->procedure ID) identity)
   (check-equal? (->procedure add1) add1)
-  (check-equal? ((->procedure 5)) 5))
+  (check-equal? ((->procedure 5)) 5)
+  (check-equal? ((->procedure (list add1 add1)) 3) 5))

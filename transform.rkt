@@ -12,6 +12,9 @@
          racket/generator
          racket/sequence
          racket/function
+         (only-in algebraic/prelude
+                  &&
+                  ||)
          threading
          relation/algebraic)
 
@@ -74,7 +77,6 @@
         [(generator? v) (~> v
                             ->list
                             ->string)]
-        [(eq? v ID) (reify v "")]
         [else (~> v
                   ~a
                   ->string)]))
@@ -134,7 +136,6 @@
         [(struct? v) (~> v
                          ->vector
                          ->list)]
-        [(eq? v ID) (reify v '())]
         [else (error '->list "Unsupported type ~a!" v)]))
 
 (define (->vector v)
@@ -197,15 +198,11 @@
         [(generator? v) (~> v
                             (in-producer (void))
                             ->stream)]
-        [(eq? v ID) (reify v (stream))]
         [else (error '->stream "Unsupported type ~a!" v)]))
 
 (define (->generator v)
   (cond [(generator? v) v]
         [(sequence? v) (sequence->generator v)]
-        [(eq? v ID) (~> v
-                        ->list
-                        ->generator)]
         [else (error '->generator "Unsupported type ~a!" v)]))
 
 (define (->set v)
@@ -237,4 +234,5 @@
 (define (->procedure v)
   (cond [(procedure? v) v]
         [(eq? v ID) (reify v identity)]
+        [((&& sequence? (negate number?)) v) (apply compose (->list v))]
         [else (λ () v)]))

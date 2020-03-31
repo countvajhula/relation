@@ -94,6 +94,23 @@
                  (error 'appendable-inverse
                         "~a is not invertible under the append operation!"
                         appendable))]
+  #:defaults ([dict?
+               (define (append appendable other)
+                 (if (eq? other ID)
+                     appendable
+                     ((.. make-immutable-hash
+                          sequence->list
+                          d:append)
+                      appendable other)))
+               (define (appendable-identity appendable)
+                 (hash))]
+              [sequence?
+               (define (append appendable other)
+                 (if (eq? other ID)
+                     appendable
+                     (d:append appendable other)))
+               (define (appendable-identity appendable)
+                 (list))])
   #:fast-defaults ([string?
                     (define (append appendable other)
                       (if (eq? other ID)
@@ -129,16 +146,6 @@
                           (set-union appendable other)))
                     (define (appendable-identity appendable)
                       (set))]
-                   [dict?
-                    (define (append appendable other)
-                      (if (eq? other ID)
-                          appendable
-                          ((.. make-immutable-hash
-                               sequence->list
-                               d:append)
-                           appendable other)))
-                    (define (appendable-identity appendable)
-                      (hash))]
                    [number?
                     (define (append appendable other)
                       (if (eq? other ID)
@@ -153,13 +160,6 @@
                           (d:append appendable other)))
                     (define (appendable-identity appendable)
                       (stream))]
-                   [sequence?
-                    (define (append appendable other)
-                      (if (eq? other ID)
-                          appendable
-                          (d:append appendable other)))
-                    (define (appendable-identity appendable)
-                      (list))]
                    [procedure?
                     (define (append appendable other)
                       (if (eq? other ID)
@@ -223,6 +223,15 @@
 
 (struct composition-identity ()
   #:transparent
+  #:methods gen:sequence
+  [(define (empty? seq)
+     #t)
+   (define (first seq)
+     (error 'first
+            "Nothing here!"))
+   (define (rest seq)
+     (error 'rest
+            "Nothing here!"))]
   #:methods gen:appendable
   [(define (append appendable other)
      other)
