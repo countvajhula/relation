@@ -4,7 +4,8 @@
                "collections-lib"
                "algebraic"
                "point-free"
-               "threading-lib"))
+               "threading-lib"
+               "version-case"))
 (define build-deps '("rackunit-lib"
                      "scribble-lib"
                      "scribble-abbrevs"

@@ -15,7 +15,15 @@
          (only-in algebraic/prelude
                   flip)
          point-free
-         relation/equivalence)
+         relation/equivalence
+         version-case)
+
+(version-case
+ [(version< (version) "7.5.0.14")
+  (define string-append
+    (compose string->immutable-string b:string-append))]
+ [else
+  (define string-append string-append-immutable)])
 
 (provide gen:appendable
          appendable/c
