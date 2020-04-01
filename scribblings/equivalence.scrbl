@@ -81,7 +81,7 @@ This module provides a generic interface that overrides the standard @racketlink
             [v comparable?] ...)
          boolean?]{
 
- True if the v's are equal. This uses the most appropriate equality check for the type. For instance, it uses the built-in @racket[=] operator for numeric data, and @racket[equal?] for some other types such as @tech/reference{structures}. If a transformation is provided via the @racket[#:key] argument, then this transformation is applied to the input values first, prior to performing the equality check.
+ True if the v's are equal. This uses the most appropriate equality check for the type. For instance, it uses the built-in @racketlink[b:=]{=} operator for numeric data, and @racketlink[b:equal?]{equal?} for some other types such as @tech/reference{structures}. If a transformation is provided via the @racket[#:key] argument, then this transformation is applied to the input values first, prior to performing the equality check.
 
 @examples[
     #:eval eval-for-docs
