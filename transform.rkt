@@ -16,6 +16,8 @@
                   &&
                   ||)
          threading
+         (only-in data/collection
+                  for-each)
          relation/algebraic)
 
 (provide (contract-out
@@ -36,7 +38,9 @@
           [->bytes (-> any/c bytes?)]
           [->char (-> any/c char?)]
           [->stream (-> any/c stream?)]
-          [->generator (-> any/c generator?)]
+          [->generator (->* (any/c)
+                            (any/c)
+                            generator?)]
           [->set (-> any/c set?)]
           [->syntax (-> any/c syntax?)]
           [->code (-> any/c any/c)]
@@ -200,9 +204,17 @@
                             ->stream)]
         [else (error '->stream "Unsupported type ~a!" v)]))
 
-(define (->generator v)
+(define (sequence->generator seq [return (void)])
+  (generator ()
+    (for-each (λ (v)
+                (yield v)
+                (void))
+              seq)
+    return))
+
+(define (->generator v [return (void)])
   (cond [(generator? v) v]
-        [(sequence? v) (sequence->generator v)]
+        [(sequence? v) (sequence->generator v return)]
         [else (error '->generator "Unsupported type ~a!" v)]))
 
 (define (->set v)
