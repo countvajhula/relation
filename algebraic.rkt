@@ -59,17 +59,17 @@
                                               'bab)
                             #:direction (one-of/c 'left
                                                   'right)
-                            #:with-steps boolean?)
+                            #:with-steps? boolean?)
                      any/c)]
           [foldl (->* ((-> any/c any/c any/c) (sequenceof any/c))
                       (any/c #:order (one-of/c 'abb
                                                'bab)
-                             #:with-steps boolean?)
+                             #:with-steps? boolean?)
                       any/c)]
           [foldr (->* ((-> any/c any/c any/c) (sequenceof any/c))
                       (any/c #:order (one-of/c 'abb
                                                'bab)
-                             #:with-steps boolean?)
+                             #:with-steps? boolean?)
                       any/c)]
           [fold/steps (->* ((-> any/c any/c any/c) (sequenceof any/c))
                            (any/c #:order (one-of/c 'abb
@@ -318,7 +318,7 @@
               [base undefined]
               #:order [order 'abb]
               #:direction [direction 'right]
-              #:with-steps [with-steps #f])
+              #:with-steps? [with-steps? #f])
   (let ([combiner-proc (cond [(= order 'abb)
                               (flip f)]
                              [(= order 'bab)
@@ -331,7 +331,7 @@
                   (error 'fold
                          "Invalid fold direction ~a!"
                          direction))]
-        [fold-method (if with-steps
+        [fold-method (if with-steps?
                          d:foldl/steps
                          d:foldl)])
     (if (undefined? base)
@@ -347,6 +347,6 @@
 
 (define foldl (curry fold #:direction 'left))
 (define foldr (curry fold #:direction 'right))
-(define fold/steps (curry fold #:with-steps #t))
+(define fold/steps (curry fold #:with-steps? #t))
 (define foldr/steps (curry fold/steps #:direction 'right))
 (define foldl/steps (curry fold/steps #:direction 'left))

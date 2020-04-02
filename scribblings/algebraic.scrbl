@@ -367,19 +367,19 @@ In the event no operands are received in the course of a computation, the result
                              [base any/c #f]
                              [#:order order (one-of/c 'abb 'bab) 'abb]
                              [#:direction direction (one-of/c 'left 'right) 'right]
-                             [#:with-steps with-steps boolean? #f])
+                             [#:with-steps? with-steps? boolean? #f])
                        any/c]
               @defproc[(foldl [f (-> any/c any/c any/c)]
                               [vs (sequenceof any/c)]
                               [base any/c #f]
                               [#:order order (one-of/c 'abb 'bab) 'abb]
-                              [#:with-steps with-steps boolean? #f])
+                              [#:with-steps? with-steps? boolean? #f])
               any/c]
               @defproc[(foldr [f (-> any/c any/c any/c)]
                               [vs (sequenceof any/c)]
                               [base any/c #f]
                               [#:order order (one-of/c 'abb 'bab) 'abb]
-                              [#:with-steps with-steps boolean? #f])
+                              [#:with-steps? with-steps? boolean? #f])
                        any/c]
               )]{
 
@@ -389,7 +389,7 @@ In the event no operands are received in the course of a computation, the result
 
  In many common cases, modulating the folding direction and/or the argument order does not make a difference to the result. Specifically, in those cases where the operation is @hyperlink["https://en.wikipedia.org/wiki/Commutative_property"]{commutative} and @hyperlink["https://en.wikipedia.org/wiki/Closure_(mathematics)"]{closed}, it doesn't matter whether you use @racket[foldl] or @racket[foldr], or whether you use argument order @racket['abb] or @racket['bab]. The result would be the same. However, in cases where the operation is not closed, argument order becomes significant. As a general guideline, choose between @racket[foldl] and @racket[foldr] in cases where the operation is not commutative (a relatively common case, such as string concatenation), and between the two argument orders in cases where the operation isn't closed (a less common case, such as type constructors).
 
- @racket[foldl] is equivalent to calling @racket[fold] with @racket[#:direction 'left], and @racket[foldr] is equivalent to calling @racket[fold] with @racket[#:direction 'right]. @racket[fold/steps] is equivalent to calling @racket[fold] with @racket[#:with-steps #t].
+ @racket[foldl] is equivalent to calling @racket[fold] with @racket[#:direction 'left], and @racket[foldr] is equivalent to calling @racket[fold] with @racket[#:direction 'right]. @racket[fold/steps] is equivalent to calling @racket[fold] with @racket[#:with-steps? #t].
 
 @examples[
     #:eval eval-for-docs
