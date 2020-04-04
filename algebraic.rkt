@@ -94,7 +94,14 @@
                  (error 'appendable-inverse
                         "~a is not invertible under the append operation!"
                         appendable))]
-  #:defaults ([dict?
+  #:defaults ([procedure?
+               (define (append appendable other)
+                 (if (eq? other ID)
+                     appendable
+                     (compose appendable other)))
+               (define (appendable-identity appendable)
+                 identity)]
+              [dict?
                (define (append appendable other)
                  (if (eq? other ID)
                      appendable
@@ -159,14 +166,7 @@
                           appendable
                           (d:append appendable other)))
                     (define (appendable-identity appendable)
-                      (stream))]
-                   [procedure?
-                    (define (append appendable other)
-                      (if (eq? other ID)
-                          appendable
-                          (compose appendable other)))
-                    (define (appendable-identity appendable)
-                      identity)]))
+                      (stream))]))
 
 (define-generics multipliable
   (multiply multipliable other)
