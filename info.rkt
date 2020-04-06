@@ -6,14 +6,14 @@
                "point-free"
                "threading-lib"
                "version-case"))
-(define build-deps '("rackunit-lib"
-                     "scribble-lib"
+(define build-deps '("scribble-lib"
                      "scribble-abbrevs"
                      "racket-doc"
                      "collections-doc"
                      "sandbox-lib"
                      "at-exp-lib"))
 (define scribblings '(("scribblings/relation.scrbl" (multi-page))))
+(define compile-omit-paths '("tests"))
 (define test-include-paths '("tests"))
 (define clean '("compiled" "doc" "doc/relation" "tests/compiled"))
 (define pkg-desc "Generic interfaces and convenient utilities for relations")
