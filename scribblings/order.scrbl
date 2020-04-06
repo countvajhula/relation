@@ -5,10 +5,11 @@
          racket/sandbox
          @for-label[relation/order
                     relation/equivalence
+                    relation/transform
                     racket/generic
-                    (except-in racket < <= >= > min max sort = equal? group-by)
+                    (except-in racket < <= >= > min max sort = equal? group-by length)
                     (only-in racket (equal? b:equal?) (sort b:sort))
-                    (only-in data/collection sequenceof)]]
+                    (only-in data/collection length sequenceof)]]
 
 @title{Order Relations}
 
@@ -25,6 +26,12 @@ This module provides a generic interface that overrides these standard operators
                  [sandbox-error-output 'string]
                  [sandbox-memory-limit #f])
                  (make-evaluator 'racket/base
+                                 '(require (except-in data/collection
+                                                      append
+                                                      index-of
+                                                      map
+                                                      foldl
+                                                      foldl/steps))
 				                 '(require relation)
 				                 '(require racket/function)
 								 '(require racket/set))))
@@ -125,7 +132,7 @@ This module provides a generic interface that overrides these standard operators
     (< 1 2 3)
     (< 2 1)
     (< "apple" "banana" "cherry")
-    (< #:key string-length "cherry" "blueberry" "abyssinian gooseberry")
+    (< #:key length "cherry" "blueberry" "abyssinian gooseberry")
   ]
 }
 
@@ -145,7 +152,7 @@ This module provides a generic interface that overrides these standard operators
     (≤ 1 1 3)
     (≤ 2 1)
     (≤ "apple" "apple" "cherry")
-    (≤ #:key string-length "cherry" "banana" "avocado")
+    (≤ #:key length "cherry" "banana" "avocado")
   ]
 }
 
@@ -165,7 +172,7 @@ This module provides a generic interface that overrides these standard operators
     (≥ 3 1 1)
     (≥ 1 2)
     (≥ "banana" "apple" "apple")
-    (≥ #:key string-length "banana" "cherry" "apple")
+    (≥ #:key length "banana" "cherry" "apple")
   ]
 }
 
@@ -181,7 +188,7 @@ This module provides a generic interface that overrides these standard operators
     (> 3 2 1)
     (> 1 1)
     (> "cherry" "banana" "apple")
-    (> #:key string-length "abyssinian gooseberry" "blueberry" "apple")
+    (> #:key length "abyssinian gooseberry" "blueberry" "apple")
   ]
 }
 
@@ -199,7 +206,7 @@ This module provides a generic interface that overrides these standard operators
     (min 3 2 1)
     (min "cherry" "banana" "apple")
     (min (set 1 2) (set 1) (set 1 2 3))
-    (min #:key string-length "apple" "banana" "cherry")
+    (min #:key length "apple" "banana" "cherry")
   ]
 }
 
@@ -217,7 +224,7 @@ This module provides a generic interface that overrides these standard operators
     (max 3 2 1)
     (max "cherry" "banana" "apple")
     (max (set 1 2) (set 1) (set 1 2 3))
-    (max #:key string-length "apple" "banana" "cherry")
+    (max #:key length "apple" "banana" "cherry")
   ]
 }
 
@@ -233,7 +240,7 @@ This module provides a generic interface that overrides these standard operators
     (sort < (list 1 2 3))
     (sort > (list 1 2 3))
     (sort < (list "cherry" "banana" "apple"))
-    (map set->list (sort < (list (set 1 2) (set 1) (set 1 2 3))))
-    (sort < #:key string-length (list "apple" "avocado" "banana" "cherry"))
+    (map ->list (sort < (list (set 1 2) (set 1) (set 1 2 3))))
+    (sort < #:key length (list "apple" "avocado" "banana" "cherry"))
   ]
 }

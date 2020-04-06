@@ -12,11 +12,13 @@
                                       /
                                       foldl
                                       foldr
+                                      length
                                       append)
                     (only-in racket (foldl f:foldl)
                                     (foldr f:foldr)
                                     (append b:append))
-                    (only-in data/collection (foldl d:foldl)
+                    (only-in data/collection length
+                                             (foldl d:foldl)
                                              (foldl/steps d:foldl/steps))]]
 
 @title{Algebraic Operators}
@@ -34,6 +36,11 @@ This module generalizes the standard algebraic operators to work on any type tha
                  [sandbox-error-output 'string]
                  [sandbox-memory-limit #f])
                  (make-evaluator 'racket/base
+                                 '(require (except-in data/collection
+                                                      append
+                                                      index-of
+                                                      foldl
+                                                      foldl/steps))
                                  '(require relation)
                                  '(require racket/set)
                                  '(require racket/stream))))

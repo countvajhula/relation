@@ -4,10 +4,11 @@
          scribble/example
          racket/sandbox
          @for-label[relation/equivalence
+                    relation/transform
                     racket/generic
-                    (except-in racket = equal? group-by drop)
+                    (except-in racket = equal? group-by drop length)
                     (only-in racket (= b:=) (equal? b:equal?))
-                    (only-in data/collection drop)]]
+                    (only-in data/collection drop length)]]
 
 @title{Equivalence Relations}
 
@@ -24,6 +25,11 @@ This module provides a generic interface that overrides the standard @racketlink
                  [sandbox-error-output 'string]
                  [sandbox-memory-limit #f])
                  (make-evaluator 'racket/base
+                                 '(require (except-in data/collection
+                                                      append
+                                                      index-of
+                                                      foldl
+                                                      foldl/steps))
 				                 '(require relation)
 				                 '(require racket/function)
 								 '(require racket/set)
@@ -119,7 +125,7 @@ This module provides a generic interface that overrides the standard @racketlink
     (≠ 1 1)
     (≠ "apple" "Apple")
     (≠ 3/2 1.5)
-    (≠ #:key string-length "cherry" "banana" "avocado")
+    (≠ #:key length "cherry" "banana" "avocado")
   ]
 }
 
@@ -139,7 +145,7 @@ This module provides a generic interface that overrides the standard @racketlink
     (group-by (list 1 1 1))
     (group-by (list 1 1 2 2 3 3 3))
     (group-by (list "cherry" "banana" "apple"))
-    (group-by #:key string-length (list "apple" "banana" "cherry"))
+    (group-by #:key length (list "apple" "banana" "cherry"))
   ]
 }
 
@@ -173,7 +179,7 @@ This module provides a generic interface that overrides the standard @racketlink
     #:eval eval-for-docs
     (tail 4 (list 1 2 3))
     (tail 4 (list 1 4 3))
-    (stream->list (tail "cherry" (stream "apple" "banana" "cherry")))
+    (->list (tail "cherry" (stream "apple" "banana" "cherry")))
     (tail "BANANA" (list "apple" "banana" "cherry"))
     (tail #:key string-upcase "BANANA" (list "apple" "banana" "cherry"))
   ]
@@ -194,6 +200,6 @@ This module provides a generic interface that overrides the standard @racketlink
     (member? "BANANA" (list "apple" "banana" "cherry"))
     (member? #:key string-upcase "BANANA" (list "apple" "banana" "cherry"))
     (member? "BANANA" (generic-set #:key string-upcase "apple" "banana" "cherry"))
-    (member? "tomato" (generic-set #:key string-length "apple" "banana" "grape"))
+    (member? "tomato" (generic-set #:key length "apple" "banana" "grape"))
   ]
 }
