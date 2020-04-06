@@ -144,7 +144,7 @@ In the event no operands are received in the course of a computation, the result
 
 @defthing[gen:multipliable any/c]{
 
- A @tech/reference{generic interface} that represents any object for which a "multiplication-like" operation can be defined. The following built-in types have implementations for @racket[gen:appendable]:
+ A @tech/reference{generic interface} that represents any object for which a "multiplication-like" operation can be defined. The following built-in types have implementations for @racket[gen:multipliable]:
 
 @itemlist[
  @item{@tech/reference{numbers}}

@@ -6,8 +6,9 @@
          @for-label[relation/order
                     relation/equivalence
                     racket/generic
-                    (except-in racket < <= >= > min max = equal? group-by)
-                    (only-in racket (equal? b:equal?))]]
+                    (except-in racket < <= >= > min max sort = equal? group-by)
+                    (only-in racket (equal? b:equal?) (sort b:sort))
+                    (only-in data/collection sequenceof)]]
 
 @title{Order Relations}
 
@@ -189,7 +190,7 @@ This module provides a generic interface that overrides these standard operators
               ...)
          orderable?]{
 
- Returns the minimum value. If @racket[key] is provided it is applied to the arguments prior to the comparison (this pattern is often referred to as "argmin" in math and programming literature). The values are compared using the canonical comparison for their type.
+ Returns the minimum value. If @racket[key] is provided, it is applied to the arguments prior to the comparison (this pattern is often referred to as "argmin" in math and programming literature). The values are compared using the canonical comparison for their type.
 
 @margin-note{In the case of a nonlinear order (i.e. where there is no greatest or least element), @racket[min] would return an arbitrary local minimum. You should typically only use this function when you know that a global minimum exists.}
 
@@ -207,7 +208,7 @@ This module provides a generic interface that overrides these standard operators
               ...)
          orderable?]{
 
- Returns the maximum value. If @racket[key] is provided it is applied to the arguments prior to the comparison (this pattern is often referred to as "argmax" in math and programming literature). The values are compared using the canonical comparison for their type.
+ Returns the maximum value. If @racket[key] is provided, it is applied to the arguments prior to the comparison (this pattern is often referred to as "argmax" in math and programming literature). The values are compared using the canonical comparison for their type.
 
 @margin-note{In the case of a nonlinear order (i.e. where there is no greatest or least element), @racket[max] would return an arbitrary local maximum. You should typically only use this function when you know that a global maximum exists.}
 
@@ -217,5 +218,22 @@ This module provides a generic interface that overrides these standard operators
     (max "cherry" "banana" "apple")
     (max (set 1 2) (set 1) (set 1 2 3))
     (max #:key string-length "apple" "banana" "cherry")
+  ]
+}
+
+@defproc[(sort [less-than? procedure?]
+               [#:key key (-> orderable? orderable?) #f]
+               [seq (sequenceof orderable?)])
+         (sequenceof orderable?)]{
+
+ Like @racketlink[b:sort]{sort} but accepts arbitrary sequences as input, and expects the comparison procedure @racket[less-than?] to be either @racket[<] or @racket[>]. The values are compared using the canonical comparison for their type. If @racket[key] is provided, it is applied to the arguments prior to the comparison.
+
+@examples[
+    #:eval eval-for-docs
+    (sort < (list 1 2 3))
+    (sort > (list 1 2 3))
+    (sort < (list "cherry" "banana" "apple"))
+    (map set->list (sort < (list (set 1 2) (set 1) (set 1 2 3))))
+    (sort < #:key string-length (list "apple" "avocado" "banana" "cherry"))
   ]
 }

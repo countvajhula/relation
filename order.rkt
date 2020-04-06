@@ -48,6 +48,11 @@
                                #f))
                   #:rest (listof orderable?)
                   boolean?)]
+          (sort (->* (procedure?
+                      (sequenceof orderable?))
+                     (#:key (or/c (-> orderable? orderable?)
+                                  #f))
+                     (sequenceof orderable?)))
           (min (->* (orderable?)
                     (#:key (or/c (-> orderable? orderable?)
                                  #f))
@@ -120,13 +125,19 @@
       (apply > (map key args))
       (check-pairwise greater-than? args)))
 
+(define (sort less-than? #:key [key #f] seq)
+  (if (member? less-than? (set < >))
+      (b:sort (sequence->list seq)
+              (curryr less-than? #:key key))
+      (raise-argument-error 'sort
+                            "Either < or >"
+                            less-than?)))
+
 (define (min #:key [key #f] . args)
-  (first (sort args
-               (curry < #:key key))))
+  (first (sort < #:key key args)))
 
 (define (max #:key [key #f] . args)
-  (first (sort args
-               (curry > #:key key))))
+  (first (sort > #:key key args)))
 
 (define <= ≤)
 (define >= ≥)
