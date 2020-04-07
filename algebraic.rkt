@@ -231,7 +231,9 @@
             "Nothing here!"))
    (define (rest seq)
      (error 'rest
-            "Nothing here!"))]
+            "Nothing here!"))
+   (define (reverse seq)
+     seq)]
   #:methods gen:appendable
   [(define (append appendable other)
      other)

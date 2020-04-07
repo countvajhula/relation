@@ -2,11 +2,15 @@
 
 (module+ test
   (require rackunit
+           (except-in data/collection
+                      foldl
+                      foldl/steps
+                      append
+                      index-of)
            relation
            (prefix-in b: racket/base)
            racket/set
            racket/stream
-           racket/sequence
            racket/function)
 
   ;; append
@@ -103,6 +107,7 @@
   (check-equal? (+ ID 3) 3)
   (check-equal? (+ #(1 2 3) ID) #(1 2 3))
   (check-equal? (+ ID #(1 2 3)) #(1 2 3))
+  (check-equal? (reverse ID) ID)
   ;; reify
   (check-equal? (reify 5 "") 5)
   (check-equal? (reify "hi" 5) "hi")
