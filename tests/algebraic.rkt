@@ -38,6 +38,9 @@
   (check-equal? ((id ..) (set 1 2 3)) (set))
   (check-equal? ((id ..) (hash 'a 1 'b 2 'c 3)) (hash))
   (check-equal? ((id ..) (stream 1 2 3)) (stream))
+  (check-exn exn:fail:contract?
+             (thunk
+              (id add1)))
   ;; multiplication
   (check-equal? (* 3 4) 12)
   (check-equal? (* 3 -4) -12)
@@ -59,6 +62,9 @@
   (let ([x 3])
     (check-equal? (* x ((inverse *) x))
                   ((id *) x)))
+  (check-exn exn:fail:contract?
+             (thunk
+              (inverse add1)))
   ;; "subtraction"
   (check-equal? (- 4 3) 1)
   (check-equal? (- 4 6) -2)

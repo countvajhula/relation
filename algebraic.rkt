@@ -270,9 +270,11 @@
          multipliable-identity]
         [(member operation (list .. append))
          appendable-identity]
-        [else (error 'id
-                     "Identity not defined for operation ~a!"
-                     operation)]))
+        [else (raise-argument-error 'id
+                                    @~a{A canonical operation such as addition
+                                        or concatenation for which the identity
+                                        is inferable.}
+                                    operation)]))
 
 (define (inverse operation)
   (cond [(member operation (list + add))
@@ -281,9 +283,11 @@
          multipliable-inverse]
         [(member operation (list .. append))
          appendable-inverse]
-        [else (error 'inverse
-                     "Inverse not defined for operation ~a!"
-                     operation)]))
+        [else (raise-argument-error 'inverse
+                                    @~a{A canonical operation such as addition
+                                        or concatenation for which the inverse
+                                        is inferable.}
+                                    operation)]))
 
 (define (.. . vs)
   (if (empty? vs)
