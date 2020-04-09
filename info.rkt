@@ -9,6 +9,7 @@
 (define build-deps '("scribble-lib"
                      "scribble-abbrevs"
                      "racket-doc"
+                     "sugar"
                      "collections-doc"
                      "sandbox-lib"
                      "at-exp-lib"))

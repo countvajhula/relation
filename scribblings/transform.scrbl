@@ -15,7 +15,9 @@ Generic utilities for transforming data into different types.
 
 The type transformers provided by Racket out of the box are @italic{type-specific}; for instance in order to convert data into a string, we would use @racket[symbol->string] if the data is a symbol, and @racket[number->string] if the data is a number. Likewise, converting a number to an integer from a more precise form, or vice versa, typically involves multiple steps and the method varies depending on the number's type.
 
-This module provides convenient interfaces to perform many such common type conversions, while keeping them agnostic to the source type.
+This module provides convenient interfaces to perform many such common type conversions, while keeping them agnostic to the source type. If mutable and immutable versions of a data type exist, these interfaces will return the immutable version.
+
+See also: @other-doc['(lib "sugar/scribblings/sugar.scrbl")].
 
 @(define eval-for-docs
   (parameterize ([sandbox-output 'string]
