@@ -12,8 +12,6 @@
                     (foldl d:foldl)
                     (foldl/steps d:foldl/steps)
                     (append d:append))
-         (only-in algebraic/prelude
-                  flip)
          point-free
          relation/equivalence
          version-case)
@@ -54,37 +52,55 @@
           [/ (-> multipliable? multipliable? ... multipliable?)]
           [+ (-> addable? ... addable?)]
           [- (-> addable? addable? ... addable?)]
-          [fold (->* ((-> any/c any/c any/c) (sequenceof any/c))
-                     (any/c #:order (one-of/c 'abb
-                                              'bab)
-                            #:direction (one-of/c 'left
-                                                  'right)
-                            #:with-steps? boolean?)
-                     any/c)]
-          [foldl (->* ((-> any/c any/c any/c) (sequenceof any/c))
-                      (any/c #:order (one-of/c 'abb
-                                               'bab)
-                             #:with-steps? boolean?)
-                      any/c)]
-          [foldr (->* ((-> any/c any/c any/c) (sequenceof any/c))
-                      (any/c #:order (one-of/c 'abb
-                                               'bab)
-                             #:with-steps? boolean?)
-                      any/c)]
-          [fold/steps (->* ((-> any/c any/c any/c) (sequenceof any/c))
-                           (any/c #:order (one-of/c 'abb
-                                                    'bab)
-                                  #:direction (one-of/c 'left
-                                                        'right))
-                           any/c)]
-          [foldl/steps (->* ((-> any/c any/c any/c) (sequenceof any/c))
-                            (any/c #:order (one-of/c 'abb
-                                                     'bab))
-                            any/c)]
-          [foldr/steps (->* ((-> any/c any/c any/c) (sequenceof any/c))
-                            (any/c #:order (one-of/c 'abb
-                                                     'bab))
-                            any/c)]))
+          [fold (->i ([f (seqs) (and/c (procedure-arity-includes/c (add1 (b:length seqs)))
+                                       (unconstrained-domain-> any/c))])
+                     (#:into [base any/c]
+                      #:order [order (one-of/c 'abb
+                                               'bab)]
+                      #:direction [direction (one-of/c 'left
+                                                       'right)]
+                      #:with-steps? [with-steps? boolean?])
+                     #:rest [seqs (listof (sequenceof any/c))]
+                     [result any/c])]
+          [foldl (->i ([f (seqs) (and/c (procedure-arity-includes/c (add1 (b:length seqs)))
+                                        (unconstrained-domain-> any/c))])
+                      (#:into [base any/c]
+                       #:order [order (one-of/c 'abb
+                                                'bab)]
+                       #:with-steps? [with-steps? boolean?])
+                      #:rest [seqs (listof (sequenceof any/c))]
+                      [result any/c])]
+          [foldr (->i ([f (seqs) (and/c (procedure-arity-includes/c (add1 (b:length seqs)))
+                                        (unconstrained-domain-> any/c))])
+                      (#:into [base any/c]
+                       #:order [order (one-of/c 'abb
+                                                'bab)]
+                       #:with-steps? [with-steps? boolean?])
+                      #:rest [seqs (listof (sequenceof any/c))]
+                      [result any/c])]
+          [fold/steps (->i ([f (seqs) (and/c (procedure-arity-includes/c (add1 (b:length seqs)))
+                                             (unconstrained-domain-> any/c))])
+                           (#:into [base any/c]
+                            #:order [order (one-of/c 'abb
+                                                     'bab)]
+                            #:direction [direction (one-of/c 'left
+                                                             'right)])
+                           #:rest [seqs (listof (sequenceof any/c))]
+                           [result any/c])]
+          [foldl/steps (->i ([f (seqs) (and/c (procedure-arity-includes/c (add1 (b:length seqs)))
+                                              (unconstrained-domain-> any/c))])
+                            (#:into [base any/c]
+                             #:order [order (one-of/c 'abb
+                                                      'bab)])
+                            #:rest [seqs (listof (sequenceof any/c))]
+                            [result any/c])]
+          [foldr/steps (->i ([f (seqs) (and/c (procedure-arity-includes/c (add1 (b:length seqs)))
+                                              (unconstrained-domain-> any/c))])
+                            (#:into [base any/c]
+                             #:order [order (one-of/c 'abb
+                                                      'bab)])
+                            #:rest [seqs (listof (sequenceof any/c))]
+                            [result any/c])]))
 
 (define-generics appendable
   (append appendable other)
@@ -319,37 +335,46 @@
 (define (undefined? v)
   (eq? v undefined))
 
+(define (flip$ f)
+  (λ (x . args)
+    (apply f (append args (list x)))))
+
 (define (fold f
-              vs
-              [base undefined]
+              #:into [base undefined]
               #:order [order 'abb]
               #:direction [direction 'right]
-              #:with-steps? [with-steps? #f])
+              #:with-steps? [with-steps? #f]
+              . seqs)
   (let ([combiner-proc (cond [(= order 'abb)
-                              (flip f)]
+                              (flip$ f)]
                              [(= order 'bab)
                               f]
                              [else (error 'fold
                                           "Invalid fold argument order ~a!"
                                           order)])]
-        [vs (cond [(= direction 'left) vs]
-                  [(= direction 'right) (reverse vs)]
-                  (error 'fold
-                         "Invalid fold direction ~a!"
-                         direction))]
+        [seqs (cond [(= direction 'left) seqs]
+                    [(= direction 'right) (map reverse seqs)]
+                    (error 'fold
+                           "Invalid fold direction ~a!"
+                           direction))]
         [fold-method (if with-steps?
                          d:foldl/steps
                          d:foldl)])
     (if (undefined? base)
-        (if (empty? vs)
+        (if (empty? seqs)
             ID
-            (let ([id-element ((id f) (first vs))])
-              (fold-method combiner-proc
+            (let ([vs (first seqs)])
+              (if (empty? vs)
+                  ID
+                  (let ([id-element ((id f) (first vs))])
+                    (apply fold-method
+                           combiner-proc
                            id-element
-                           vs)))
-        (fold-method combiner-proc
-                     base
-                     vs))))
+                           seqs)))))
+        (apply fold-method
+               combiner-proc
+               base
+               seqs))))
 
 (define foldl (curry fold #:direction 'left))
 (define foldr (curry fold #:direction 'right))
