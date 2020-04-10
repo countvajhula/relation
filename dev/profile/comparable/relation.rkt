@@ -45,11 +45,11 @@
 
 (define (sort-numbers how-many)
   (for ([i (take how-many (in (cycle '((4 1 3 2 7 1 3 5)))))])
-    (sort i <)))
+    (sort < i)))
 
 (define (sort-strings how-many)
   (for ([i (take how-many (in (cycle '(("dragonfruit" "apple" "cherry" "banana" "guava" "apple" "cherry" "elderberry")))))])
-    (sort i <)))
+    (sort < i)))
 
 (define (check-group-by how-many)
   (for ([i (take how-many (in (cycle '((4 1 3 2 7 1 3 5)))))])

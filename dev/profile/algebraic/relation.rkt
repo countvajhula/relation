@@ -29,7 +29,7 @@
 
 (define (check-fold how-many)
   (for ([i (take how-many (in (cycle '((4 1 3 2 7 1 3 5)))))])
-    (foldl + i 0)))
+    (foldl + i #:into 0)))
 
 (check-+-numbers 10000)
 (check-..-strings 10000)
