@@ -18,6 +18,7 @@
                                     (foldr f:foldr)
                                     (append b:append))
                     (only-in data/collection length
+                                             gen:sequence
                                              (foldl d:foldl)
                                              (foldl/steps d:foldl/steps))]]
 
@@ -120,7 +121,7 @@ In the event no operands are received in the course of a computation, the result
   ]
 }
 
- To implement this interface for custom types, the following methods need to be implemented:
+ To implement this interface for custom types, the following methods need to be implemented, unless the type already implements another interface for which a default implementation exists for @racket[gen:appendable] (such as @racket[gen:sequence]) and if more specific handling is not needed for the custom type.
 
  @defproc[(append [a appendable?]
                   [b appendable?])
