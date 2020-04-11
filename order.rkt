@@ -4,13 +4,12 @@
          racket/set
          racket/contract/base
          racket/generic
-         (only-in algebraic/prelude
-                  flip
-                  ||
-                  &&)
-         racket/function
+         (only-in racket/function
+                  curryr)
          data/collection
-         relation/equivalence)
+         relation/equivalence
+         (except-in relation/function
+                    curryr))
 
 (require "private/util.rkt")
 

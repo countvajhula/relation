@@ -14,12 +14,12 @@
                   (group-by b:group-by)
                   splitf-at)
          data/collection
-         (only-in algebraic/prelude
-                  &&
-                  ||)
-         describe)
+         describe
+         relation/logic)
 
 (require "private/util.rkt")
+
+(define || disjoin)
 
 (provide gen:comparable
          comparable/c

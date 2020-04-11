@@ -2,7 +2,6 @@
 (define collection "relation")
 (define deps '("base"
                "collections-lib"
-               "algebraic"
                "describe"
                "arguments"
                "point-free"

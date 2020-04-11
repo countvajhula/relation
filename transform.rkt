@@ -11,13 +11,13 @@
          racket/stream
          racket/generator
          racket/sequence
-         racket/function
-         (only-in algebraic/prelude
-                  &&
-                  ||)
+         (only-in racket/function
+                  identity
+                  negate)
          threading
          (only-in data/collection
                   for-each)
+         relation/function
          relation/algebraic)
 
 (provide (contract-out
