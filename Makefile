@@ -19,6 +19,11 @@ help:
 	@echo "test-algebraic - Run tests for algebraic operators"
 	@echo "docs - View docs in a browser"
 	@echo "profile - Run benchmarks to gauge relative performance against built-in interfaces"
+	@echo "profile-equivalence - Run benchmarks for equivalence relations"
+	@echo "profile-order - Run benchmarks for order relations"
+	@echo "profile-function - Run benchmarks for functional primitives"
+	@echo "profile-transform - Run benchmarks for type transformers"
+	@echo "profile-algebraic - Run benchmarks for algebraic operators"
 
 # Primarily for use by CI.
 # Installs dependencies as well as linking this as a package.
@@ -97,14 +102,32 @@ profile:
 	echo "Profiling logical relations..."
 	raco profile dev/profile/logic/builtin.rkt | grep "Total cpu time"
 	raco profile dev/profile/logic/relation.rkt | grep "Total cpu time"
-	echo "Profiling order and equivalence relations..."
-	raco profile dev/profile/comparable/builtin.rkt | grep "Total cpu time"
-	raco profile dev/profile/comparable/relation.rkt | grep "Total cpu time"
+
+profile-equivalence:
+	echo "Profiling equivalence relations..."
+	raco profile dev/profile/equivalence/builtin.rkt | grep "Total cpu time"
+	raco profile dev/profile/equivalence/relation.rkt | grep "Total cpu time"
+
+profile-order:
+	echo "Profiling order relations..."
+	raco profile dev/profile/order/builtin.rkt | grep "Total cpu time"
+	raco profile dev/profile/order/relation.rkt | grep "Total cpu time"
+
+profile-function:
+	echo "Profiling functional primitives..."
+	raco profile dev/profile/function/builtin.rkt | grep "Total cpu time"
+	raco profile dev/profile/function/relation.rkt | grep "Total cpu time"
+
+profile-transform:
 	echo "Profiling type transformers..."
 	raco profile dev/profile/transform/builtin.rkt | grep "Total cpu time"
 	raco profile dev/profile/transform/relation.rkt | grep "Total cpu time"
+
+profile-algebraic:
 	echo "Profiling algebraic operators..."
 	raco profile dev/profile/algebraic/builtin.rkt | grep "Total cpu time"
 	raco profile dev/profile/algebraic/relation.rkt | grep "Total cpu time"
 
-.PHONY:	help install remove build build-docs build-all check-deps clean test test-equivalence test-order test-function test-transform test-algebraic docs profile
+profile: profile-equivalence profile-order profile-function profile-transform profile-algebraic
+
+.PHONY:	help install remove build build-docs build-all check-deps clean test test-equivalence test-order test-function test-transform test-algebraic docs profile-equivalence profile-order profile-function profile-transform profile-algebraic profile
