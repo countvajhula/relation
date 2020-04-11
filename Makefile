@@ -12,6 +12,11 @@ help:
 	@echo "install - Install package along with dependencies"
 	@echo "remove - Remove package"
 	@echo "test - Run tests"
+	@echo "test-equivalence - Run tests for equivalence relations"
+	@echo "test-order - Run tests for order relations"
+	@echo "test-function - Run tests for functional primitives"
+	@echo "test-transform - Run tests for type transformers"
+	@echo "test-algebraic - Run tests for algebraic operators"
 	@echo "docs - View docs in a browser"
 	@echo "profile - Run benchmarks to gauge relative performance against built-in interfaces"
 
@@ -76,6 +81,9 @@ test-equivalence:
 test-order:
 	raco test -x tests/order.rkt
 
+test-function:
+	raco test -x tests/function.rkt
+
 test-transform:
 	raco test -x tests/transform.rkt
 
@@ -99,4 +107,4 @@ profile:
 	raco profile dev/profile/algebraic/builtin.rkt | grep "Total cpu time"
 	raco profile dev/profile/algebraic/relation.rkt | grep "Total cpu time"
 
-.PHONY:	help install remove build build-docs build-all check-deps clean test docs profile
+.PHONY:	help install remove build build-docs build-all check-deps clean test test-equivalence test-order test-function test-transform test-algebraic docs profile
