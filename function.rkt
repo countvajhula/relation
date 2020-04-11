@@ -4,6 +4,7 @@
          racket/match
          racket/generic
          arguments
+         (prefix-in b: racket/base)
          (except-in data/collection
                     foldl
                     foldl/steps
@@ -16,6 +17,7 @@
          !!
          andf
          orf
+         iff
          flip
          flip$
          flip*
@@ -25,6 +27,7 @@
          make-function
          function-null
          function-cons
+         function-compose
          curry
          curryr)
 
@@ -51,6 +54,12 @@
      (match vs
        ['() v]
        [_ (or v (apply orf vs))])]))
+
+(define (iff pred f g)
+  (λ (v)
+    (if (pred v)
+        (f v)
+        (g v))))
 
 (define (flip f)
   (λ (x y . args)
@@ -92,6 +101,13 @@
 
 (define (function-cons proc fs)
   (function (cons proc (function-components fs))))
+
+(define (function-compose . fs)
+  (function (apply b:append
+                   (b:map (iff function?
+                               function-components
+                               list)
+                          fs))))
 
 (define (arguments-cons v args)
   (make-arguments (cons v (arguments-positional args))
