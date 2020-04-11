@@ -33,7 +33,6 @@ This module provides a generic interface that overrides these standard operators
                                                       foldl
                                                       foldl/steps))
 				                 '(require relation)
-				                 '(require racket/function)
 								 '(require racket/set))))
 
 @section[#:tag "order:interface"]{Interface}

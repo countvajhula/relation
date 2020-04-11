@@ -5,8 +5,10 @@
            (prefix-in b: racket/base)
            racket/set
            racket/stream
-           racket/function
            racket/class
+           racket/string
+           (only-in racket/function
+                    identity)
            (except-in data/collection
                       foldl
                       foldl/steps

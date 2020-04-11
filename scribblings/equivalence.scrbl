@@ -36,7 +36,6 @@ The @racket[=] relation provided in this module is intended to express the notio
                                                       foldl
                                                       foldl/steps))
 				                 '(require relation)
-				                 '(require racket/function)
 								 '(require racket/set)
 								 '(require racket/stream))))
 

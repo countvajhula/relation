@@ -5,7 +5,9 @@
          racket/vector
          racket/set
          racket/dict
-         racket/function
+         (except-in racket/function
+                    curry
+                    curryr)
          racket/generic
          racket/undefined
          (rename-in data/collection
@@ -14,6 +16,7 @@
                     (append d:append))
          point-free
          relation/equivalence
+         relation/function
          version-case)
 
 (version-case
@@ -121,11 +124,23 @@
                  (error 'appendable-inverse
                         "~a is not invertible under the append operation!"
                         appendable))]
-  #:defaults ([procedure?
+  #:defaults ([function?
+               (define/generic -append append)
+               (define (append self other)
+                 (function (-append (function-components self)
+                                    (if (function? other)
+                                        (function-components other)
+                                        ; if it's just a regular procedure
+                                        (list other)))))
+               (define (appendable-identity self)
+                 (function '()))]
+              [procedure?
                (define (append appendable other)
                  (if (eq? other ID)
                      appendable
-                     (compose appendable other)))
+                     (if (function? other)
+                         (function-cons appendable other)
+                         (compose appendable other))))
                (define (appendable-identity appendable)
                  identity)]
               [dict?

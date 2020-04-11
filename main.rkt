@@ -5,12 +5,14 @@
 (require "logic.rkt"
          "equivalence.rkt"
          "order.rkt"
+         "function.rkt"
          "transform.rkt"
          "algebraic.rkt")
 
 (provide (all-from-out "logic.rkt"
                        "equivalence.rkt"
                        "order.rkt"
+                       "function.rkt"
                        "transform.rkt"
                        "algebraic.rkt"))
 

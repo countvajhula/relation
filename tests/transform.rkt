@@ -7,7 +7,8 @@
            racket/set
            racket/stream
            racket/sequence
-           racket/function)
+           (only-in racket/function
+                    identity))
 
   (check-true (->boolean 0))
   (check-true (->boolean (list 1 2)))

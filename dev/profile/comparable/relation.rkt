@@ -2,7 +2,8 @@
 
 (require (prefix-in b: racket/base)
          racket/stream
-         racket/function
+         (only-in racket/function
+                  identity)
          (except-in data/collection
                     foldl
                     foldl/steps

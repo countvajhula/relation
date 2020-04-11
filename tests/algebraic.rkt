@@ -11,7 +11,9 @@
            (prefix-in b: racket/base)
            racket/set
            racket/stream
-           racket/function)
+           (only-in racket/function
+                    identity
+                    thunk))
 
   ;; append
   (check-equal? (.. "hi" " " "there") "hi there")

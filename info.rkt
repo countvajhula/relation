@@ -4,6 +4,7 @@
                "collections-lib"
                "algebraic"
                "describe"
+               "arguments"
                "point-free"
                "threading-lib"
                "mischief"

@@ -6,8 +6,7 @@
            (prefix-in b: racket/base)
            racket/set
            racket/stream
-           racket/sequence
-           racket/function)
+           racket/sequence)
 
   ;; less than
   (check-true (< 1 2 3) "monotonically increasing")
