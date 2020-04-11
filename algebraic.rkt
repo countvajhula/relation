@@ -367,10 +367,6 @@
 (define (undefined? v)
   (eq? v undefined))
 
-(define (flip$ f)
-  (λ (x . args)
-    (apply f (append args (list x)))))
-
 (define (fold f
               #:into [base undefined]
               #:order [order 'abb]
