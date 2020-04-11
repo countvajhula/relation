@@ -17,7 +17,8 @@
          threading
          (only-in data/collection
                   for-each)
-         relation/function
+         (except-in relation/function
+                    negate)
          relation/algebraic)
 
 (provide (contract-out

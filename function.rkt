@@ -1,6 +1,6 @@
 #lang racket/base
 
-(require racket/function
+(require (prefix-in f: racket/function)
          racket/contract/base
          racket/match
          racket/generic
@@ -31,11 +31,20 @@
           [make-function (-> procedure? ... function?)]
           [function-null function?]
           [function-cons (-> procedure? function? function?)]
-          [function-compose (-> function? ... function?)]))
-
-(define && conjoin)
-(define || disjoin)
-(define !! negate)
+          [function-compose (-> (or/c function? procedure?) ... function?)]
+          [conjoined? (-> any/c boolean?)]
+          [conjoined (-> list? conjoined?)]
+          [conjoined-components (-> conjoined? list?)]
+          [conjoin (-> procedure? ... conjoined?)]
+          [disjoined? (-> any/c boolean?)]
+          [disjoined (-> list? disjoined?)]
+          [disjoined-components (-> disjoined? list?)]
+          [disjoin (-> procedure? ... disjoined?)]
+          [negated? (-> any/c boolean?)]
+          [negated (-> procedure? disjoined?)]
+          [negated-f (-> disjoined? procedure?)]
+          [negate (-> procedure? disjoined?)]
+          [curried? (-> any/c boolean?)]))
 
 (define (unthunk f . args)
   (λ ignored-args
@@ -114,6 +123,67 @@
 (define (arguments-cons v args)
   (make-arguments (cons v (arguments-positional args))
                   (arguments-keyword args)))
+
+(struct conjoined (components)
+  #:transparent
+  #:property prop:procedure
+  (λ (self . args)
+    (apply (apply f:conjoin
+                  (conjoined-components self))
+           args))
+  #:methods gen:sequence
+  [(define/generic -empty? empty?)
+   (define/generic -first first)
+   (define/generic -rest rest)
+   (define/generic -reverse reverse)
+   (define (empty? self)
+     (-empty? (conjoined-components self)))
+   (define (first self)
+     (-first (conjoined-components self)))
+   (define (rest self)
+     (conjoined (-rest (conjoined-components self))))
+   (define (reverse self)
+     (conjoined (-reverse (conjoined-components self))))])
+
+(define (conjoin . fs)
+  (conjoined fs))
+
+(struct disjoined (components)
+  #:transparent
+  #:property prop:procedure
+  (λ (self . args)
+    (apply (apply f:disjoin
+                  (disjoined-components self))
+           args))
+  #:methods gen:sequence
+  [(define/generic -empty? empty?)
+   (define/generic -first first)
+   (define/generic -rest rest)
+   (define/generic -reverse reverse)
+   (define (empty? self)
+     (-empty? (disjoined-components self)))
+   (define (first self)
+     (-first (disjoined-components self)))
+   (define (rest self)
+     (disjoined (-rest (disjoined-components self))))
+   (define (reverse self)
+     (disjoined (-reverse (disjoined-components self))))])
+
+(define (disjoin . fs)
+  (disjoined fs))
+
+(struct negated (f)
+  #:transparent
+  #:property prop:procedure
+  (λ (self . args)
+    (not (apply (negated-f self) args))))
+
+(define (negate f)
+  (negated f))
+
+(define && conjoin)
+(define || disjoin)
+(define !! negate)
 
 (struct curried (f side args)
   #:transparent

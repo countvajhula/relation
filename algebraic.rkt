@@ -5,9 +5,7 @@
          racket/vector
          racket/set
          racket/dict
-         (except-in racket/function
-                    curry
-                    curryr)
+         (prefix-in f: racket/function)
          racket/generic
          racket/undefined
          (rename-in data/collection
@@ -142,7 +140,7 @@
                          (function-cons appendable other)
                          (compose appendable other))))
                (define (appendable-identity appendable)
-                 identity)]
+                 f:identity)]
               [dict?
                (define (append appendable other)
                  (if (eq? other ID)
