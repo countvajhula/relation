@@ -1,6 +1,7 @@
 #lang racket/base
 
 (require racket/function
+         racket/contract/base
          racket/match
          racket/generic
          arguments
@@ -11,25 +12,26 @@
                     append)
          relation/equivalence)
 
-(provide unthunk
-         &&
+(provide &&
          ||
          !!
-         andf
-         orf
-         iff
-         flip
-         flip$
-         flip*
-         function?
-         function
-         function-components
-         make-function
-         function-null
-         function-cons
-         function-compose
          curry
-         curryr)
+         curryr
+         (contract-out
+          [unthunk (-> procedure? any/c ... procedure?)]
+          [andf (-> any/c ... any/c)]
+          [orf (-> any/c ... any/c)]
+          [iff (-> (-> any/c boolean?) procedure? procedure? procedure?)]
+          [flip (-> procedure? procedure?)]
+          [flip$ (-> procedure? procedure?)]
+          [flip* (-> procedure? procedure?)]
+          [function? (-> any/c boolean?)]
+          [function (-> list? function?)]
+          [function-components (-> function? list?)]
+          [make-function (-> procedure? ... function?)]
+          [function-null function?]
+          [function-cons (-> procedure? function? function?)]
+          [function-compose (-> function? ... function?)]))
 
 (define && conjoin)
 (define || disjoin)
