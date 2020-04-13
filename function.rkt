@@ -12,12 +12,7 @@
                     append)
          relation/equivalence)
 
-(provide &&
-         ||
-         !!
-         curry
-         curryr
-         (contract-out
+(provide (contract-out
           [unthunk (-> procedure? any/c ... procedure?)]
           [andf (-> any/c ... any/c)]
           [orf (-> any/c ... any/c)]
@@ -26,25 +21,32 @@
           [flip$ (-> procedure? procedure?)]
           [flip* (-> procedure? procedure?)]
           [function? (-> any/c boolean?)]
-          [function (-> list? function?)]
+          [function (-> list? symbol? list? function?)]
           [function-components (-> function? list?)]
           [make-function (-> procedure? ... function?)]
+          [f (-> procedure? ... function?)]
+          [f> (-> procedure? ... function?)]
           [function-null function?]
           [function-cons (-> procedure? function? function?)]
           [function-compose (-> (or/c function? procedure?) ... function?)]
+          [curry (unconstrained-domain-> function?)]
+          [curryr (unconstrained-domain-> function?)]
           [conjoined? (-> any/c boolean?)]
           [conjoined (-> list? conjoined?)]
           [conjoined-components (-> conjoined? list?)]
           [conjoin (-> procedure? ... conjoined?)]
+          [&& (-> procedure? ... conjoined?)]
           [disjoined? (-> any/c boolean?)]
           [disjoined (-> list? disjoined?)]
           [disjoined-components (-> disjoined? list?)]
           [disjoin (-> procedure? ... disjoined?)]
+          [|| (-> procedure? ... disjoined?)]
           [negated? (-> any/c boolean?)]
           [negated (-> procedure? disjoined?)]
           [negated-f (-> disjoined? procedure?)]
           [negate (-> procedure? disjoined?)]
-          [curried? (-> any/c boolean?)]))
+          [!! (-> procedure? negated?)]))
+
 
 (define (unthunk f . args)
   (λ ignored-args
@@ -84,13 +86,30 @@
   (λ args
     (apply f (reverse args))))
 
-(struct function (components)
+(struct function (components side args)
   #:transparent
   #:property prop:procedure
-  (λ (self . args)
-    (apply (apply compose
-                  (function-components self))
-           args))
+  (lambda/arguments
+   args
+   (let* ([self (first (arguments-positional args))]
+          [pos (rest (arguments-positional args))]
+          [kw (arguments-keyword args)]
+          [args-invocation (make-arguments pos kw)])
+     (let ([f (apply compose (function-components self))]
+           [side (function-side self)]
+           [args (if (= (function-side self) 'left)
+                     (arguments-merge (function-args self)
+                                      args-invocation)
+                     (arguments-merge args-invocation
+                                      (function-args self)))])
+       (with-handlers ([exn:fail:contract:arity?
+                        (λ (exn)
+                          (let ([curry-proc (if (= side 'left)
+                                                curry
+                                                curryr)])
+                            (apply/arguments curry-proc
+                                             (arguments-cons f args))))])
+         (apply/arguments f args)))))
   #:methods gen:sequence
   [(define/generic -empty? empty?)
    (define/generic -first first)
@@ -101,12 +120,23 @@
    (define (first self)
      (-first (function-components self)))
    (define (rest self)
-     (function (-rest (function-components self))))
+     (function (-rest (function-components self))
+               (function-side self)
+               (function-args self)))
    (define (reverse self)
-     (function (-reverse (function-components self))))])
+     (function (-reverse (function-components self))
+               (function-side self)
+               (function-args self)))])
 
 (define (make-function . fs)
-  (function fs))
+  (function fs 'left empty-arguments))
+
+(define (make-right-function . fs)
+  (function fs 'right empty-arguments))
+
+(define f make-function)
+
+(define f> make-right-function)
 
 (define function-null (make-function))
 
@@ -119,6 +149,22 @@
                                function-components
                                list)
                           fs))))
+
+(define/arguments (curry args)
+  (let ([f (first (arguments-positional args))]
+        [pos (rest (arguments-positional args))]
+        [kw (arguments-keyword args)])
+    (function (list f)
+              'left
+              (make-arguments pos kw))))
+
+(define/arguments (curryr args)
+  (let ([f (first (arguments-positional args))]
+        [pos (rest (arguments-positional args))]
+        [kw (arguments-keyword args)])
+    (function (list f)
+              'right
+              (make-arguments pos kw))))
 
 (define (arguments-cons v args)
   (make-arguments (cons v (arguments-positional args))
@@ -184,44 +230,3 @@
 (define && conjoin)
 (define || disjoin)
 (define !! negate)
-
-(struct curried (f side args)
-  #:transparent
-  #:property prop:procedure
-  (lambda/arguments
-   args
-   (let* ([self (first (arguments-positional args))]
-          [pos (rest (arguments-positional args))]
-          [kw (arguments-keyword args)]
-          [args-invocation (make-arguments pos kw)])
-     (let ([f (curried-f self)]
-           [side (curried-side self)]
-           [args (if (= (curried-side self) 'left)
-                     (arguments-merge (curried-args self)
-                                      args-invocation)
-                     (arguments-merge args-invocation
-                                      (curried-args self)))])
-       (with-handlers ([exn:fail:contract:arity?
-                        (λ (exn)
-                          (let ([curry-proc (if (= side 'left)
-                                                curry
-                                                curryr)])
-                            (apply/arguments curry-proc
-                                             (arguments-cons f args))))])
-         (apply/arguments f args))))))
-
-(define/arguments (curry args)
-  (let ([f (first (arguments-positional args))]
-        [pos (rest (arguments-positional args))]
-        [kw (arguments-keyword args)])
-    (curried f
-             'left
-             (make-arguments pos kw))))
-
-(define/arguments (curryr args)
-  (let ([f (first (arguments-positional args))]
-        [pos (rest (arguments-positional args))]
-        [kw (arguments-keyword args)])
-    (curried f
-             'right
-             (make-arguments pos kw))))
