@@ -192,7 +192,7 @@ This module provides a @racket[function] type intended as a drop-in alternative 
   ]
 }
 
-@defproc[(compose [f procedure?]
+@defproc[(compose [f function?]
                   ...)
          function?]{
 
@@ -202,6 +202,20 @@ This module provides a @racket[function] type intended as a drop-in alternative 
     #:eval eval-for-docs
     (compose add1 ->string)
     (compose (f add1) (f ->string))
+  ]
+}
+
+@defproc[(power [n integer?]
+                [f function?])
+         function?]{
+
+ Composes a function with itself @racket[n] times.
+
+@examples[
+    #:eval eval-for-docs
+    (power 2 add1)
+    ((power 2 add1) 3)
+    ((power 10 add1) 3)
   ]
 }
 
