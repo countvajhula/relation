@@ -31,6 +31,7 @@
           [function-null function?]
           [function-cons (-> procedure? function? function?)]
           [compose (-> (or/c function? procedure?) ... function?)]
+          [power (-> integer? (or/c function? procedure?) function?)]
           [curry (unconstrained-domain-> function?)]
           [curryr (unconstrained-domain-> function?)]
           [conjoined? (-> any/c boolean?)]
@@ -161,6 +162,14 @@
               (if (function? initial-function)
                   (function-args initial-function)
                   empty-arguments))))
+
+(define (~power n f)
+  ; maybe incorporate a power into the function type
+  (if (= n 0)
+      function-null
+      (function-cons f (~power (sub1 n) f))))
+
+(define power (f ~power))
 
 (define/arguments (curry args)
   (let ([f (first (arguments-positional args))]
