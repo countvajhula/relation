@@ -123,15 +123,7 @@
                         "~a is not invertible under the append operation!"
                         appendable))]
   #:defaults ([function?
-               (define/generic -append append)
-               (define (append self other)
-                 (function (-append (function-components self)
-                                    (if (function? other)
-                                        (function-components other)
-                                        ; if it's just a regular procedure
-                                        (list other)))
-                           (function-side self)
-                           (function-args self)))
+               (define append function-compose)
                (define (appendable-identity self)
                  function-null)]
               [procedure?

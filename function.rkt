@@ -21,7 +21,7 @@
           [flip$ (-> procedure? procedure?)]
           [flip* (-> procedure? procedure?)]
           [function? (-> any/c boolean?)]
-          [function (-> list? symbol? list? function?)]
+          [function (-> list? symbol? arguments? function?)]
           [function-components (-> function? list?)]
           [function-side (-> function? symbol?)]
           [function-args (-> function? arguments?)]
@@ -148,11 +148,19 @@
             (function-args f)))
 
 (define (function-compose . fs)
-  (function (apply b:append
-                   (b:map (iff function?
-                               function-components
-                               list)
-                          fs))))
+  ; TODO: improve
+  (let ([initial-function (last fs)])
+    (function (apply b:append
+                     (b:map (iff function?
+                                 function-components
+                                 list)
+                            fs))
+              (if (function? initial-function)
+                  (function-side initial-function)
+                  'left)
+              (if (function? initial-function)
+                  (function-args initial-function)
+                  empty-arguments))))
 
 (define/arguments (curry args)
   (let ([f (first (arguments-positional args))]
