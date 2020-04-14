@@ -23,6 +23,8 @@
           [function? (-> any/c boolean?)]
           [function (-> list? symbol? list? function?)]
           [function-components (-> function? list?)]
+          [function-side (-> function? symbol?)]
+          [function-args (-> function? arguments?)]
           [make-function (-> procedure? ... function?)]
           [f (-> procedure? ... function?)]
           [f> (-> procedure? ... function?)]
@@ -140,8 +142,10 @@
 
 (define function-null (make-function))
 
-(define (function-cons proc fs)
-  (function (cons proc (function-components fs))))
+(define (function-cons proc f)
+  (function (cons proc (function-components f))
+            (function-side f)
+            (function-args f)))
 
 (define (function-compose . fs)
   (function (apply b:append

@@ -129,9 +129,11 @@
                                     (if (function? other)
                                         (function-components other)
                                         ; if it's just a regular procedure
-                                        (list other)))))
+                                        (list other)))
+                           (function-side self)
+                           (function-args self)))
                (define (appendable-identity self)
-                 (function '()))]
+                 function-null)]
               [procedure?
                (define (append appendable other)
                  (if (eq? other ID)
