@@ -20,7 +20,7 @@
 (version-case
  [(version< (version) "7.5.0.14")
   (define string-append
-    (compose string->immutable-string b:string-append))]
+    (b:compose string->immutable-string b:string-append))]
  [else
   (define string-append string-append-immutable)])
 
@@ -123,7 +123,7 @@
                         "~a is not invertible under the append operation!"
                         appendable))]
   #:defaults ([function?
-               (define append function-compose)
+               (define append compose)
                (define (appendable-identity self)
                  function-null)]
               [procedure?
@@ -132,7 +132,7 @@
                      appendable
                      (if (function? other)
                          (function-cons appendable other)
-                         (compose appendable other))))
+                         (b:compose appendable other))))
                (define (appendable-identity appendable)
                  f:identity)]
               [dict?

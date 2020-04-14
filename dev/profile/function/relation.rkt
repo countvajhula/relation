@@ -10,7 +10,7 @@
                   curry
                   curryr
                   make-function
-                  function-compose))
+                  compose))
 
 (define (str-append-3 x y z)
   (string-append x y z))
@@ -40,7 +40,7 @@
 (define (check-compose how-many)
   (for ([i (take how-many (in (cycle '(1 2 3))))]
         [j (take how-many (in (cycle '(1 2 3))))])
-    ((function-compose add1 square times2 +) 5 6)))
+    ((compose add1 square times2 +) 5 6)))
 
 (check-curry-+ 10000)
 (check-curry-strings 10000)

@@ -30,7 +30,7 @@
           [f> (-> procedure? ... function?)]
           [function-null function?]
           [function-cons (-> procedure? function? function?)]
-          [function-compose (-> (or/c function? procedure?) ... function?)]
+          [compose (-> (or/c function? procedure?) ... function?)]
           [curry (unconstrained-domain-> function?)]
           [curryr (unconstrained-domain-> function?)]
           [conjoined? (-> any/c boolean?)]
@@ -44,9 +44,9 @@
           [disjoin (-> procedure? ... disjoined?)]
           [|| (-> procedure? ... disjoined?)]
           [negated? (-> any/c boolean?)]
-          [negated (-> procedure? disjoined?)]
-          [negated-f (-> disjoined? procedure?)]
-          [negate (-> procedure? disjoined?)]
+          [negated (-> procedure? negated?)]
+          [negated-f (-> negated? procedure?)]
+          [negate (-> procedure? negated?)]
           [!! (-> procedure? negated?)]))
 
 
@@ -97,7 +97,7 @@
           [pos (rest (arguments-positional args))]
           [kw (arguments-keyword args)]
           [args-invocation (make-arguments pos kw)])
-     (let ([f (apply compose (function-components self))]
+     (let ([f (apply b:compose (function-components self))]
            [side (function-side self)]
            [args (if (= (function-side self) 'left)
                      (arguments-merge (function-args self)
@@ -147,7 +147,7 @@
             (function-side f)
             (function-args f)))
 
-(define (function-compose . fs)
+(define (compose . fs)
   ; TODO: improve
   (let ([initial-function (last fs)])
     (function (apply b:append
