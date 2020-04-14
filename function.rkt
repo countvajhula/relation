@@ -149,19 +149,7 @@
             (function-args f)))
 
 (define (compose . fs)
-  ; TODO: improve
-  (let ([initial-function (last fs)])
-    (function (apply b:append
-                     (b:map (iff function?
-                                 function-components
-                                 list)
-                            fs))
-              (if (function? initial-function)
-                  (function-side initial-function)
-                  'left)
-              (if (function? initial-function)
-                  (function-args initial-function)
-                  empty-arguments))))
+  (apply f fs))
 
 (define (~power n f)
   ; maybe incorporate a power into the function type

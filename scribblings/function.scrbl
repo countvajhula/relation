@@ -68,7 +68,7 @@ This module provides a @racket[function] type intended as a drop-in alternative 
 @defproc[(function-side [f function?])
          symbol?]{
 
-  The currying direction.
+  The side on which the function is curried.
 
 @examples[
     #:eval eval-for-docs
