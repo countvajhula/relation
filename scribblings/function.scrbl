@@ -156,7 +156,7 @@ This module provides a @racket[function] type intended as a drop-in alternative 
 @examples[
     #:eval eval-for-docs
     ((iff positive? add1 sub1) 3)
-    ((iff positive? add1 sub1) -3)
+    (map (iff positive? add1 sub1) (list 3 -3))
   ]
 }
 

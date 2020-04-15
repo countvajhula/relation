@@ -4,6 +4,7 @@
          racket/contract/base
          racket/match
          racket/generic
+         racket/stream
          arguments
          (prefix-in b: racket/base)
          (except-in data/collection
@@ -26,6 +27,7 @@
           [function-side (-> function? symbol?)]
           [function-args (-> function? arguments?)]
           [make-function (-> procedure? ... function?)]
+          [make-right-function (-> procedure? ... function?)]
           [f (-> procedure? ... function?)]
           [f> (-> procedure? ... function?)]
           [function-null function?]
@@ -147,6 +149,35 @@
   (function (cons proc (function-components f))
             (function-side f)
             (function-args f)))
+
+(define (fold-into-tail lst)
+  (cond [(empty? lst) (raise-arguments-error 'fold-into-tail
+                                             "Tail must be a list")]
+        [(and (list? (first lst))
+              (empty? (rest lst)))
+         (first lst)]
+        [else (cons (first lst)
+                    (fold-into-tail (rest lst)))]))
+
+(define/arguments (apply/steps args)
+  (let ([f (first (arguments-positional args))]
+        [args (make-arguments (fold-into-tail
+                               (rest (arguments-positional args)))
+                              (arguments-keyword args))])
+    (if (empty? f)
+        (stream (apply/arguments f args))
+        (let* ([remf (reverse f)]
+               [v (apply/arguments (first remf)
+                                   args)])
+          (stream-cons v
+                       (let loop ([remf (rest remf)]
+                                  [v v])
+                         (if (empty? remf)
+                             (stream)
+                             (let ([v ((first remf) v)])
+                               (stream-cons v
+                                            (loop (rest remf)
+                                                  v))))))))))
 
 (define (compose . fs)
   (apply f fs))
