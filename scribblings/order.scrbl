@@ -228,7 +228,7 @@ This module provides a generic interface that overrides these standard operators
   ]
 }
 
-@defproc[(sort [less-than? procedure?]
+@defproc[(sort [less-than? (one-of/c < >)]
                [#:key key (-> orderable? orderable?) #f]
                [seq (sequenceof orderable?)])
          (sequenceof orderable?)]{
