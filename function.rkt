@@ -32,6 +32,7 @@
           [f> (-> procedure? ... function?)]
           [function-null function?]
           [function-cons (-> procedure? function? function?)]
+          [apply/steps (unconstrained-domain-> sequence?)]
           [compose (-> (or/c function? procedure?) ... function?)]
           [power (-> integer? (or/c function? procedure?) function?)]
           [curry (unconstrained-domain-> function?)]

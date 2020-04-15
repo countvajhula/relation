@@ -192,6 +192,20 @@ This module provides a @racket[function] type intended as a drop-in alternative 
   ]
 }
 
+@defproc[(apply/steps [f function?]
+                      [v any/c] ... [lst list?]
+                      [#:<kw> kw-arg any/c] ...)
+         any]{
+
+ Similar to @racketlink[b:apply]{apply}, but yields a sequence corresponding to the values at each stage of application of the function @racket[f].
+
+@examples[
+    #:eval eval-for-docs
+    (->list (apply/steps (f add1 sub1 add1) (list 3)))
+    (->list (apply/steps (f ->string add1 ->number) (list "1")))
+  ]
+}
+
 @defproc[(compose [f function?]
                   ...)
          function?]{
