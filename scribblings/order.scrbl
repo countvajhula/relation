@@ -125,7 +125,7 @@ This module provides a generic interface that overrides these standard operators
             ...)
          boolean?]{
 
- True if the v's are monotonically increasing. If a transformation is provided via the @racket[#:key] argument, then it is applied to the arguments prior to comparing them.
+ True if the v's are monotonically increasing according to the canonical order relation for the arguments, which is determined by their type. If a transformation is provided via the @racket[#:key] argument, then it is applied to the arguments prior to comparing them.
 
 @examples[
     #:eval eval-for-docs
@@ -145,7 +145,7 @@ This module provides a generic interface that overrides these standard operators
                           ...)
                        boolean?])]{
 
- True if the v's are monotonically nondecreasing. If a transformation is provided via the @racket[#:key] argument, then it is applied to the arguments prior to comparing them.
+ True if the v's are monotonically nondecreasing according to the canonical order relation for the arguments, which is determined by their type. If a transformation is provided via the @racket[#:key] argument, then it is applied to the arguments prior to comparing them.
 
 @examples[
     #:eval eval-for-docs
@@ -165,7 +165,7 @@ This module provides a generic interface that overrides these standard operators
                           ...)
                        boolean?])]{
 
- True if the v's are monotonically nonincreasing. If a transformation is provided via the @racket[#:key] argument, then it is applied to the arguments prior to comparing them.
+ True if the v's are monotonically nonincreasing according to the canonical order relation for the arguments, which is determined by their type. If a transformation is provided via the @racket[#:key] argument, then it is applied to the arguments prior to comparing them.
 
 @examples[
     #:eval eval-for-docs
@@ -181,7 +181,7 @@ This module provides a generic interface that overrides these standard operators
             ...)
          boolean?]{
 
- True if the v's are monotonically decreasing. If a transformation is provided via the @racket[#:key] argument, then it is applied to the arguments prior to comparing them.
+ True if the v's are monotonically decreasing according to the canonical order relation for the arguments, which is determined by their type. If a transformation is provided via the @racket[#:key] argument, then it is applied to the arguments prior to comparing them.
 
 @examples[
     #:eval eval-for-docs
@@ -197,7 +197,7 @@ This module provides a generic interface that overrides these standard operators
               ...)
          orderable?]{
 
- Returns the minimum value. If @racket[key] is provided, it is applied to the arguments prior to the comparison (this pattern is often referred to as "argmin" in math and programming literature). The values are compared using the canonical comparison for their type.
+ Returns the minimum value according to the canonical order relation for the arguments, which is determined by their type. If @racket[key] is provided, it is applied to the arguments prior to the comparison (this pattern is often referred to as "argmin" in math and programming literature). The values are compared using the canonical comparison for their type.
 
 @margin-note{In the case of a nonlinear order (i.e. where there is no greatest or least element), @racket[min] would return an arbitrary local minimum. You should typically only use this function when you know that a global minimum exists.}
 
@@ -215,7 +215,7 @@ This module provides a generic interface that overrides these standard operators
               ...)
          orderable?]{
 
- Returns the maximum value. If @racket[key] is provided, it is applied to the arguments prior to the comparison (this pattern is often referred to as "argmax" in math and programming literature). The values are compared using the canonical comparison for their type.
+ Returns the maximum value according to the canonical order relation for the arguments, which is determined by their type. If @racket[key] is provided, it is applied to the arguments prior to the comparison (this pattern is often referred to as "argmax" in math and programming literature). The values are compared using the canonical comparison for their type.
 
 @margin-note{In the case of a nonlinear order (i.e. where there is no greatest or least element), @racket[max] would return an arbitrary local maximum. You should typically only use this function when you know that a global maximum exists.}
 
@@ -233,7 +233,7 @@ This module provides a generic interface that overrides these standard operators
                [seq (sequenceof orderable?)])
          (sequenceof orderable?)]{
 
- Like @racketlink[b:sort]{sort} but accepts arbitrary sequences as input, and expects the comparison procedure @racket[less-than?] to be either @racket[<] or @racket[>]. The values are compared using the canonical comparison for their type. If @racket[key] is provided, it is applied to the arguments prior to the comparison.
+ Like @racketlink[b:sort]{sort} but accepts arbitrary sequences as input, and employs a generic order relation (either @racket[<] or @racket[>]) as the comparison procedure.
 
 @examples[
     #:eval eval-for-docs
