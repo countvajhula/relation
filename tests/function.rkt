@@ -8,6 +8,8 @@
                       foldl/steps
                       append)
            data/maybe
+           (only-in racket/function
+                    thunk)
            relation)
 
   (check-equal? ((unthunk (λ () 5))) 5)
@@ -40,7 +42,11 @@
     (check-equal? (((curry str-append-3 "hello") " ") "there") "hello there")
     (check-equal? ((curryr str-append-3 "there") "hello" " ") "hello there")
     (check-equal? (((curryr str-append-3 "there") " ") "hello") "hello there")
-    (check-equal? ((function-cons ->bytes (curry str-append-3 "hello" " ")) "there") #"hello there"))
+    (check-equal? ((function-cons ->bytes (curry str-append-3 "hello" " ")) "there") #"hello there")
+    (check-exn exn:fail:contract:arity? (thunk ((curry str-append-3 "hello" "there") "blah" "blah")))
+    (check-exn exn:fail:contract:arity? (thunk ((curry str-append-3 "hello" "there" "blah") "blah")))
+    (check-exn exn:fail:contract:arity? (thunk ((curry str-append-3 "hello") "there" "blah" "blah")))
+    (check-exn exn:fail:contract:arity? (thunk ((curry str-append-3 "hello" "there" "blah" "blah")))))
   (check-equal? ((function-cons add1 (f sub1)) 3) 3)
   (check-equal? (->list (apply/steps (f add1 sub1 add1) (list 3))) (list 4 3 4))
   (check-equal? (->list (apply/steps (f ->string sub1 fold) #:into 2 + (list (list 1 2 3 4)))) (list 12 11 "11"))

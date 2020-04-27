@@ -98,6 +98,17 @@
 (define (lift f)
   (curry f:map f))
 
+(define (~min-arity-value arity)
+  (cond [(number? arity) arity]
+        [(arity-at-least? arity) (arity-at-least-value arity)]
+        [(list? arity) (apply min (map ~min-arity-value arity))]
+        [else (raise-argument-error 'min-arity
+                                    "normalized-arity?"
+                                    arity)]))
+
+(define (~min-arity f)
+  (~min-arity-value (procedure-arity f)))
+
 (struct function (components side args)
   #:transparent
   #:property prop:procedure
@@ -116,11 +127,14 @@
                                       (function-args self)))])
        (with-handlers ([exn:fail:contract:arity?
                         (λ (exn)
-                          (let ([curry-proc (if (= side 'left)
-                                                curry
-                                                curryr)])
-                            (apply/arguments curry-proc
-                                             (arguments-cons f args))))])
+                          (if (> (length (arguments-positional args))
+                                 (~min-arity f))
+                              (raise exn)
+                              (let ([curry-proc (if (= side 'left)
+                                                    curry
+                                                    curryr)])
+                                (apply/arguments curry-proc
+                                                 (arguments-cons f args)))))])
          (apply/arguments f args)))))
   #:methods gen:sequence
   [(define/generic -empty? empty?)
