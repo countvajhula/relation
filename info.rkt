@@ -3,6 +3,7 @@
 (define deps '("base"
                "collections-lib"
                "describe"
+               "functional-lib"
                "arguments"
                "point-free"
                "threading-lib"

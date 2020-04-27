@@ -49,6 +49,7 @@ This module provides a @racket[function] type intended as a drop-in alternative 
       (f add1 ->number)
       ((f ->string add1 ->number) "12")
       (define (str-append x y z) (string-append x y z))
+      ((f str-append) "hello")
       ((((f str-append) "hello") "there") "friend")
       ((((f> str-append) "hello") "there") "friend")
     ]
@@ -175,6 +176,20 @@ This module provides a @racket[function] type intended as a drop-in alternative 
     ((flip string-append) "my" "hello" "friend")
     ((flip$ string-append) "friend" "hello" "my")
     ((flip* string-append) "friend" "my" "hello")
+  ]
+}
+
+@defproc[(lift [f procedure?])
+         procedure?]{
+
+ "Lifts" a function operating on ordinary values to a function operating on a functor (for instance, a list of such values) in the natural way. This is a thin wrapper around @racketlink[f:map]{map}, and may lend clarity in cases where you want to derive such a function but not necessarily apply it immediately.
+
+@examples[
+    #:eval eval-for-docs
+    (define list-add1 (lift add1))
+    (->list (list-add1 (list 1 2 3)))
+    (->list ((lift ->string) (list 1 2 3)))
+    ((lift add1) (just 3))
   ]
 }
 

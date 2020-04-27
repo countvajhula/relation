@@ -11,6 +11,8 @@
                     foldl
                     foldl/steps
                     append)
+         (only-in data/functor
+                  (map f:map))
          relation/equivalence)
 
 (provide (contract-out
@@ -21,6 +23,7 @@
           [flip (-> procedure? procedure?)]
           [flip$ (-> procedure? procedure?)]
           [flip* (-> procedure? procedure?)]
+          [lift (-> procedure? procedure?)]
           [function? (-> any/c boolean?)]
           [function (-> list? symbol? arguments? function?)]
           [function-components (-> function? list?)]
@@ -91,6 +94,9 @@
 (define (flip* f)
   (λ args
     (apply f (reverse args))))
+
+(define (lift f)
+  (curry f:map f))
 
 (struct function (components side args)
   #:transparent

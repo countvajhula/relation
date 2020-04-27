@@ -7,6 +7,7 @@
                       foldl
                       foldl/steps
                       append)
+           data/maybe
            relation)
 
   (check-equal? ((unthunk (λ () 5))) 5)
@@ -25,6 +26,9 @@
   (check-equal? ((flip string-append) " " "hello" "my" " " "friend") "hello my friend")
   (check-equal? ((flip$ string-append) "friend" "hello" " " "my" " ") "hello my friend")
   (check-equal? ((flip* string-append) "friend" " " "my" " " "hello") "hello my friend")
+  (check-equal? (->list ((lift add1) (list 1 2 3))) (list 2 3 4))
+  (check-equal? (->list ((lift ->string) (list 1 2 3))) (list "1" "2" "3"))
+  (check-equal? ((lift add1) (just 3)) (just 4))
   (check-equal? ((make-function add1 add1 +) 3 2) 7)
   (check-equal? ((make-function +) 3 2) 5)
   (check-equal? (first (make-function add1 sub1)) add1)
