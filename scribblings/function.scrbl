@@ -4,7 +4,23 @@
          scribble/example
          racket/sandbox
          @for-label[relation/function
-                    (prefix-in b: racket)]]
+                    relation/transform
+                    data/maybe
+                    (except-in racket/base compose)
+                    (only-in racket/base (compose b:compose))
+                    (prefix-in b: racket/function)
+                    (prefix-in f: data/functor)]]
+
+@(define eval-for-docs
+  (parameterize ([sandbox-output 'string]
+                 [sandbox-error-output 'string]
+                 [sandbox-memory-limit #f])
+                 (make-evaluator 'racket/base
+                                 '(require data/maybe)
+                                 '(require relation)
+                                 '(require racket/set)
+                                 '(require racket/generator)
+                                 '(require racket/stream))))
 
 @title{Functional Primitives}
 
@@ -13,16 +29,6 @@
 Elementary types and utilities to simplify the use and manipulation of functions.
 
 This module provides a @racket[function] type intended as a drop-in alternative to built-in Racket functions. The advantage of using it is that it implements some high-level generic interfaces that make it easy to treat functions as sequences (that is, for the purposes of composition order) and as monoids (for the purpose of composing them). In addition, several general-purpose elementary functional utilities are provided to make working with functions more convenient.
-
-@(define eval-for-docs
-  (parameterize ([sandbox-output 'string]
-                 [sandbox-error-output 'string]
-                 [sandbox-memory-limit #f])
-                 (make-evaluator 'racket/base
-                                 '(require relation)
-                                 '(require racket/set)
-                                 '(require racket/generator)
-                                 '(require racket/stream))))
 
 @section[#:tag "function:types"]{Types}
 
@@ -123,7 +129,7 @@ This module provides a @racket[function] type intended as a drop-in alternative 
                ...)
          any/c?]{
 
- Similar to @racketlink[b:and]{and} but a function rather than a macro, so that it can be used in functional combinators such as @racket[fold].
+ Similar to @racket[and] but a function rather than a macro, so that it can be used in functional combinators such as @racket[fold].
 
 @examples[
     #:eval eval-for-docs
@@ -137,7 +143,7 @@ This module provides a @racket[function] type intended as a drop-in alternative 
               ...)
          any/c?]{
 
- Similar to @racketlink[b:or]{or} but a function rather than a macro, so that it can be used in functional combinators such as @racket[fold].
+ Similar to @racket[or] but a function rather than a macro, so that it can be used in functional combinators such as @racket[fold].
 
 @examples[
     #:eval eval-for-docs
@@ -152,7 +158,7 @@ This module provides a @racket[function] type intended as a drop-in alternative 
               [g procedure?])
          procedure?]{
 
- Analogous to @racketlink[b:if]{if}, checks the predicate @racket[pred] against an input value and applies either @racket[f] or @racket[g] to it depending on the result.
+ Analogous to @racket[if], checks the predicate @racket[pred] against an input value and applies either @racket[f] or @racket[g] to it depending on the result.
 
 @examples[
     #:eval eval-for-docs
@@ -198,7 +204,7 @@ This module provides a @racket[function] type intended as a drop-in alternative 
            function?]
   @defthing[function-null function?]
   )]{
- Constructors for the @racket[function] type analogous to @racketlink[b:cons]{cons} and @racketlink[b:null]{null} for lists. @racket[function-null] also serves as the identity value for composition.
+ Constructors for the @racket[function] type analogous to @racket[cons] and @racket[null] for lists. @racket[function-null] also serves as the identity value for composition.
 
 @examples[
     #:eval eval-for-docs
@@ -212,7 +218,7 @@ This module provides a @racket[function] type intended as a drop-in alternative 
                       [#:<kw> kw-arg any/c] ...)
          any]{
 
- Similar to @racketlink[b:apply]{apply}, but yields a sequence corresponding to the values at each stage of application of the function @racket[f].
+ Similar to @racket[apply], but yields a sequence corresponding to the values at each stage of application of the function @racket[f].
 
 @examples[
     #:eval eval-for-docs

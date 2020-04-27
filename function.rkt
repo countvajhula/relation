@@ -56,7 +56,6 @@
           [negate (-> procedure? negated?)]
           [!! (-> procedure? negated?)]))
 
-
 (define (unthunk f . args)
   (λ ignored-args
     (apply f args)))

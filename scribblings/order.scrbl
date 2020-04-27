@@ -11,16 +11,6 @@
                     (only-in racket (equal? b:equal?) (sort b:sort))
                     (only-in data/collection length sequenceof)]]
 
-@title{Order Relations}
-
-@defmodule[relation/order]
-
-A generic interface and utilities for defining and working with orderable data.
-
-By default, the built-in comparison operators @racket[<], @racket[<=], @racket[=], @racket[>=] and @racket[>] operate on @tech/reference{numbers} specifically, while other comparable types like characters and strings have their own type-specific comparison operators, for instance @racket[char<?] and @racket[string<?].
-
-This module provides a generic interface that overrides these standard operators to allow their use with any orderable type and not only numbers, and also provides additional utilities to support working with orderable data in a type-agnostic way. You can also provide an implementation for the interface in custom types so that they can be compared and reasoned about by using the same standard operators as well as the generic utilities provided here.
-
 @(define eval-for-docs
   (parameterize ([sandbox-output 'string]
                  [sandbox-error-output 'string]
@@ -34,6 +24,16 @@ This module provides a generic interface that overrides these standard operators
                                                       foldl/steps))
 				                 '(require relation)
 								 '(require racket/set))))
+
+@title{Order Relations}
+
+@defmodule[relation/order]
+
+A generic interface and utilities for defining and working with orderable data.
+
+By default, the built-in comparison operators @racket[<], @racket[<=], @racket[=], @racket[>=] and @racket[>] operate on @tech/reference{numbers} specifically, while other comparable types like characters and strings have their own type-specific comparison operators, for instance @racket[char<?] and @racket[string<?].
+
+This module provides a generic interface that overrides these standard operators to allow their use with any orderable type and not only numbers, and also provides additional utilities to support working with orderable data in a type-agnostic way. You can also provide an implementation for the interface in custom types so that they can be compared and reasoned about by using the same standard operators as well as the generic utilities provided here.
 
 @section[#:tag "order:interface"]{Interface}
 

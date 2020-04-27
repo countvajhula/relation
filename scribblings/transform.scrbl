@@ -7,6 +7,16 @@
                     (except-in racket < <= = >= >)
 					racket/generator]]
 
+@(define eval-for-docs
+  (parameterize ([sandbox-output 'string]
+                 [sandbox-error-output 'string]
+                 [sandbox-memory-limit #f])
+                 (make-evaluator 'racket/base
+				                 '(require relation)
+								 '(require racket/set)
+								 '(require (only-in data/collection conj))
+								 '(require racket/stream))))
+
 @title{Type Transformers}
 
 @defmodule[relation/transform]
@@ -18,16 +28,6 @@ The type transformers provided by Racket out of the box are @italic{type-specifi
 This module provides convenient interfaces to perform many such common type conversions, while keeping them agnostic to the source type. If mutable and immutable versions of a data type exist, these interfaces will return the immutable version.
 
 See also: @other-doc['(lib "sugar/scribblings/sugar.scrbl")].
-
-@(define eval-for-docs
-  (parameterize ([sandbox-output 'string]
-                 [sandbox-error-output 'string]
-                 [sandbox-memory-limit #f])
-                 (make-evaluator 'racket/base
-				                 '(require relation)
-								 '(require racket/set)
-								 '(require (only-in data/collection conj))
-								 '(require racket/stream))))
 
 @defproc[(->boolean [v any/c])
          boolean?]{

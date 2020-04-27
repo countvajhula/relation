@@ -7,6 +7,7 @@
                     relation/transform
                     relation/logic
                     racket/generic
+					racket/undefined
                     (except-in racket +
                                       -
                                       *
@@ -30,16 +31,6 @@
                                              (foldl d:foldl)
                                              (foldl/steps d:foldl/steps))]]
 
-@title{Algebraic Operators}
-
-@defmodule[relation/algebraic]
-
-Generic algebraic operators for composing data.
-
-The built-in operators @racket[+] and @racket[*] operate on numbers specifically. Often, however, we are interested in performing operations "similar" to these for datatypes that aren't numbers, for which we would resort to type-specific operators like @racketlink[b:append "append"] for lists.
-
-This module generalizes the standard algebraic operators to work on any type that supports a "canonical" notion of addition, multiplication, or concatenation. This allows our intuitions about addition and other forms of composition to extend over all appropriate types via the use of the common generic operators @racket[+], @racket[*] and @racket[..].
-
 @(define eval-for-docs
   (parameterize ([sandbox-output 'string]
                  [sandbox-error-output 'string]
@@ -54,6 +45,16 @@ This module generalizes the standard algebraic operators to work on any type tha
                                            relation
                                            racket/set
                                            racket/stream))))
+
+@title{Algebraic Operators}
+
+@defmodule[relation/algebraic]
+
+Generic algebraic operators for composing data.
+
+The built-in operators @racket[+] and @racket[*] operate on numbers specifically. Often, however, we are interested in performing operations "similar" to these for datatypes that aren't numbers, for which we would resort to type-specific operators like @racketlink[b:append "append"] for lists.
+
+This module generalizes the standard algebraic operators to work on any type that supports a "canonical" notion of addition, multiplication, or concatenation. This allows our intuitions about addition and other forms of composition to extend over all appropriate types via the use of the common generic operators @racket[+], @racket[*] and @racket[..].
 
 @section[#:tag "algebraic:interfaces"]{Interfaces}
 
@@ -385,20 +386,20 @@ In the event no operands are received in the course of a computation, the result
 @deftogether[(
   @defproc[(fold [f procedure?]
                  [seqs (listof (sequenceof any/c))]
-                 [#:into base any/c #f]
+                 [#:into base any/c undefined]
                  [#:order order (one-of/c 'abb 'bab) 'abb]
                  [#:direction direction (one-of/c 'left 'right) 'right]
                  [#:with-steps? with-steps? boolean? #f])
            any/c]
   @defproc[(foldl [f procedure?]
                   [seqs (listof (sequenceof any/c))]
-                  [#:into base any/c #f]
+                  [#:into base any/c undefined]
                   [#:order order (one-of/c 'abb 'bab) 'abb]
                   [#:with-steps? with-steps? boolean? #f])
            any/c]
   @defproc[(foldr [f procedure?]
                   [seqs (listof (sequenceof any/c))]
-                  [#:into base any/c #f]
+                  [#:into base any/c undefined]
                   [#:order order (one-of/c 'abb 'bab) 'abb]
                   [#:with-steps? with-steps? boolean? #f])
            any/c]
@@ -433,18 +434,18 @@ In the event no operands are received in the course of a computation, the result
 @deftogether[(
   @defproc[(fold/steps [f (-> any/c any/c any/c)]
                        [seqs (listof (sequenceof any/c))]
-                       [#:into base any/c #f]
+                       [#:into base any/c undefined]
                        [#:order order (one-of/c 'abb 'bab) 'abb]
                        [#:direction direction (one-of/c 'left 'right) 'right])
            any/c]
   @defproc[(foldl/steps [f (-> any/c any/c any/c)]
                         [seqs (listof (sequenceof any/c))]
-                        [#:into base any/c #f]
+                        [#:into base any/c undefined]
                         [#:order order (one-of/c 'abb 'bab) 'abb])
            any/c]
   @defproc[(foldr/steps [f (-> any/c any/c any/c)]
                         [seqs (listof (sequenceof any/c))]
-                        [#:into base any/c #f]
+                        [#:into base any/c undefined]
                         [#:order order (one-of/c 'abb 'bab) 'abb])
            any/c]
   )]{

@@ -39,6 +39,16 @@ The @racket[=] relation provided in this module is intended to express the notio
 								 '(require racket/set)
 								 '(require racket/stream))))
 
+@title{Equivalence Relations}
+
+@defmodule[relation/equivalence]
+
+A generic interface and utilities for comparing data.
+
+By default, the built-in equivalence operator @racketlink[b:=]{=} operates on @tech/reference{numbers} specifically, while the operators @racket[eq?], @racket[eqv?] and @racketlink[b:equal?]{equal?} are more suitable for other comparisons depending on the type of the values being compared. Additionally, there are type-specific comparison operators, for instance @racket[char=?] and @racket[string=?], that may be used if the type is known.
+
+This module provides a generic interface that overrides the standard @racketlink[b:=]{=} operator to allow its use with any comparable type and not only numbers, performing the most appropriate comparison depending on the type of the values being compared. It also supports additional parameters to express broader notions of equivalence than simple equality. You can also provide an implementation for the interface in custom types so that they can be compared using the same standard equality operator and the generic utilities available in this module.
+
 @section[#:tag "equivalence:interface"]{Interface}
 
 @defthing[gen:comparable any/c]{
