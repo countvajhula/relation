@@ -22,6 +22,8 @@
          (contract-out
           [comparable? (-> any/c boolean?)]
           [gset? (-> any/c boolean?)]
+          [hash-code (-> comparable? fixnum?)]
+          [secondary-hash-code (-> comparable? fixnum?)]
           [= (->* (comparable?)
                   (#:key (or/c (-> comparable? comparable?)
                                #f))
@@ -66,20 +68,50 @@
 
 (define-generics comparable
   (equal? comparable other)
+  (hash-code comparable)
+  (secondary-hash-code comparable)
+  #:fallbacks [(define equal? b:equal?)
+               (define hash-code equal-hash-code)
+               (define secondary-hash-code equal-secondary-hash-code)]
   #:fast-defaults ([number?
-                    (define equal? b:=)]
-                   [string?
-                    (define equal? string=?)]
-                   [bytes?
-                    (define equal? bytes=?)]
-                   [char?
-                    (define equal? char=?)]
+                    (define equal? b:=)
+                    (define hash-code values)]
                    [symbol?
-                    (define equal? eq?)]
-                   [generic-set?
-                    (define equal? set=?)])
-  #:defaults ([any/c
-               (define equal? b:equal?)]))
+                    (define equal? eq?)
+                    (define hash-code eq-hash-code)])
+  #:defaults ([string?
+               (define equal? b:equal?)
+               (define hash-code equal-hash-code)
+               (define secondary-hash-code equal-secondary-hash-code)]
+              [sequence?
+               (define/generic generic-equal? equal?)
+               (define/generic generic-hash-code hash-code)
+               (define (equal? comparable other)
+                 (cond [(andmap empty? (list comparable other))
+                        #t]
+                       [(and (empty? comparable)
+                             (not (empty? other)))
+                        #f]
+                       [(and (empty? other)
+                             (not (empty? comparable)))
+                        #f]
+                       [else (let ([a (first comparable)]
+                                   [b (first other)])
+                               (and (generic-equal? a b)
+                                    (equal? (rest comparable)
+                                            (rest other))))]))
+               (define (hash-code comparable)
+                 (let ([hashes (map generic-hash-code comparable)]
+                       [squares (map (curryr expt 2) (naturals 1))])
+                   (apply +
+                          (equal-hash-code sequence?)
+                          (zip-with *
+                                    hashes
+                                    squares))))]
+              [any/c
+               (define equal? b:equal?)
+               (define hash-code equal-hash-code)
+               (define secondary-hash-code equal-secondary-hash-code)]))
 
 (define (= #:key [key #f] . args)
   (if key
@@ -145,6 +177,15 @@
      (gset-contents st))
    (define (set->stream st)
      (sequence->stream (gset-contents st)))]
+  #:methods gen:equal+hash
+  [(define (equal-proc st other equal-recur)
+     (set=? st other))
+   (define (hash-proc st hash-recur)
+     (+ (* 3 (equal-hash-code (gset-key st)))
+        (equal-hash-code (apply set (gset-contents st)))))
+   (define (hash2-proc st hash2-recur)
+     (+ (equal-hash-code (gset-key st))
+        (equal-secondary-hash-code (apply set (gset-contents st)))))]
   #:methods gen:collection
   [(define (conj st v)
      (set-add st v))]

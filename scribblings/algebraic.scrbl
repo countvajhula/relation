@@ -14,7 +14,6 @@
                                       foldr
                                       length
                                       append)
-                    (prefix-in b: math/base)
                     (only-in racket (foldl f:foldl)
                                     (foldr f:foldr)
                                     (append b:append))

@@ -39,7 +39,7 @@ This module provides a generic interface that overrides the standard @racketlink
 
 @defthing[gen:comparable any/c]{
 
- A @tech/reference{generic interface} that represents any object that can be compared with other objects of the same type in terms of equivalence, that is, in cases where we seek to know, "are these values equal, for some definition of equality?" All built-in as well as @seclink["define-struct" #:doc '(lib "scribblings/guide/guide.scrbl")]{custom} types are @racket[gen:comparable]. For custom types, the implementation falls back to the built-in @racketlink[b:equal?]{equal?} by default.
+ A @tech/reference{generic interface} that represents any object that can be compared with other objects of the same type in terms of equivalence, that is, in cases where we seek to know, "are these values equal, for some definition of equality?" All built-in as well as @seclink["define-struct" #:doc '(lib "scribblings/guide/guide.scrbl")]{custom} types are @racket[gen:comparable]. For all custom types, the implementation defers to the built-in @racketlink[b:equal?]{equal?}.
 
  @examples[
     #:eval eval-for-docs
@@ -66,16 +66,26 @@ This module provides a generic interface that overrides the standard @racketlink
   ]
 }
 
- To implement this interface for custom types, the following method needs to be implemented:
+@deftogether[(
+@defproc[(hash-code [v comparable?])
+         fixnum?]
+@defproc[(secondary-hash-code [v comparable?])
+         fixnum?])]{
 
- @defproc[(equal? [a comparable?]
-                  [b comparable?])
-          boolean?]{
+ Similar to @racket[equal-hash-code] and @racket[equal-secondary-hash-code], but these yield the hash code reported by the underlying operation used to perform the equality check. For example, for numbers, @racket[hash-code] evaluates to the number itself, while for strings, it evaluates to the hash code reported by @racket[equal-hash-code]. Likewise, for symbols, it evaluates to the hash code reported by @racket[eq-hash-code] since @racket[eq?] is the check employed for symbol comparisons.
 
- A function taking two arguments that tests whether the arguments are equal, where both arguments are instances of the structure type to which the generic interface is associated (or a subtype of the structure type). The function must return true if the arguments are to be considered equal, and false if not.
+@examples[
+    #:eval eval-for-docs
+    (hash-code 3)
+    (hash-code #\a)
+    (hash-code 'abc)
+    (hash-code "cherry")
+  ]
+}
 
- All Racket types are @racket[gen:comparable]. If a struct type does not explicitly implement @racket[gen:comparable], the built-in @racketlink[b:equal? "equal?"] will be used for instances of that type, so @racket[=] may be treated as a drop-in replacement for @racketlink[b:equal? "equal?"].
- }
+ In order to implement this interface in custom types, all that is needed is to implement the @racket[gen:equal+hash] interface. @racket[gen:comparable] itself @emph{should not be implemented directly}, since there is never a case where both of these interfaces would need to be implemented. To avoid any possibility of conflicting notions of equality, @racket[gen:comparable] simply defers to the built-in @racketlink[b:equal?]{equal?} for the definition of equality for custom types.
+
+ All Racket types are @racket[gen:comparable], so @racket[=] may be treated as a drop-in replacement for @racketlink[b:equal? "equal?"].
 
 }
 

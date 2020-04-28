@@ -6,6 +6,7 @@
            racket/set
            racket/stream
            racket/function
+           racket/class
            (except-in data/collection
                       foldl
                       foldl/steps
@@ -38,12 +39,16 @@
   (check-false (= (set 1 2) (set 1) (set)))
   (check-false (= (set 1 2) (set 1 3)) "incomparable sets")
   (check-false (= (set 1 2) (set 3 4)) "incomparable sets")
-  (check-false (= #:key string-length "z" "yy" "xxx"))
-  (check-true (= #:key string-length "xxx" "zzz" "yyy"))
-  (check-false (= #:key string-length "xxx" "yy" "z"))
+  (check-true (= (new object%) (new object%)))
 
   ;; simple type-specific equality
   (check-true (= 'hi 'hi 'hi))
+
+  ;; sequences (recursive equality check)
+  (check-true (= (list 1 2 3) (list 1 2 3)))
+  (check-true (= (list 1.25 2 3) (list 5/4 2 3)) "nested numeric equality")
+  (check-false (= (list 1 2 3) (list 1 2 3 4)) "common prefix")
+  (check-false (= "hi" "hide") "common prefix")
 
   ;; custom types
   ((λ ()
@@ -56,6 +61,11 @@
      (check-true (= (amount 5 95) (amount 5 99)))
      (check-false (= (amount 5 95) (amount 4 95)))))
 
+  ;; hash codes
+  (check-true (equal? (hash-code (list 1 2 3)) (hash-code (list 1 2 3))))
+  (check-true (equal? (hash-code 'abc) (hash-code (string->symbol "abc"))))
+  (check-false (equal? (hash-code (list 1 2 3)) (hash-code (list 2 1 3))))
+
   ;; equivalence under a mapping
   (check-true (= #:key identity 1 1 1))
   (check-true (= #:key even? 1 13 7))
@@ -64,6 +74,9 @@
   (check-true (= #:key string-upcase "apple" "Apple" "APPLE"))
   (check-true (= #:key ->number "42" "42.0" "42/1"))
   (check-false (= #:key ->number "42" "42.1"))
+  (check-false (= #:key string-length "z" "yy" "xxx"))
+  (check-true (= #:key string-length "xxx" "zzz" "yyy"))
+  (check-false (= #:key string-length "xxx" "yy" "z"))
 
   ;; not equal
   (check-true (≠ 1 2 3) "monotonically increasing")
@@ -172,6 +185,8 @@
   (check-true (set=? (set-remove (generic-set "apple" "banana" "cherry") "BANANA") (generic-set "apple" "banana" "cherry")))
   (check-true (set=? (set-remove (generic-set #:key string-upcase "apple" "banana" "cherry") "BANANA") (generic-set #:key string-upcase "apple" "cherry")))
   (check-true (set=? (generic-set #:key string-upcase "apple" "banana" "cherry") (generic-set #:key string-upcase "apple" "BANANA" "cherry")))
+  (check-equal? (set-add (generic-set 1 2 3) 5) (generic-set 1 2 3 5))
+  (check-equal? (set-add (generic-set #:key string-upcase "apple" "banana" "cherry") "BANANA") (generic-set #:key string-upcase "apple" "banana" "cherry"))
 
   ;; tail
   (check-equal? (tail 5 (list 1 2 3)) '())
