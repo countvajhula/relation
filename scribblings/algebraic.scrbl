@@ -14,6 +14,7 @@
                                       foldr
                                       length
                                       append)
+                    (prefix-in b: math/base)
                     (only-in racket (foldl f:foldl)
                                     (foldr f:foldr)
                                     (append b:append))
@@ -448,5 +449,17 @@ In the event no operands are received in the course of a computation, the result
     (->list (foldl/steps * '(1 2 3 4)))
     (->list (foldr/steps .. '("hi" " " "there")))
     (->list (foldl/steps .. '("hi" " " "there")))
+  ]
+}
+
+@defproc[(sum [vs (listof addable?)])
+		 addable?]{
+
+ Equivalent to @racket[(apply + vs)], this supports @tech/reference{numbers} in the usual way, but also supports any other @racketlink[gen:addable]{addable} type, for instance, @tech/reference{vectors}.
+
+@examples[
+    #:eval eval-for-docs
+    (sum (list 1 2 3 4))
+    (sum (list #(1 2 3) #(1 2 3) #(1 2 3)))
   ]
 }

@@ -6,6 +6,7 @@
          racket/generic
          racket/function
          racket/stream
+         racket/class
          (only-in racket/list
                   (group-by b:group-by)
                   splitf-at)

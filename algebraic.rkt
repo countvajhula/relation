@@ -52,6 +52,7 @@
           [/ (-> multipliable? multipliable? ... multipliable?)]
           [+ (-> addable? ... addable?)]
           [- (-> addable? addable? ... addable?)]
+          [sum (-> (sequenceof addable?) addable?)]
           [fold (->i ([f (seqs) (and/c (procedure-arity-includes/c (add1 (b:length seqs)))
                                        (unconstrained-domain-> any/c))])
                      (#:into [base any/c]
@@ -324,6 +325,8 @@
   (if (empty? vs)
       ID
       (foldl add vs #:order 'bab)))
+
+(define sum (curry apply +))
 
 (define (- v . remaining)
   (if (empty? remaining)
