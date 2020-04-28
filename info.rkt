@@ -18,5 +18,5 @@
 (define test-include-paths '("tests"))
 (define clean '("compiled" "doc" "doc/relation" "tests/compiled"))
 (define pkg-desc "Generic interfaces and convenient utilities for relations")
-(define version "1.6")
+(define version "1.7")
 (define pkg-authors '(countvajhula))
