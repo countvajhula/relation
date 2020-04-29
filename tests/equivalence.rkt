@@ -62,9 +62,9 @@
      (check-false (= (amount 5 95) (amount 4 95)))))
 
   ;; hash codes
-  (check-true (equal? (hash-code (list 1 2 3)) (hash-code (list 1 2 3))))
-  (check-true (equal? (hash-code 'abc) (hash-code (string->symbol "abc"))))
-  (check-false (equal? (hash-code (list 1 2 3)) (hash-code (list 2 1 3))))
+  (check-equal? (hash-code (list 1 2 3)) (hash-code (list 1 2 3)))
+  (check-equal? (hash-code 'abc) (hash-code (string->symbol "abc")))
+  (check-not-equal? (hash-code (list 1 2 3)) (hash-code (list 2 1 3)))
 
   ;; equivalence under a mapping
   (check-true (= #:key identity 1 1 1))

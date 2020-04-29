@@ -87,13 +87,9 @@
                (define/generic generic-equal? equal?)
                (define/generic generic-hash-code hash-code)
                (define (equal? comparable other)
-                 (cond [(andmap empty? (list comparable other))
+                 (cond [(for-all empty? (list comparable other))
                         #t]
-                       [(and (empty? comparable)
-                             (not (empty? other)))
-                        #f]
-                       [(and (empty? other)
-                             (not (empty? comparable)))
+                       [(exists empty? (list comparable other))
                         #f]
                        [else (let ([a (first comparable)]
                                    [b (first other)])

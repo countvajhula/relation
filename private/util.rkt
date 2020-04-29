@@ -6,7 +6,9 @@
          data/collection)
 
 (provide check-pairwise
-         zip-with)
+         zip-with
+         exists
+         for-all)
 
 (define (check-pairwise check? vals)
   (if (empty? vals)
@@ -36,3 +38,15 @@
       (let ([vs (map first seqs)])
         (stream-cons (apply op vs)
                      (apply zip-with op (map rest seqs))))))
+
+(define (exists pred . seqs)
+  (if (andmap empty? seqs)
+      #f
+      (or (apply pred (map first seqs))
+          (apply exists pred (map rest seqs)))))
+
+(define (for-all pred . seqs)
+  (if (andmap empty? seqs)
+      #t
+      (and (apply pred (map first seqs))
+           (apply for-all pred (map rest seqs)))))
