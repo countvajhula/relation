@@ -462,3 +462,14 @@ In the event no operands are received in the course of a computation, the result
     (sum (list #(1 2 3) #(1 2 3) #(1 2 3)))
   ]
 }
+
+@defproc[(product [vs (listof multipliable?)])
+		 multipliable?]{
+
+ Equivalent to @racket[(apply * vs)], this supports @tech/reference{numbers} in the usual way, but also supports any other @racketlink[gen:multipliable]{multipliable} type.
+
+@examples[
+    #:eval eval-for-docs
+    (product (list 1 2 3 4))
+  ]
+}

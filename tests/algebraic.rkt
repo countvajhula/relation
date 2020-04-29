@@ -103,9 +103,14 @@
                 #f
                 "boolean #f base value")
   ;; sum
+  (check-equal? (sum '()) ID)
   (check-equal? (sum '(1 2 3 4)) 10)
   (check-equal? (sum '(#(1 2 3) #(1 2 3))) #(2 4 6))
   (check-exn exn:fail:contract? (thunk (sum '("hi" "there"))))
+  ;; product
+  (check-equal? (product '()) ID)
+  (check-equal? (product '(1 2 3 4)) 24)
+  (check-exn exn:fail:contract? (thunk (product '("hi" "there"))))
   ;; composition identity
   (check-equal? (.. ID) ID)
   (check-equal? (.. '(1 2 3) ID) '(1 2 3))
