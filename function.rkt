@@ -32,6 +32,8 @@
                         arguments?
                         function?)]
           [function-components (-> function? list?)]
+          [function-composer (-> function? (-> any/c any/c any/c))]
+          [function-identity (-> function? procedure?)]
           [function-side (-> function? symbol?)]
           [function-args (-> function? arguments?)]
           [make-function (-> procedure? ... function?)]
@@ -111,30 +113,33 @@
   #:transparent
   #:property prop:procedure
   (lambda/arguments
-   args
-   (let* ([self (first (arguments-positional args))]
+   packed-args
+   (let* ([self (first (arguments-positional packed-args))]
+          [components (function-components self)]
           [composer (function-composer self)]
           [identity (function-identity self)]
-          [pos (rest (arguments-positional args))]
-          [kw (arguments-keyword args)]
-          [args-invocation (make-arguments pos kw)])
-     (let ([f (foldl composer identity (function-components self))]
-           [side (function-side self)]
-           [args (if (= (function-side self) 'left)
-                     (arguments-merge (function-args self)
-                                      args-invocation)
-                     (arguments-merge args-invocation
-                                      (function-args self)))])
-       (with-handlers ([exn:fail:contract:arity?
-                        (λ (exn)
-                          (if (> (length (arguments-positional args))
-                                 (~min-arity f))
-                              (raise exn)
-                              (let ([curry-proc (if (= side 'left)
-                                                    curry
-                                                    curryr)])
-                                (apply/arguments curry-proc
-                                                 (arguments-cons f args)))))])
+          [side (function-side self)]
+          [pos (rest (arguments-positional packed-args))]
+          [kw (arguments-keyword packed-args)]
+          [args-invocation (make-arguments pos kw)]
+          [args (if (= (function-side self) 'left)
+                    (arguments-merge (function-args self)
+                                     args-invocation)
+                    (arguments-merge args-invocation
+                                     (function-args self)))])
+     (with-handlers ([exn:fail:contract:arity?
+                      (λ (exn)
+                        (if (> (length (arguments-positional args))
+                               (~min-arity (last (function-components self))))
+                            (raise exn)
+                            (let ([curry-proc (if (= side 'left)
+                                                  curry
+                                                  curryr)])
+                              (apply/arguments curry-proc
+                                               (arguments-cons self args-invocation)))))])
+       (let ([f (foldl (flip composer)
+                       identity
+                       components)])
          (apply/arguments f args)))))
   #:methods gen:sequence
   [(define/generic -empty? empty?)
@@ -229,13 +234,18 @@
   (let ([f (first (arguments-positional args))]
         [pos (rest (arguments-positional args))]
         [kw (arguments-keyword args)])
-    ;; if f is already a function, we probably want to add to the
-    ;; existing arguments instead of wrapping in another layer
-    (function (list f)
-              b:compose
-              values
-              'left
-              (make-arguments pos kw))))
+    (if (function? f)
+        (function (function-components f)
+                  (function-composer f)
+                  (function-identity f)
+                  (function-side f)
+                  (arguments-merge (function-args f)
+                                   (make-arguments pos kw)))
+        (function (list f)
+                  b:compose
+                  values
+                  'left
+                  (make-arguments pos kw)))))
 
 (define/arguments (curryr args)
   (let ([f (first (arguments-positional args))]
