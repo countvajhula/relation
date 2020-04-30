@@ -25,7 +25,12 @@
           [flip* (-> procedure? procedure?)]
           [lift (-> procedure? procedure?)]
           [function? (-> any/c boolean?)]
-          [function (-> list? symbol? arguments? function?)]
+          [function (-> list?
+                        (-> any/c any/c any/c)
+                        procedure?
+                        symbol?
+                        arguments?
+                        function?)]
           [function-components (-> function? list?)]
           [function-side (-> function? symbol?)]
           [function-args (-> function? arguments?)]
@@ -40,16 +45,10 @@
           [power (-> integer? (or/c function? procedure?) function?)]
           [curry (unconstrained-domain-> function?)]
           [curryr (unconstrained-domain-> function?)]
-          [conjoined? (-> any/c boolean?)]
-          [conjoined (-> list? conjoined?)]
-          [conjoined-components (-> conjoined? list?)]
-          [conjoin (-> procedure? ... conjoined?)]
-          [&& (-> procedure? ... conjoined?)]
-          [disjoined? (-> any/c boolean?)]
-          [disjoined (-> list? disjoined?)]
-          [disjoined-components (-> disjoined? list?)]
-          [disjoin (-> procedure? ... disjoined?)]
-          [|| (-> procedure? ... disjoined?)]
+          [conjoin (-> procedure? ... function?)]
+          [&& (-> procedure? ... function?)]
+          [disjoin (-> procedure? ... function?)]
+          [|| (-> procedure? ... function?)]
           [negated? (-> any/c boolean?)]
           [negated (-> procedure? negated?)]
           [negated-f (-> negated? procedure?)]
@@ -108,16 +107,18 @@
 (define (~min-arity f)
   (~min-arity-value (procedure-arity f)))
 
-(struct function (components side args)
+(struct function (components composer identity side args)
   #:transparent
   #:property prop:procedure
   (lambda/arguments
    args
    (let* ([self (first (arguments-positional args))]
+          [composer (function-composer self)]
+          [identity (function-identity self)]
           [pos (rest (arguments-positional args))]
           [kw (arguments-keyword args)]
           [args-invocation (make-arguments pos kw)])
-     (let ([f (apply b:compose (function-components self))]
+     (let ([f (foldl composer identity (function-components self))]
            [side (function-side self)]
            [args (if (= (function-side self) 'left)
                      (arguments-merge (function-args self)
@@ -146,18 +147,30 @@
      (-first (function-components self)))
    (define (rest self)
      (function (-rest (function-components self))
+               (function-composer self)
+               (function-identity self)
                (function-side self)
                (function-args self)))
    (define (reverse self)
      (function (-reverse (function-components self))
+               (function-composer self)
+               (function-identity self)
                (function-side self)
                (function-args self)))])
 
 (define (make-function . fs)
-  (function fs 'left empty-arguments))
+  (function fs
+            b:compose
+            values
+            'left
+            empty-arguments))
 
 (define (make-right-function . fs)
-  (function fs 'right empty-arguments))
+  (function fs
+            b:compose
+            values
+            'right
+            empty-arguments))
 
 (define f make-function)
 
@@ -167,6 +180,8 @@
 
 (define (function-cons proc f)
   (function (cons proc (function-components f))
+            (function-composer f)
+            (function-identity f)
             (function-side f)
             (function-args f)))
 
@@ -214,7 +229,11 @@
   (let ([f (first (arguments-positional args))]
         [pos (rest (arguments-positional args))]
         [kw (arguments-keyword args)])
+    ;; if f is already a function, we probably want to add to the
+    ;; existing arguments instead of wrapping in another layer
     (function (list f)
+              b:compose
+              values
               'left
               (make-arguments pos kw))))
 
@@ -223,6 +242,8 @@
         [pos (rest (arguments-positional args))]
         [kw (arguments-keyword args)])
     (function (list f)
+              b:compose
+              values
               'right
               (make-arguments pos kw))))
 
@@ -230,53 +251,19 @@
   (make-arguments (cons v (arguments-positional args))
                   (arguments-keyword args)))
 
-(struct conjoined (components)
-  #:transparent
-  #:property prop:procedure
-  (λ (self . args)
-    (apply (apply f:conjoin
-                  (conjoined-components self))
-           args))
-  #:methods gen:sequence
-  [(define/generic -empty? empty?)
-   (define/generic -first first)
-   (define/generic -rest rest)
-   (define/generic -reverse reverse)
-   (define (empty? self)
-     (-empty? (conjoined-components self)))
-   (define (first self)
-     (-first (conjoined-components self)))
-   (define (rest self)
-     (conjoined (-rest (conjoined-components self))))
-   (define (reverse self)
-     (conjoined (-reverse (conjoined-components self))))])
-
 (define (conjoin . fs)
-  (conjoined fs))
-
-(struct disjoined (components)
-  #:transparent
-  #:property prop:procedure
-  (λ (self . args)
-    (apply (apply f:disjoin
-                  (disjoined-components self))
-           args))
-  #:methods gen:sequence
-  [(define/generic -empty? empty?)
-   (define/generic -first first)
-   (define/generic -rest rest)
-   (define/generic -reverse reverse)
-   (define (empty? self)
-     (-empty? (disjoined-components self)))
-   (define (first self)
-     (-first (disjoined-components self)))
-   (define (rest self)
-     (disjoined (-rest (disjoined-components self))))
-   (define (reverse self)
-     (disjoined (-reverse (disjoined-components self))))])
+  (function fs
+            f:conjoin
+            (f:const #t)
+            'left
+            empty-arguments))
 
 (define (disjoin . fs)
-  (disjoined fs))
+  (function fs
+            f:disjoin
+            (f:const #f)
+            'left
+            empty-arguments))
 
 (struct negated (f)
   #:transparent

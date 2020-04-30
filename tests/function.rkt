@@ -12,6 +12,7 @@
                     thunk)
            relation)
 
+  ;; TODO: different compositions, curry, evaluate coverage
   (check-equal? ((unthunk (λ () 5))) 5)
   (check-equal? ((unthunk (λ () 5)) 1) 5)
   (check-equal? ((unthunk (λ () 5)) 1 2 3) 5)
