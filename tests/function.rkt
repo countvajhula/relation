@@ -3,13 +3,16 @@
 (module+ test
   (require rackunit
            racket/stream
+           racket/bool
            (except-in data/collection
                       foldl
                       foldl/steps
                       append)
            data/maybe
            (only-in racket/function
-                    thunk)
+                    thunk
+                    const)
+           arguments
            relation)
 
   ;; TODO: different compositions, curry, evaluate coverage
@@ -37,12 +40,14 @@
   (check-equal? (first (make-function add1 sub1)) add1)
   (check-equal? (second (make-function add1 sub1)) sub1)
   (check-true (empty? (make-function)))
-  (let ([str-append-3 (λ (x y z)
-                        (string-append x y z))])
+  (let ([str-append-3 (procedure-reduce-arity string-append 3)])
     (check-equal? ((curry str-append-3 "hello") " " "there") "hello there")
     (check-equal? (((curry str-append-3 "hello") " ") "there") "hello there")
+    (check-equal? ((curry str-append-3 "hello" " ") "there") "hello there")
     (check-equal? ((curryr str-append-3 "there") "hello" " ") "hello there")
     (check-equal? (((curryr str-append-3 "there") " ") "hello") "hello there")
+    (check-equal? ((curryr str-append-3 " " "there") "hello") "hello there")
+    (check-equal? (length (arguments-positional (function-args (((curryr str-append-3 "there") " "))))) 2 "invoking with incomplete args")
     (check-equal? ((function-cons ->bytes (curry str-append-3 "hello" " ")) "there") #"hello there")
     (check-exn exn:fail:contract:arity? (thunk ((curry str-append-3 "hello" "there") "blah" "blah")))
     (check-exn exn:fail:contract:arity? (thunk ((curry str-append-3 "hello" "there" "blah") "blah")))
@@ -64,4 +69,41 @@
   (check-true ((disjoin positive? integer?) -5))
   (check-true ((disjoin positive? integer?) 5.3))
   (check-false ((disjoin positive? integer?) -5.3))
-  (check-true ((disjoin bytes<? bytes=?) #"apple" #"banana")))
+  (check-true ((disjoin bytes<? bytes=?) #"apple" #"banana"))
+  ;; custom composition
+  (check-true ((function (list positive? integer? (curryr > -3))
+                         (λ (f g)
+                           (λ (x)
+                             (xor (f x)
+                                  (g x))))
+                         (const #f)
+                         'left
+                         empty-arguments)
+               5))
+  (check-false ((function (list positive? integer? (curryr > -3))
+                          (λ (f g)
+                            (λ (x)
+                              (xor (f x)
+                                   (g x))))
+                          (const #f)
+                          'left
+                          empty-arguments)
+                -1))
+  (check-true ((function (list positive? integer? (curryr > -3))
+                         (λ (f g)
+                           (λ (x)
+                             (xor (f x)
+                                  (g x))))
+                         (const #f)
+                         'left
+                         empty-arguments)
+               -1.4))
+  (check-false ((function (list positive? integer? (curryr > -3))
+                          (λ (f g)
+                            (λ (x)
+                              (xor (f x)
+                                   (g x))))
+                          (const #f)
+                          'left
+                          empty-arguments)
+                -3.4)))

@@ -251,11 +251,18 @@
   (let ([f (first (arguments-positional args))]
         [pos (rest (arguments-positional args))]
         [kw (arguments-keyword args)])
-    (function (list f)
-              b:compose
-              values
-              'right
-              (make-arguments pos kw))))
+    (if (function? f)
+        (function (function-components f)
+                  (function-composer f)
+                  (function-identity f)
+                  (function-side f)
+                  (arguments-merge (make-arguments pos kw)
+                                   (function-args f)))
+        (function (list f)
+                  b:compose
+                  values
+                  'right
+                  (make-arguments pos kw)))))
 
 (define (arguments-cons v args)
   (make-arguments (cons v (arguments-positional args))
