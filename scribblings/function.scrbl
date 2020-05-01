@@ -6,8 +6,13 @@
          @for-label[relation/function
                     relation/transform
                     data/maybe
-                    (except-in racket/base compose)
-                    (only-in racket/base (compose b:compose))
+                    (rename-in racket (compose b:compose)
+                                      (curry b:curry)
+                                      (curryr b:curryr)
+                                      (conjoin b:conjoin)
+                                      (disjoin b:disjoin)
+                                      (negate b:negate))
+                    (only-in racket/generator sequence->generator)
                     (prefix-in b: racket/function)
                     (prefix-in f: data/functor)]]
 
@@ -39,13 +44,16 @@ This module provides a @racket[function] type intended as a drop-in alternative 
 @deftogether[(
   @defproc[(make-function [g procedure?]
                           ...)
-           any/c?]
+           any/c]
   @defproc[(f [g procedure?]
               ...)
-           any/c?]
+           any/c]
+  @defproc[(make-right-function [g procedure?]
+                                ...)
+           any/c]
   @defproc[(f> [g procedure?]
               ...)
-           any/c?]
+           any/c]
   )]{
   A constructor for creating functions from other functions. @racket[f] functions are left-curried (the default), while @racket[f>] functions are right-curried.
 
@@ -61,10 +69,10 @@ This module provides a @racket[function] type intended as a drop-in alternative 
     ]
 }
 
-@defproc[(function-components [f function?])
+@defproc[(function-components [g function?])
          list?]{
 
-  A list of functions that comprise the composite function @racket[f].
+  An accessor to get the list of functions that comprise the composite function @racket[g].
 
 @examples[
     #:eval eval-for-docs
@@ -72,10 +80,36 @@ This module provides a @racket[function] type intended as a drop-in alternative 
   ]
 }
 
-@defproc[(function-side [f function?])
+@defproc[(function-composer [g function?])
+         list?]{
+
+  An accessor to get the function used for composing the component functions in @racket[g]. By default this is the usual function composition, @racketlink[b:compose]{compose}, but it could be any @hyperlink["https://en.wikipedia.org/wiki/Higher-order_function"]{higher-order} @hyperlink["https://en.wikipedia.org/wiki/Binary_function"]{binary function}, i.e. a function taking in two functions and producing a single one.
+
+@examples[
+    #:eval eval-for-docs
+    (function-composer (f add1 ->number))
+    (function-composer (conjoin positive? integer?))
+    (function-composer (disjoin positive? integer?))
+  ]
+}
+
+@defproc[(function-identity [g function?])
+         list?]{
+
+  An accessor to get the @hyperlink["https://en.wikipedia.org/wiki/Identity_element"]{identity function} to be used in the composition specified in @racket[g]. This should be specified in tandem with, rather than independently of, the @racket[composer] attribute, since any definition of composition must simultaneously specify both the composition procedure as well as the identity value for the composition (if any). By default the composition function @racketlink[b:compose]{compose} is used together with @racket[values] as the identity function, but it should be whatever function is appropriate as an identity for the chosen composition. For instance, for @racketlink[conjoin]{conjoining} functions, a function returning @racket[false] is the appropriate identity.
+
+@examples[
+    #:eval eval-for-docs
+    (function-identity (f add1 ->number))
+    (function-identity (conjoin positive? integer?))
+    (function-identity (disjoin positive? integer?))
+  ]
+}
+
+@defproc[(function-side [g function?])
          symbol?]{
 
-  The side on which the function is curried.
+  An accessor to get the side on which the function is curried.
 
 @examples[
     #:eval eval-for-docs
@@ -84,10 +118,10 @@ This module provides a @racket[function] type intended as a drop-in alternative 
   ]
 }
 
-@defproc[(function-args [f function?])
+@defproc[(function-args [g function?])
          arguments?]{
 
-  Arguments that have already been supplied to the function.
+  An accessor to get the arguments that have already been supplied to the function.
 
 @examples[
     #:eval eval-for-docs
@@ -96,7 +130,7 @@ This module provides a @racket[function] type intended as a drop-in alternative 
   ]
 }
 
-@defproc[(function? [v any/c?])
+@defproc[(function? [v any/c])
          boolean?]{
 
   A predicate to check if a value is a @racket[function].
@@ -121,13 +155,13 @@ This module provides a @racket[function] type intended as a drop-in alternative 
     (define gen (unthunk (sequence->generator '(1 2 3))))
     (gen "some")
     (gen 'ignored)
-    (gen "arguments")
+    (gen "arguments" 'a 'b 42)
   ]
 }
 
-@defproc[(andf [v any/c?]
+@defproc[(andf [v any/c]
                ...)
-         any/c?]{
+         any/c]{
 
  Similar to @racket[and] but a function rather than a macro, so that it can be used in functional combinators such as @racket[fold].
 
@@ -139,9 +173,9 @@ This module provides a @racket[function] type intended as a drop-in alternative 
   ]
 }
 
-@defproc[(orf [v any/c?]
+@defproc[(orf [v any/c]
               ...)
-         any/c?]{
+         any/c]{
 
  Similar to @racket[or] but a function rather than a macro, so that it can be used in functional combinators such as @racket[fold].
 
@@ -168,11 +202,11 @@ This module provides a @racket[function] type intended as a drop-in alternative 
 }
 
 @deftogether[(
-  @defproc[(flip [f procedure?])
+  @defproc[(flip [g procedure?])
            procedure?]
-  @defproc[(flip$ [f procedure?])
+  @defproc[(flip$ [g procedure?])
            procedure?]
-  @defproc[(flip* [f procedure?])
+  @defproc[(flip* [g procedure?])
            procedure?])]{
 
  @racket[flip] yields a function identical to the one passed in, but with the first two argument positions swapped, @racket[flip$] swaps the first and last argument positions, while @racket[flip*] reverses the entire list of arguments.
@@ -185,7 +219,7 @@ This module provides a @racket[function] type intended as a drop-in alternative 
   ]
 }
 
-@defproc[(lift [f procedure?])
+@defproc[(lift [g procedure?])
          procedure?]{
 
  "Lifts" a function operating on ordinary values to a function operating on a functor (for instance, a list of such values) in the natural way. This is a thin wrapper around @racketlink[f:map]{map}, and may lend clarity in cases where you want to derive such a function but not necessarily apply it immediately.
@@ -213,12 +247,12 @@ This module provides a @racket[function] type intended as a drop-in alternative 
   ]
 }
 
-@defproc[(apply/steps [f function?]
+@defproc[(apply/steps [g function?]
                       [v any/c] ... [lst list?]
                       [#:<kw> kw-arg any/c] ...)
          any]{
 
- Similar to @racket[apply], but yields a sequence corresponding to the values at each stage of application of the function @racket[f].
+ Similar to @racket[apply], but yields a sequence corresponding to the values at each stage of application of the function @racket[g].
 
 @examples[
     #:eval eval-for-docs
@@ -227,7 +261,7 @@ This module provides a @racket[function] type intended as a drop-in alternative 
   ]
 }
 
-@defproc[(compose [f function?]
+@defproc[(compose [g function?]
                   ...)
          function?]{
 
@@ -236,12 +270,11 @@ This module provides a @racket[function] type intended as a drop-in alternative 
 @examples[
     #:eval eval-for-docs
     (compose add1 ->string)
-    (compose (f add1) (f ->string))
   ]
 }
 
 @defproc[(power [n integer?]
-                [f function?])
+                [g function?])
          function?]{
 
  Composes a function with itself @racket[n] times.
@@ -255,12 +288,12 @@ This module provides a @racket[function] type intended as a drop-in alternative 
 }
 
 @deftogether[(
- @defproc[(curry [f procedure?]
-                 [v unconstrained-domain->]
+ @defproc[(curry [g procedure?]
+                 [v any/c]
                  ...)
           function?]
- @defproc[(curryr [f procedure?]
-                  [v unconstrained-domain->]
+ @defproc[(curryr [g procedure?]
+                  [v any/c]
                   ...)
           function?]
  )]{
@@ -272,5 +305,65 @@ This module provides a @racket[function] type intended as a drop-in alternative 
     (curry + 2)
     (curry + 2 3)
     ((curryr < 5) 3)
+  ]
+}
+
+@deftogether[(
+ @defproc[(conjoin [g procedure?]
+                   ...)
+          function?]
+ @defproc[(&& [g procedure?]
+              ...)
+          function?]
+ )]{
+
+ Analogous to @racketlink[b:conjoin]{conjoin}, this yields a @racket[function] whose composition method is @racketlink[b:conjoin]{conjoin} rather than @racketlink[b:compose]{compose}.
+
+@examples[
+    #:eval eval-for-docs
+    (&& positive? integer?)
+    ((&& positive? integer?) -5)
+    ((&& positive? integer?) 5.3)
+    ((&& positive? integer?) 5)
+  ]
+}
+
+@deftogether[(
+ @defproc[(disjoin [g procedure?]
+                   ...)
+          function?]
+ @defproc[(|| [g procedure?]
+              ...)
+          function?]
+ )]{
+
+ Analogous to @racketlink[b:disjoin]{disjoin}, this yields a @racket[function] whose composition method is @racketlink[b:disjoin]{disjoin} rather than @racketlink[b:compose]{compose}.
+
+@examples[
+    #:eval eval-for-docs
+    (|| positive? integer?)
+    ((|| positive? integer?) -5)
+    ((|| positive? integer?) 5.3)
+    ((|| positive? integer?) 5)
+    ((|| positive? integer?) -5.3)
+  ]
+}
+
+@deftogether[(
+ @defproc[(negate [g procedure?]
+                   ...)
+          function?]
+ @defproc[(!! [g procedure?]
+              ...)
+          function?]
+ )]{
+
+ Analogous to @racketlink[b:negate]{negate}, this yields a @racket[function] whose result is the boolean negation of the result of applying @racket[g].
+
+@examples[
+    #:eval eval-for-docs
+    (!! positive?)
+    ((!! positive?) -5)
+    ((!! positive?) 5)
   ]
 }
