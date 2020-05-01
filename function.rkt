@@ -51,11 +51,8 @@
           [&& (-> procedure? ... function?)]
           [disjoin (-> procedure? ... function?)]
           [|| (-> procedure? ... function?)]
-          [negated? (-> any/c boolean?)]
-          [negated (-> procedure? negated?)]
-          [negated-f (-> negated? procedure?)]
-          [negate (-> procedure? negated?)]
-          [!! (-> procedure? negated?)]))
+          [negate (-> procedure? function?)]
+          [!! (-> procedure? function?)]))
 
 (define (unthunk f . args)
   (λ ignored-args
@@ -282,14 +279,8 @@
             'left
             empty-arguments))
 
-(struct negated (f)
-  #:transparent
-  #:property prop:procedure
-  (λ (self . args)
-    (not (apply (negated-f self) args))))
-
-(define (negate f)
-  (negated f))
+(define (negate g)
+  (f not g))
 
 (define && conjoin)
 (define || disjoin)

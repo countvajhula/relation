@@ -15,7 +15,6 @@
            arguments
            relation)
 
-  ;; TODO: different compositions, curry, evaluate coverage
   (check-equal? ((unthunk (λ () 5))) 5)
   (check-equal? ((unthunk (λ () 5)) 1) 5)
   (check-equal? ((unthunk (λ () 5)) 1 2 3) 5)
@@ -106,4 +105,10 @@
                           (const #f)
                           'left
                           empty-arguments)
-                -3.4)))
+                -3.4))
+  (check-false ((negate positive?) 5))
+  (check-true ((negate positive?) -5))
+  (check-true ((negate negative?) 5))
+  (check-false ((negate negative?) -5))
+  (check-true ((negate positive?) 0))
+  (check-true ((negate negative?) 0)))
