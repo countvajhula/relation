@@ -1,7 +1,6 @@
 #lang racket/base
 
 (require (prefix-in b: racket/base)
-         racket/function
          (except-in racket/list
                     take
                     group-by)

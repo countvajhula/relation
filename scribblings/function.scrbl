@@ -159,34 +159,6 @@ This module provides a @racket[function] type intended as a drop-in alternative 
   ]
 }
 
-@defproc[(andf [v any/c]
-               ...)
-         any/c]{
-
- Similar to @racket[and] but a function rather than a macro, so that it can be used in functional combinators such as @racket[fold].
-
-@examples[
-    #:eval eval-for-docs
-    (andf #f #t #t)
-    (andf #t #t #t)
-    (andf 1 2 3)
-  ]
-}
-
-@defproc[(orf [v any/c]
-              ...)
-         any/c]{
-
- Similar to @racket[or] but a function rather than a macro, so that it can be used in functional combinators such as @racket[fold].
-
-@examples[
-    #:eval eval-for-docs
-    (orf #f #t #t)
-    (orf #f #f #f)
-    (orf 1 2 3)
-  ]
-}
-
 @defproc[(iff [pred (-> any/c boolean?)]
               [f procedure?]
               [g procedure?])

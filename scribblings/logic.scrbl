@@ -20,7 +20,6 @@
                          foldl/steps)
               relation
               racket/undefined
-              racket/function
               racket/set
               racket/stream))))
 

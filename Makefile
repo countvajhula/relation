@@ -98,7 +98,7 @@ test-algebraic:
 docs:
 	raco docs $(PACKAGE-NAME)
 
-profile:
+profile-logic:
 	echo "Profiling logical relations..."
 	raco profile dev/profile/logic/builtin.rkt | grep "Total cpu time"
 	raco profile dev/profile/logic/relation.rkt | grep "Total cpu time"
@@ -128,6 +128,6 @@ profile-algebraic:
 	raco profile dev/profile/algebraic/builtin.rkt | grep "Total cpu time"
 	raco profile dev/profile/algebraic/relation.rkt | grep "Total cpu time"
 
-profile: profile-equivalence profile-order profile-function profile-transform profile-algebraic
+profile: profile-logic profile-equivalence profile-order profile-function profile-transform profile-algebraic
 
-.PHONY:	help install remove build build-docs build-all check-deps clean test test-equivalence test-order test-function test-transform test-algebraic docs profile-equivalence profile-order profile-function profile-transform profile-algebraic profile
+.PHONY:	help install remove build build-docs build-all check-deps clean test test-equivalence test-order test-function test-transform test-algebraic docs profile-logic profile-equivalence profile-order profile-function profile-transform profile-algebraic profile

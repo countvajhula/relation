@@ -3,7 +3,6 @@
 (require (prefix-in b: racket/base)
          (only-in racket/list
                   group-by)
-         racket/function
          (except-in racket/list
                     take)
          (only-in data/collection

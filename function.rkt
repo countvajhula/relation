@@ -17,8 +17,6 @@
 
 (provide (contract-out
           [unthunk (-> procedure? any/c ... procedure?)]
-          [andf (-> any/c ... any/c)]
-          [orf (-> any/c ... any/c)]
           [iff (-> (-> any/c boolean?) procedure? procedure? procedure?)]
           [flip (-> procedure? procedure?)]
           [flip$ (-> procedure? procedure?)]
@@ -57,22 +55,6 @@
 (define (unthunk f . args)
   (λ ignored-args
     (apply f args)))
-
-(define (andf . args)
-  (match args
-    ['() #t]
-    [(cons v vs)
-     (match vs
-       ['() v]
-       [_ (and v (apply andf vs))])]))
-
-(define (orf . args)
-  (match args
-    ['() #f]
-    [(cons v vs)
-     (match vs
-       ['() v]
-       [_ (or v (apply orf vs))])]))
 
 (define (iff pred f g)
   (λ (v)
