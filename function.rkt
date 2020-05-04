@@ -23,7 +23,7 @@
           [flip (-> procedure? procedure?)]
           [flip$ (-> procedure? procedure?)]
           [flip* (-> procedure? procedure?)]
-          [lift (-> procedure? procedure?)]
+          [lift (-> procedure? function?)]
           [function? (-> any/c boolean?)]
           [function (-> list?
                         (-> any/c any/c any/c)
@@ -43,8 +43,8 @@
           [function-null function?]
           [function-cons (-> procedure? function? function?)]
           [apply/steps (unconstrained-domain-> sequence?)]
-          [compose (-> (or/c function? procedure?) ... function?)]
-          [power (-> integer? (or/c function? procedure?) function?)]
+          [compose (-> procedure? ... function?)]
+          [power (-> integer? procedure? function?)]
           [curry (unconstrained-domain-> function?)]
           [curryr (unconstrained-domain-> function?)]
           [conjoin (-> procedure? ... function?)]
@@ -216,8 +216,7 @@
                                             (loop (rest remf)
                                                   v))))))))))
 
-(define (compose . fs)
-  (apply f fs))
+(define compose f)
 
 (define (~power n f)
   ; maybe incorporate a power into the function type
