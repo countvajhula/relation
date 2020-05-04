@@ -4,6 +4,7 @@
          scribble/example
          racket/sandbox
          @for-label[relation/logic
+                    (only-in relation/algebraic fold)
                     racket/undefined
                     racket]]
 
@@ -49,12 +50,12 @@ Note: This module is still being designed and the interfaces may change without 
  @defproc[(orf [v any/c]
                ...)
           any/c]
- @defproc[(any? [v sequence?])
+ @defproc[(any? [vs sequence?])
           any/c]
     )]{
 
  Similar to @racket[or] but a function rather than a macro, so that it can be used in functional combinators such as @racket[fold].
- @racket[any?] is a predicate to check if any of a sequence of values is truthy, equivalent to @racket[(apply orf v ...)].
+ @racket[any?] is a predicate to check if any of a sequence of values are truthy, equivalent to @racket[(apply orf vs)].
 
 @examples[
     #:eval eval-for-docs
@@ -71,12 +72,12 @@ Note: This module is still being designed and the interfaces may change without 
  @defproc[(andf [v any/c]
                 ...)
           any/c]
- @defproc[(all? [v sequence?])
+ @defproc[(all? [vs sequence?])
           any/c]
     )]{
 
  Similar to @racket[and] but a function rather than a macro, so that it can be used in functional combinators such as @racket[fold].
- @racket[all?] is a predicate to check if all of a sequence of values are truthy, equivalent to @racket[(apply andf v ...)].
+ @racket[all?] is a predicate to check if all of a sequence of values are truthy, equivalent to @racket[(apply andf vs)].
 
 @examples[
     #:eval eval-for-docs
