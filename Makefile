@@ -86,6 +86,9 @@ docs:
 	raco docs $(PACKAGE-NAME)
 
 profile:
+	echo "Profiling logical relations..."
+	raco profile dev/profile/logic/builtin.rkt | grep "Total cpu time"
+	raco profile dev/profile/logic/relation.rkt | grep "Total cpu time"
 	echo "Profiling order and equivalence relations..."
 	raco profile dev/profile/comparable/builtin.rkt | grep "Total cpu time"
 	raco profile dev/profile/comparable/relation.rkt | grep "Total cpu time"

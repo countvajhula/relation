@@ -10,14 +10,15 @@
                   foldl)
          (for-syntax racket/base))
 
-(provide undefined?
-         any?
-         all?
-         none?
-         :=
+(provide :=
          =!
-         (contract-out [andf (-> any/c ... any/c)]
-                       [orf (-> any/c ... any/c)]))
+         (contract-out
+          [undefined? (-> any/c boolean?)]
+          [orf (-> any/c ... any/c)]
+          [any? (-> sequence? any/c)]
+          [andf (-> any/c ... any/c)]
+          [all? (-> sequence? any/c)]
+          [none? (-> sequence? any/c)]))
 
 (define (undefined? v)
   (eq? v undefined))
