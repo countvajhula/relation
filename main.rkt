@@ -2,12 +2,14 @@
 
 ;; Code here
 
-(require "equivalence.rkt"
+(require "logic.rkt"
+         "equivalence.rkt"
          "order.rkt"
          "transform.rkt"
          "algebraic.rkt")
 
-(provide (all-from-out "equivalence.rkt"
+(provide (all-from-out "logic.rkt"
+                       "equivalence.rkt"
                        "order.rkt"
                        "transform.rkt"
                        "algebraic.rkt"))

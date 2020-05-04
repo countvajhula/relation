@@ -67,6 +67,9 @@ clean:
 test:
 	raco test -x -p $(PACKAGE-NAME)
 
+test-logic:
+	raco test -x tests/logic.rkt
+
 test-equivalence:
 	raco test -x tests/equivalence.rkt
 

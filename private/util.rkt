@@ -3,7 +3,8 @@
 (require racket/match
          racket/function
          racket/stream
-         data/collection)
+         data/collection
+         relation/logic)
 
 (provide check-pairwise
          zip-with
@@ -19,18 +20,6 @@
             #t
             (and (check? v (first vs))
                  (check-pairwise check? vs))))))
-
-(define (orf . args)
-  (match args
-    ['() #f]
-    [(cons v vs)
-     (match vs
-       ['() v]
-       [_ (or v (apply orf vs))])]))
-
-(define any? (curry foldl
-                    orf
-                    #f))
 
 (define (zip-with op . seqs)
   (if (any? (map empty? seqs))

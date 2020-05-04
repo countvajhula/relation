@@ -12,6 +12,7 @@ This collection provides generic relations and type-agnostic operators. Out of t
 
 @table-of-contents[]
 
+@include-section["logic.scrbl"]
 @include-section["equivalence.scrbl"]
 @include-section["order.scrbl"]
 @include-section["transform.scrbl"]
