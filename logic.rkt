@@ -1,13 +1,13 @@
 #lang racket/base
 
 
-(require racket/undefined
+(require racket/contract/base
+         racket/undefined
          racket/match
-         racket/contract/base
          (only-in racket/function
                   curry)
          (only-in data/collection
-                  foldl)
+                  (apply d:apply))
          (for-syntax racket/base))
 
 (provide :=
@@ -39,13 +39,9 @@
        ['() v]
        [_ (or v (apply orf vs))])]))
 
-(define any? (curry foldl
-                    orf
-                    #f))
+(define any? (curry d:apply orf))
 
-(define all? (curry foldl
-                    andf
-                    #t))
+(define all? (curry d:apply andf))
 
 (define none? (compose not any?))
 
