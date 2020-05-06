@@ -23,7 +23,7 @@
           [flip* (-> procedure? procedure?)]
           [lift (-> procedure? function?)]
           [monoid? (-> any/c boolean?)]
-          [monoid (-> procedure? procedure? monoid?)]
+          [monoid (-> procedure? any/c monoid?)]
           [monoid-f (-> monoid? procedure?)]
           [monoid-id (-> monoid? procedure?)]
           [function? (-> any/c boolean?)]
