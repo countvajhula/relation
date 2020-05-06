@@ -102,7 +102,11 @@
                              #:order [order (one-of/c 'abb
                                                       'bab)])
                             #:rest [seqs (listof (sequenceof any/c))]
-                            [result any/c])]))
+                            [result any/c])]
+          [gather (-> (sequenceof procedure?)
+                      any/c
+                      ...
+                      any/c)]))
 
 (define-generics appendable
   (append appendable other)
@@ -387,3 +391,9 @@
 (define fold/steps (curry fold #:with-steps? #t))
 (define foldr/steps (curry fold/steps #:direction 'right))
 (define foldl/steps (curry fold/steps #:direction 'left))
+
+(define (gather fs . vs)
+  (if (empty? fs)
+      empty-stream
+      (stream-cons (apply (first fs) vs)
+                   (apply gather (rest fs) vs))))

@@ -13,11 +13,18 @@
                                       foldl
                                       foldr
                                       length
-                                      append)
+                                      append
+                                      map
+                                      sequence?)
                     (only-in racket (foldl f:foldl)
                                     (foldr f:foldr)
                                     (append b:append))
+                    (only-in racket/function curry curryr)
                     (only-in data/collection length
+                                             repeat
+                                             sequenceof
+                                             sequence?
+                                             map
                                              gen:sequence
                                              (foldl d:foldl)
                                              (foldl/steps d:foldl/steps))]]
@@ -41,10 +48,11 @@ This module generalizes the standard algebraic operators to work on any type tha
                                                       append
                                                       index-of
                                                       foldl
-                                                      foldl/steps))
-                                 '(require relation)
-                                 '(require racket/set)
-                                 '(require racket/stream))))
+                                                      foldl/steps)
+                                           racket/function
+                                           relation
+                                           racket/set
+                                           racket/stream))))
 
 @section[#:tag "algebraic:interfaces"]{Interfaces}
 
@@ -448,6 +456,26 @@ In the event no operands are received in the course of a computation, the result
     (->list (foldl/steps * '(1 2 3 4)))
     (->list (foldr/steps .. '("hi" " " "there")))
     (->list (foldl/steps .. '("hi" " " "there")))
+  ]
+}
+
+@defproc[(gather [fs (sequenceof procedure?)]
+                 [v any/c]
+                 ...)
+		 sequence?]{
+
+  A kind of "dual" to the usual @racket[map] operation where we map a function over values, @racket[gather] instead maps a value over functions. Specifically, this applies each function in the input sequence of functions to the provided arguments, independently, lazily yielding a corresponding sequence of results. Each of the input functions must have an arity that accepts the provided number of arguments.
+
+@examples[
+    #:eval eval-for-docs
+    (->list (gather (list add1 sub1 ->string) 0))
+    (->list (gather (list + *) 7 6))
+    (define (n·xⁿ [n 0])
+      (stream-cons (.. (curry * n)
+                       (curryr expt n))
+                   (n·xⁿ (add1 n))))
+    (->list (take 10 (gather (n·xⁿ) 3)))
+    (->list (take 10 (gather (map .. (repeat ->string) (n·xⁿ)) 3)))
   ]
 }
 
