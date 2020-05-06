@@ -22,22 +22,40 @@
           [flip$ (-> procedure? procedure?)]
           [flip* (-> procedure? procedure?)]
           [lift (-> procedure? function?)]
+          [monoid? (-> any/c boolean?)]
+          [monoid (-> procedure? procedure? monoid?)]
+          [monoid-f (-> monoid? procedure?)]
+          [monoid-id (-> monoid? procedure?)]
           [function? (-> any/c boolean?)]
           [function (-> list?
-                        (-> any/c any/c any/c)
-                        procedure?
+                        monoid?
                         symbol?
                         arguments?
                         function?)]
           [function-components (-> function? list?)]
           [function-composer (-> function? (-> any/c any/c any/c))]
-          [function-identity (-> function? procedure?)]
           [function-side (-> function? symbol?)]
           [function-args (-> function? arguments?)]
-          [make-function (-> procedure? ... function?)]
-          [make-right-function (-> procedure? ... function?)]
-          [f (-> procedure? ... function?)]
-          [f> (-> procedure? ... function?)]
+          [make-function (->* ()
+                              (#:compose-with monoid?
+                               #:curry-on symbol?)
+                              #:rest (listof procedure?)
+                              function?)]
+          [make-threading-function (->* ()
+                                        (#:compose-with monoid?
+                                         #:curry-on symbol?)
+                                        #:rest (listof procedure?)
+                                        function?)]
+          [f (->* ()
+                  (#:compose-with monoid?
+                   #:curry-on symbol?)
+                  #:rest (listof procedure?)
+                  function?)]
+          [f> (->* ()
+                   (#:compose-with monoid?
+                    #:curry-on symbol?)
+                   #:rest (listof procedure?)
+                   function?)]
           [function-null function?]
           [function-cons (-> procedure? function? function?)]
           [apply/steps (unconstrained-domain-> sequence?)]
@@ -88,7 +106,15 @@
 (define (~min-arity f)
   (~min-arity-value (procedure-arity f)))
 
-(struct function (components composer identity side args)
+(struct monoid (f id)
+  #:transparent
+  #:property prop:procedure
+  (λ (self . vs)
+    (foldl (flip (monoid-f self))
+           (monoid-id self)
+           vs)))
+
+(struct function (components composer side args)
   #:transparent
   #:property prop:procedure
   (lambda/arguments
@@ -96,7 +122,6 @@
    (let* ([self (first (arguments-positional packed-args))]
           [components (function-components self)]
           [composer (function-composer self)]
-          [identity (function-identity self)]
           [side (function-side self)]
           [pos (rest (arguments-positional packed-args))]
           [kw (arguments-keyword packed-args)]
@@ -116,10 +141,8 @@
                                                   curryr)])
                               (apply/arguments curry-proc
                                                (arguments-cons self args-invocation)))))])
-       (let ([f (foldl (flip composer)
-                       identity
-                       components)])
-         (apply/arguments f args)))))
+       (apply/arguments (apply composer components)
+                        args))))
   #:methods gen:sequence
   [(define/generic -empty? empty?)
    (define/generic -first first)
@@ -132,40 +155,39 @@
    (define (rest self)
      (function (-rest (function-components self))
                (function-composer self)
-               (function-identity self)
                (function-side self)
                (function-args self)))
    (define (reverse self)
      (function (-reverse (function-components self))
                (function-composer self)
-               (function-identity self)
                (function-side self)
                (function-args self)))])
 
-(define (make-function . fs)
+(define (make-function #:compose-with [composer (monoid b:compose values)]
+                       #:curry-on [curry-on 'left]
+                       . fs)
   (function fs
-            b:compose
-            values
-            'left
+            composer
+            curry-on
             empty-arguments))
 
-(define (make-right-function . fs)
-  (function fs
-            b:compose
-            values
-            'right
+(define (make-threading-function #:compose-with [composer (monoid b:compose values)]
+                                 #:curry-on [curry-on 'left]
+                                 . fs)
+  (function (reverse fs)
+            composer
+            curry-on
             empty-arguments))
 
 (define f make-function)
 
-(define f> make-right-function)
+(define f> make-threading-function)
 
 (define function-null (make-function))
 
 (define (function-cons proc f)
   (function (cons proc (function-components f))
             (function-composer f)
-            (function-identity f)
             (function-side f)
             (function-args f)))
 
@@ -215,13 +237,12 @@
     (if (function? f)
         (function (function-components f)
                   (function-composer f)
-                  (function-identity f)
                   (function-side f)
                   (arguments-merge (function-args f)
                                    (make-arguments pos kw)))
         (function (list f)
-                  b:compose
-                  values
+                  (monoid b:compose
+                          values)
                   'left
                   (make-arguments pos kw)))))
 
@@ -232,13 +253,12 @@
     (if (function? f)
         (function (function-components f)
                   (function-composer f)
-                  (function-identity f)
                   (function-side f)
                   (arguments-merge (make-arguments pos kw)
                                    (function-args f)))
         (function (list f)
-                  b:compose
-                  values
+                  (monoid b:compose
+                          values)
                   'right
                   (make-arguments pos kw)))))
 
@@ -248,15 +268,15 @@
 
 (define (conjoin . fs)
   (function fs
-            f:conjoin
-            (f:const #t)
+            (monoid f:conjoin
+                    (f:const #t))
             'left
             empty-arguments))
 
 (define (disjoin . fs)
   (function fs
-            f:disjoin
-            (f:const #f)
+            (monoid f:disjoin
+                    (f:const #f))
             'left
             empty-arguments))
 
