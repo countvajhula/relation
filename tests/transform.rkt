@@ -127,7 +127,7 @@
              (lambda ()
                (->set 'hi)))
 
-  (check-equal? (->code (->syntax (list 1 2 3))) '(1 2 3))
+  (check-equal? (->symex (->syntax (list 1 2 3))) '(1 2 3))
 
   (check-equal? (let-values ([(a b c) (->values (list 1 2 3))])
                   (list a b c)) (list 1 2 3))

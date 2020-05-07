@@ -224,10 +224,11 @@ See also: @other-doc['(lib "sugar/scribblings/sugar.scrbl")].
   ]
 }
 
-@defproc[(->syntax [v any/c])
+@defproc[(->syntax [v any/c]
+                   [ctx syntax? #f])
          syntax?]{
 
- Maps the input data to a @tech/reference{syntax object}.
+ Constructs a @tech/reference{syntax object} wrapping the provided @hyperlink["https://en.wikipedia.org/wiki/S-expression"]{symbolic expression} @racket[v]. If the input is already a syntax object, then it is left unchanged. If a syntax object @racket[ctx] is provided, it will be used as the context in constructing the new syntax object.
 
 @examples[
     #:eval eval-for-docs
@@ -237,18 +238,18 @@ See also: @other-doc['(lib "sugar/scribblings/sugar.scrbl")].
   ]
 }
 
-@defproc[(->code [v any/c])
+@defproc[(->symex [v any/c])
          any/c]{
 
- Maps the input data (for instance, a syntax object in a macro definition) to a @tech/reference{datum}, that is, to an elementary syntactic representation, the literal "code."
+ Maps a @tech/reference{syntax object} to its underlying @hyperlink["https://en.wikipedia.org/wiki/S-expression"]{symbolic expression}, the literal "code" that will be evaluated by the interpreter. If the input is already a symex, then it is left unchanged.
 
 @examples[
     #:eval eval-for-docs
-    (->code "apple")
-    (->code #'42)
-    (->code #'(+ 1 2))
-    (->code #'(define (square x) (* x x)))
-    (eval (->code #'((λ (x) (* x x)) 4)))
+    (->symex "apple")
+    (->symex #'42)
+    (->symex #'(+ 1 2))
+    (->symex #'(define (square x) (* x x)))
+    (eval (->symex #'((λ (x) (* x x)) 4)))
   ]
 }
 

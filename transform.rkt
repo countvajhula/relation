@@ -42,8 +42,10 @@
                             (any/c)
                             generator?)]
           [->set (-> any/c set?)]
-          [->syntax (-> any/c syntax?)]
-          [->code (-> any/c any/c)]
+          [->syntax (->* (any/c)
+                         (syntax?)
+                         syntax?)]
+          [->symex (-> any/c any/c)]
           [->values (-> any/c any)]
           [->dict (-> any/c dict?)]
           [->procedure (-> any/c procedure?)]))
@@ -224,11 +226,11 @@
                   ->list
                   ->set)]))
 
-(define (->syntax v)
+(define (->syntax v [ctx #f])
   (cond [(syntax? v) v]
-        [else (datum->syntax #f v)]))
+        [else (datum->syntax (if ctx ctx #f) v)]))
 
-(define (->code v)
+(define (->symex v)
   (cond [(syntax? v) (syntax->datum v)]
         [else v]))
 
