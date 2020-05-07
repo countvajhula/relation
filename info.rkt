@@ -11,6 +11,7 @@
                      "racket-doc"
                      "sugar"
                      "collections-doc"
+                     "functional-doc"
                      "sandbox-lib"
                      "at-exp-lib"))
 (define scribblings '(("scribblings/relation.scrbl" (multi-page))))
