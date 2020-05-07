@@ -5,6 +5,7 @@
          racket/sandbox
          @for-label[relation/algebraic
                     relation/transform
+                    relation/logic
                     racket/generic
                     (except-in racket +
                                       -
@@ -469,7 +470,10 @@ In the event no operands are received in the course of a computation, the result
 @examples[
     #:eval eval-for-docs
     (->list (gather (list add1 sub1 ->string) 0))
-    (->list (gather (list + *) 7 6))
+    (->list (gather (list + * min max) 7 6))
+    (define (conjoin . fs)
+      (.. all? (curry gather fs)))
+    ((conjoin positive? even? integer?) 4)
     (define (n·xⁿ [n 0])
       (stream-cons (.. (curry * n)
                        (curryr expt n))
