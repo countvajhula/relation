@@ -128,6 +128,8 @@
   (check-equal? (power '(1 2 3) 0) '())
   (check-equal? (power "abc" 2) "abcabc")
   (check-equal? ((power add1 3) 5) 8)
+  (check-equal? ((power add1 1) 3) 4)
+  (check-equal? ((power add1 0) 3) 3)
   (check-exn exn:fail:contract? (thunk (power '("hi" "there"))))
   ;; gather
   (check-equal? (->list (gather (list add1 sub1 ->string) 23)) '(24 22 "23"))

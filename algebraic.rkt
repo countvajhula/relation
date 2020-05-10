@@ -281,7 +281,9 @@
    (define (addable-identity addable)
      addable)
    (define (addable-inverse addable)
-     addable)])
+     addable)]
+  #:property prop:procedure
+  (b:compose (curry apply values) cdr list))
 
 (define ID (composition-identity))
 
