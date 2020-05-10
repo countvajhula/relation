@@ -91,7 +91,7 @@
   (cond [(number? v) v]
         [(string? v) (string->number v)]
         [(char? v) (char->integer v)]
-        [(eq? v ID) (reify v 0)]
+        [(eq? v ID) (reify v 0 +)]
         [else (error '->number "Unsupported type ~a!" v)]))
 
 (define (->inexact v)

@@ -31,7 +31,9 @@
          addable/c
          ID
          (contract-out
-          [reify (-> any/c any/c any/c)]
+          [reify (->* (any/c any/c)
+                      (procedure?)
+                      any/c)]
           [appendable? (-> any/c boolean?)]
           [append (-> appendable? appendable? appendable?)]
           [appendable-identity (-> appendable? appendable?)]
@@ -54,6 +56,9 @@
           [- (-> addable? addable? ... addable?)]
           [sum (-> (sequenceof addable?) addable?)]
           [product (-> (sequenceof multipliable?) multipliable?)]
+          [power (->* (any/c integer?)
+                      (procedure?)
+                      any/c)]
           [fold (->i ([f (seqs) (and/c (procedure-arity-includes/c (add1 (b:length seqs)))
                                        (unconstrained-domain-> any/c))])
                      (#:into [base any/c]
@@ -280,9 +285,9 @@
 
 (define ID (composition-identity))
 
-(define (reify v example)
+(define (reify v example [op ..])
   (if (eq? v ID)
-      ((id append) example)
+      ((id op) example)
       v))
 
 (define (id operation)
@@ -397,3 +402,14 @@
       empty-stream
       (stream-cons (apply (first fs) vs)
                    (apply gather (rest fs) vs))))
+
+(define (power v n [op ..])
+  (if (= n 0)
+      (reify ID v op)
+      (let ([result (fold #:into ID
+                          op
+                          (take (abs n)
+                                (repeat v)))])
+        (if (> n 0)
+            result
+            ((inverse op) result)))))

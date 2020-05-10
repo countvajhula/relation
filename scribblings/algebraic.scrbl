@@ -75,14 +75,17 @@ In order to support generic composition seamlessly, all of the composition inter
 
 In the event no operands are received in the course of a computation, the result of composition would be @racket[ID], which would not be a usable result in utilities that are expecting a specific type such as a string. In such cases, the result could be converted to the expected type using one of the transformers in @seclink["Type_Transformers" #:doc '(lib "relation/scribblings/relation.scrbl")]{relation/transform} such as @racket[->string]. If you are not using a built-in type but rather a @seclink["define-struct" #:doc '(lib "scribblings/guide/guide.scrbl")]{custom type}, however, you could use the following more general utility to "reify" the generic identity value to a type of your choosing:
 
-@defproc[(reify [v any/c] [example any/c])
+@defproc[(reify [v any/c]
+                [example any/c]
+                [op procedure? ..])
          any/c]{
 
- "Reifies" a value to a specific type. If the value is already a tangible value (i.e. anything other than @racket[ID]), then it is returned without modification. Otherwise, the appropriate nullary value for the type is returned. The nullary value is defined as the identity value for the @racket[append] operation for the type, so custom types are expected to implement the @racket[gen:appendable] interface in order to leverage this utility.
+ "Reifies" a value to a specific type. If the value is already a tangible value (i.e. anything other than @racket[ID]), then it is returned without modification. Otherwise, the identity value for the desired type (indicated by supplying an arbitrary @racket[example] of this type) for the operation @racket[op] is returned. Custom types are expected to implement one of the canonical algebraic operations (e.g. @racket[gen:appendable]) in order to leverage this utility.
 
 @examples[
     #:eval eval-for-docs
     (reify ID 3)
+    (reify ID 3 *)
     (reify ID "cherry")
     (reify ID (list))
     (reify "hi" (list))
@@ -503,5 +506,23 @@ In the event no operands are received in the course of a computation, the result
 @examples[
     #:eval eval-for-docs
     (product (list 1 2 3 4))
+  ]
+}
+
+@defproc[(power [v any/c]
+                [n integer?]
+                [op procedure? ..])
+		 any/c]{
+
+  Compose @racket[v] with itself @racket[n] times with the @racket[op] operation. If @racket[n] is negative, the result is the @racket[inverse] of the value computed with a positive exponent. This generalizes the idea of a numeric "power" to @hyperlink["https://en.wikipedia.org/wiki/Exponentiation#Monoids"]{any type} and composing operation.
+
+@examples[
+    #:eval eval-for-docs
+    ((power add1 3) 5)
+    (power "abc" 5)
+    (power 2 3)
+    (power 2 3 *)
+    (power 2 -3 *)
+    (power 2 -3 +)
   ]
 }
