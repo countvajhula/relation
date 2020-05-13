@@ -33,6 +33,14 @@
     (> i j)
     (≠ i j)))
 
+(define (check-hash-codes how-many)
+  (for ([i (take how-many (in (cycle (list (list 1 2)
+                                           (list 1.0 2.0)
+                                           (list (list 1 2))
+                                           (list (list 1.0 2.0))
+                                           (list "abc" 'abc #\a 1 (list 2.0 3))))))])
+    (hash-code i)))
+
 (define (check-chars how-many)
   (for ([i (take how-many (in (cycle '(#\a #\a #\b))))]
         [j (take how-many (in (cycle '(#\a #\b #\a))))])
@@ -65,6 +73,7 @@
 
 (check-numbers 10000)
 (check-strings 10000)
+(check-hash-codes 10000)
 (check-chars 10000)
 (sort-numbers 10000)
 (sort-strings 10000)

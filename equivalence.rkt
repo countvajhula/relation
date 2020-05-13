@@ -5,6 +5,7 @@
          racket/contract/base
          racket/generic
          racket/function
+         racket/vector
          racket/stream
          racket/class
          (only-in racket/list
@@ -13,7 +14,8 @@
          data/collection
          (only-in algebraic/prelude
                   &&
-                  ||))
+                  ||)
+         describe)
 
 (require "private/util.rkt")
 
@@ -75,35 +77,57 @@
                (define secondary-hash-code equal-secondary-hash-code)]
   #:fast-defaults ([number?
                     (define equal? b:=)
-                    (define hash-code values)]
+                    (define hash-code (b:compose eqv-hash-code exact->inexact))]
                    [symbol?
                     (define equal? eq?)
                     (define hash-code eq-hash-code)])
-  #:defaults ([string?
+  #:defaults ([(|| string? bytes? hash?)
                (define equal? b:equal?)
                (define hash-code equal-hash-code)
                (define secondary-hash-code equal-secondary-hash-code)]
-              [sequence?
+              [(|| sequence? b:sequence?)
                (define/generic generic-equal? equal?)
                (define/generic generic-hash-code hash-code)
                (define (equal? comparable other)
-                 (cond [(for-all empty? (list comparable other))
-                        #t]
-                       [(exists empty? (list comparable other))
-                        #f]
-                       [else (let ([a (first comparable)]
-                                   [b (first other)])
-                               (and (generic-equal? a b)
-                                    (equal? (rest comparable)
-                                            (rest other))))]))
+                 (and (eq? (variant comparable)
+                           (variant other))
+                      (cond [(for-all empty? (list comparable other))
+                             #t]
+                            [(exists empty? (list comparable other))
+                             #f]
+                            [else (let ([a (first comparable)]
+                                        [b (first other)])
+                                    (and (generic-equal? a b)
+                                         (equal? (rest comparable)
+                                                 (rest other))))])))
+               (define (seq-flonum seq)
+                 ;; Recursively transform any numbers in the sequence to inexact
+                 ;; numbers prior to computation of the hash code. The built-in
+                 ;; equal? does not consider these equal but = does, so we perform
+                 ;; this equivalence mapping prior to consulting equal? for the
+                 ;; hash code, since otherwise the returned hash codes could
+                 ;; be unequal.
+                 (cond [(number? seq) (exact->inexact seq)]
+                       [(string? seq) seq]
+                       [(list? seq) (b:map seq-flonum seq)]
+                       [(vector? seq) (vector-map seq-flonum seq)]
+                       [(set? seq) (list->set (set-map seq seq-flonum))]
+                       [(stream? seq) (map seq-flonum seq)]
+                       [else seq]))
                (define (hash-code comparable)
-                 (let ([hashes (map generic-hash-code comparable)]
-                       [squares (map (curryr expt 2) (naturals 1))])
-                   (apply +
-                          (equal-hash-code sequence?)
-                          (zip-with *
-                                    hashes
-                                    squares))))]
+                 (let ([new-seq (cond [(list? comparable) (b:map seq-flonum comparable)]
+                                      [(vector? comparable) (vector-map seq-flonum comparable)]
+                                      [(set? comparable) (list->set (set-map comparable seq-flonum))]
+                                      [(stream? comparable) (map seq-flonum comparable)]
+                                      [else comparable])])
+                   (equal-hash-code new-seq)))
+               (define (secondary-hash-code comparable)
+                 (let ([new-seq (cond [(list? comparable) (b:map seq-flonum comparable)]
+                                      [(vector? comparable) (vector-map seq-flonum comparable)]
+                                      [(set? comparable) (list->set (set-map comparable seq-flonum))]
+                                      [(stream? comparable) (map seq-flonum comparable)]
+                                      [else comparable])])
+                   (equal-secondary-hash-code new-seq)))]
               [any/c
                (define equal? b:equal?)
                (define hash-code equal-hash-code)

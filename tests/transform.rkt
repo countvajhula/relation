@@ -142,7 +142,7 @@
              (lambda ()
                (->dict (list 1 2))))
 
-  (check-equal? (->procedure ID) identity)
+  (check-equal? ((->procedure ID) 5) 5)
   (check-equal? (->procedure add1) add1)
   (check-equal? ((->procedure 5)) 5)
   (check-equal? ((->procedure (list add1 add1)) 3) 5))

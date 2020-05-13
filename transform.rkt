@@ -247,6 +247,5 @@
 
 (define (->procedure v)
   (cond [(procedure? v) v]
-        [(eq? v ID) (reify v identity)]
         [((&& sequence? (negate number?)) v) (apply compose (->list v))]
-        [else (λ () v)]))
+        [else (thunk v)]))

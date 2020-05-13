@@ -40,6 +40,8 @@
   (check-false (= (set 1 2) (set 1 3)) "incomparable sets")
   (check-false (= (set 1 2) (set 3 4)) "incomparable sets")
   (check-true (= (new object%) (new object%)))
+  (check-true (= 1 1.0))
+  (check-true (= 5/4 1.25))
 
   ;; simple type-specific equality
   (check-true (= 'hi 'hi 'hi))
@@ -47,8 +49,13 @@
   ;; sequences (recursive equality check)
   (check-true (= (list 1 2 3) (list 1 2 3)))
   (check-true (= (list 1.25 2 3) (list 5/4 2 3)) "nested numeric equality")
+  (check-true (= (list (list 1.25) 2 3) (list (list 5/4) 2 3)) "nested numeric equality")
   (check-false (= (list 1 2 3) (list 1 2 3 4)) "common prefix")
   (check-false (= "hi" "hide") "common prefix")
+  (check-false (= (list 1 2 3) #(1 2 3)) "heterogeneous types")
+  (check-false (= (list 1 2 3) (stream 1 2 3)) "heterogeneous types")
+  (check-false (= (list (list 1 2 3)) (list (stream 1 2 3))) "nested heterogeneous types")
+  (check-false (= (list (list (list 1 2 3))) (list (list (stream 1 2 3)))) "nested heterogeneous types")
 
   ;; custom types
   ((λ ()
@@ -62,9 +69,19 @@
      (check-false (= (amount 5 95) (amount 4 95)))))
 
   ;; hash codes
+  (check-equal? (hash-code 1) (hash-code 1.0))
+  (check-equal? (hash-code 5/4) (hash-code 1.25))
   (check-equal? (hash-code (list 1 2 3)) (hash-code (list 1 2 3)))
   (check-equal? (hash-code 'abc) (hash-code (string->symbol "abc")))
   (check-not-equal? (hash-code (list 1 2 3)) (hash-code (list 2 1 3)))
+  (check-not-equal? (hash-code (list 1 2 3)) (hash-code #(1 2 3)))
+  (check-equal? (hash-code (list (list 1) 2 3)) (hash-code (list (list 1.0) 2 3)))
+  (check-equal? (hash-code (list 1.25 2 3)) (hash-code (list 5/4 2 3)) "nested numeric equality")
+  (check-equal? (hash-code (list (list 1.25) 2 3)) (hash-code (list (list 5/4) 2 3)) "nested numeric equality")
+  (check-not-equal? (hash-code (list 1 2 3)) (hash-code #(1 2 3)) "heterogeneous types")
+  (check-not-equal? (hash-code (list 1 2 3)) (hash-code (stream 1 2 3)) "heterogeneous types")
+  (check-not-equal? (hash-code (list (list 1 2 3))) (hash-code (list (stream 1 2 3))) "nested heterogeneous types")
+  (check-not-equal? (hash-code (list (list (list 1 2 3)))) (hash-code (list (list (stream 1 2 3)))) "nested heterogeneous types")
 
   ;; equivalence under a mapping
   (check-true (= #:key identity 1 1 1))
