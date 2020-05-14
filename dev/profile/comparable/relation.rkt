@@ -61,7 +61,7 @@
 
 (define (check-group-by how-many)
   (for ([i (take how-many (in (cycle '((4 1 3 2 7 1 3 5)))))])
-    (group-by #:key identity i)))
+    (group-by identity i)))
 
 (define (check-min how-many)
   (for ([i (take how-many (in (cycle '((4 1 3 2 7 1 3 5)))))])

@@ -147,23 +147,22 @@ True if the v's are equal. This uses the most appropriate equality check for the
   ]
 }
 
-@deftogether[(@defproc[(group-by [#:key key (-> comparable? comparable?) #f]
+@deftogether[(@defproc[(group-by [key (-> comparable? comparable?)]
                                  [vs (listof comparable?)])
                        (listof list?)]
-              @defproc[(=/classes [#:key key (-> comparable? comparable?) #f]
+              @defproc[(=/classes [key (-> comparable? comparable?)]
                                   [vs (listof comparable?)])
                        (listof list?)])]{
 
- Groups input values into equivalence classes induced by the specified equivalence relation (by default, @racket[=] is applied directly unless a key is specified).
+ Groups input values into equivalence classes under the equivalence relation induced by @racket[key]. Values that are @racket[=] after the application of @racket[key] are grouped together to form the classes.
 
 @examples[
     #:eval eval-for-docs
-    (group-by (list 1 2 1))
-    (group-by (list 1 2 3))
-    (group-by (list 1 1 1))
-    (group-by (list 1 1 2 2 3 3 3))
-    (group-by (list "cherry" "banana" "apple"))
-    (group-by #:key length (list "apple" "banana" "cherry"))
+    (group-by identity (list 1 1 2 2 3 3 3))
+    (group-by identity (list 1 1 1))
+    (group-by odd? (list 1 1 2 3 4 8 12))
+    (group-by identity (list "cherry" "banana" "apple"))
+    (group-by length (list "apple" "banana" "cherry"))
   ]
 }
 
