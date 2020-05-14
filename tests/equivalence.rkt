@@ -230,4 +230,13 @@
   (check-true (member? "HI" (generic-set #:key string-upcase "hi" "there")))
   (check-true (member? "HI" (generic-set #:key string? "hi" "there")))
   (check-false (member? #:key string? "HI" (generic-set "hi" "there")) "key ignored for generic sets")
-  (check-true (member? "to" (generic-set #:key string-length "hi" "there")) "generic set key used as is"))
+  (check-true (member? "to" (generic-set #:key string-length "hi" "there")) "generic set key used as is")
+
+  ;; assoc
+  (check-equal? (assoc 'b (list '(a 1) '(b 2) '(c 3))) '(b 2))
+  (check-equal? (assoc 'b (stream '(a 1) '(b 2) '(c 3))) '(b 2))
+  (check-false (assoc 'd (list '(a 1) '(b 2) '(c 3))))
+  (check-equal? (assoc 2 (list '(1 a) '(2 b) '(3 c))) '(2 b))
+  (check-equal? (assoc 2 (list '(1 a) '(2.0 b) '(3 c))) '(2.0 b))
+  (check-equal? (assoc #:key string-upcase "abc" (list '("PQR" a) '("XYZ" b) '("ABC" c))) '("ABC" c))
+  (check-false (assoc 'b (list))))

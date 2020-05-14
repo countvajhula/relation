@@ -6,10 +6,10 @@
          @for-label[relation/equivalence
                     relation/transform
                     racket/generic
-                    (except-in racket = equal? group-by drop length)
-                    (only-in racket (= b:=) (equal? b:equal?))
+                    (except-in racket = equal? group-by drop length assoc)
+                    (only-in racket (= b:=) (equal? b:equal?) (assoc b:assoc) (group-by b:group-by))
 					(only-in rackjure/egal egal?)
-                    (only-in data/collection drop length)]]
+                    (only-in data/collection drop length sequenceof)]]
 
 @title{Equivalence Relations}
 
@@ -154,7 +154,7 @@ True if the v's are equal. This uses the most appropriate equality check for the
                                   [vs (listof comparable?)])
                        (listof list?)])]{
 
- Groups input values into equivalence classes under the equivalence relation induced by @racket[key]. Values that are @racket[=] after the application of @racket[key] are grouped together to form the classes.
+ Like @racketlink[b:group-by]{group-by}, groups input values into equivalence classes under the equivalence relation induced by @racket[key]. Values that are @racket[=] after the application of @racket[key] are grouped together to form the classes.
 
 @examples[
     #:eval eval-for-docs
@@ -218,5 +218,21 @@ True if the v's are equal. This uses the most appropriate equality check for the
     (member? #:key string-upcase "BANANA" (list "apple" "banana" "cherry"))
     (member? "BANANA" (generic-set #:key string-upcase "apple" "banana" "cherry"))
     (member? "tomato" (generic-set #:key length "apple" "banana" "grape"))
+  ]
+}
+
+@defproc[(assoc [#:key key (-> comparable? comparable?) #f]
+                [assoc-key comparable?]
+                [col (sequenceof pair?)])
+         pair?]{
+
+ A generic version of @racketlink[b:assoc]{assoc}, this checks if a value keyed by @racket[assoc-key] is present in a collection structured as an @tech/reference{association list}. The @racket[first] item in each element of @racket[col] is compared against @racket[assoc-key] using @racket[=] after first applying the transformation @racket[key] to both values.
+
+@examples[
+    #:eval eval-for-docs
+    (assoc 'b (list '(a 1) '(b 2)))
+    (assoc 2 (list '(1 a) '(2 b) '(3 c)))
+    (assoc 2 (list '(1 a) '(2.0 b) '(3 c)))
+    (assoc #:key string-upcase "cherry" (list '("Apple" a) '("Banana" b) '("Cherry" c)))
   ]
 }

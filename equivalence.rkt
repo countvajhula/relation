@@ -9,6 +9,7 @@
          racket/vector
          racket/stream
          racket/class
+         racket/match
          (only-in racket/list
                   (group-by b:group-by)
                   splitf-at)
@@ -65,7 +66,12 @@
           (member? (->* (comparable? sequence?)
                         (#:key (or/c (-> comparable? comparable?)
                                      #f))
-                        boolean?))))
+                        boolean?))
+          (assoc (->* (comparable? (sequenceof pair?))
+                      (#:key (or/c (-> comparable? comparable?)
+                                   #f))
+                      (or/c pair?
+                            #f)))))
 
 (define-generics comparable
   (equal? comparable other)
@@ -248,6 +254,15 @@
       (not (null? (tail #:key key
                         elem
                         (in col))))))
+
+(define (assoc #:key [key #f] elem col)
+  (if (empty? col)
+      #f
+      (let ([pair (first col)])
+        (match-let ([(list k v) pair])
+          (if (= #:key key k elem)
+              pair
+              (assoc #:key key elem (rest col)))))))
 
 (define /= ≠)
 (define != ≠)

@@ -7,7 +7,7 @@
                     relation/equivalence
                     relation/transform
                     racket/generic
-                    (except-in racket < <= >= > min max sort = equal? group-by length)
+                    (except-in racket < <= >= > min max sort = equal? group-by length assoc)
                     (only-in racket (equal? b:equal?) (sort b:sort))
                     (only-in data/collection length sequenceof)]]
 
