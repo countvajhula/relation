@@ -16,8 +16,7 @@
          (only-in algebraic/prelude
                   &&
                   ||)
-         describe
-         kw-utils/kw-hash-lambda)
+         describe)
 
 (require "private/util.rkt")
 
