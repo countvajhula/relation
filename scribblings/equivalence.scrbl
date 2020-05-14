@@ -8,17 +8,22 @@
                     racket/generic
                     (except-in racket = equal? group-by drop length)
                     (only-in racket (= b:=) (equal? b:equal?))
+					(only-in rackjure/egal egal?)
                     (only-in data/collection drop length)]]
 
 @title{Equivalence Relations}
 
 @defmodule[relation/equivalence]
 
-A generic interface and utilities for comparing data.
+A unified equality relation @racket[=] together with derived utilities for comparing data.
 
-By default, the built-in equivalence operator @racketlink[b:=]{=} operates on @tech/reference{numbers} specifically, while the operators @racket[eq?], @racket[eqv?] and @racketlink[b:equal?]{equal?} are more suitable for other comparisons depending on the type of the values being compared. Additionally, there are type-specific comparison operators, for instance @racket[char=?] and @racket[string=?], that may be used if the type is known.
+Traditionally in Lisp a distinction is made between object "equality" and object "identity." The latter represents that two references indicate the @emph{same} object, while the former represents that two distinct objects are identical in every way.
 
-This module provides a generic interface that overrides the standard @racketlink[b:=]{=} operator to allow its use with any comparable type and not only numbers, performing the most appropriate comparison depending on the type of the values being compared. It also supports additional parameters to express broader notions of equivalence than simple equality. You can also provide an implementation for the interface in custom types so that they can be compared using the same standard equality operator and the generic utilities available in this module.
+Racket offers several built-in operators to check for some form of equivalence. @racket[eq?] corresponds to checking for object identity, while for equality, we have @racketlink[b:=]{=} (for numbers), @racket[eqv?] (for numbers and other types), and @racketlink[b:equal?]{equal?} (the broadest notion of equality covering most cases). In practice, none of these can be used exclusively to represent the idea of "equality," since cases exist where each is preferable to the others. For instance, @racket[=] reports that @racket[1] is equal to @racket[1.0] -- a behavior that is desirable in most cases -- whereas @racketlink[b:equal?]{equal?} sees them as unequal.
+
+This module provides a generic interface that overrides the standard @racketlink[b:=]{=} operator to allow its use with any type, delegating to built-in equality checks to perform the most appropriate comparison depending on the type of the values being compared. It also supports additional parameters to express @hyperlink["https://en.wikipedia.org/wiki/Equivalence_relation"]{broader notions of equivalence} than simple equality -- since, indeed, any idea of equality presupposes a definition in relation to which two objects are indistinguishable.
+
+The @racket[=] relation provided in this module is intended to express the notion of "equality" in all cases, but, at least for the moment, does not usually differentiate between mutable and immutable versions of a data type. For that, consider using @racket[egal?].
 
 @(define eval-for-docs
   (parameterize ([sandbox-output 'string]
@@ -72,7 +77,7 @@ This module provides a generic interface that overrides the standard @racketlink
 @defproc[(secondary-hash-code [v comparable?])
          fixnum?])]{
 
- Similar to @racket[equal-hash-code] and @racket[equal-secondary-hash-code], but these yield the hash code reported by the underlying operation used to perform the equality check. For example, for numbers, @racket[hash-code] evaluates to the number itself, while for strings, it evaluates to the hash code reported by @racket[equal-hash-code]. Likewise, for symbols, it evaluates to the hash code reported by @racket[eq-hash-code] since @racket[eq?] is the check employed for symbol comparisons.
+ Similar to @racket[equal-hash-code] and @racket[equal-secondary-hash-code], but these yield the hash code reported by the underlying operation used to perform the equality check. For example, for numbers, @racket[hash-code] is equivalent to the @racket[eqv-hash-code] of the @tech[#:doc '(lib "scribblings/reference/reference.scrbl") #:key "inexact number"]{inexact} representation of the number, while for strings, it evaluates to the hash code reported by @racket[equal-hash-code]. Likewise, for symbols, it evaluates to the hash code reported by @racket[eq-hash-code] since @racket[eq?] is the check employed for symbol comparisons.
 
 @examples[
     #:eval eval-for-docs
@@ -91,13 +96,13 @@ This module provides a generic interface that overrides the standard @racketlink
 
 @section[#:tag "equivalence:utilities"]{Utilities}
 
- The following utilities are provided which work with any type that implements the @racket[gen:comparable] interface.
+ The following equivalence-related utilities are universally applicable, since all types are @racket[gen:comparable].
 
 @defproc[(= [#:key key (-> comparable? comparable?) #f]
             [v comparable?] ...)
          boolean?]{
 
- True if the v's are equal. This uses the most appropriate equality check for the type. For instance, it uses the built-in @racketlink[b:=]{=} operator for numeric data, and @racketlink[b:equal?]{equal?} for some other types such as @tech/reference{structures}. If a transformation is provided via the @racket[#:key] argument, then this transformation is applied to the input values first, prior to performing the equality check.
+True if the v's are equal. This uses the most appropriate equality check for the type. For instance, it uses the built-in @racketlink[b:=]{=} operator for numeric data, and @racketlink[b:equal?]{equal?} for some other types such as @tech/reference{structures}. If a transformation is provided via the @racket[#:key] argument, then this transformation is applied to the input values first, prior to performing the equality check. For @seclink["Sequences" #:doc '(lib "scribblings/data/collection/collections.scrbl")]{sequences}, the types of the values are compared prior to recursively applying the equality relation on the contents.
 
 @examples[
     #:eval eval-for-docs
@@ -105,11 +110,14 @@ This module provides a generic interface that overrides the standard @racketlink
     (= 1 2)
     (= "apple" "apple" "apple")
     (= 3/2 1.5)
+    (= (list 1 3/2 2.0) (list 1.0 1.5 2))
+    (= (list 1 3/2 2.0) #(1.0 1.5 2))
     (= #:key string-upcase "apple" "Apple" "APPLE")
     (= #:key ->number "42.0" "42/1" "42")
     (= #:key ->number "42" "42.1")
     (= #:key even? 12 20)
     (= #:key odd? 12 20)
+    (= #:key first (list 1.5 4 7) (list 3/2 2 3))
     (= #:key (.. even? ->number) "12" "20")
   ]
 }

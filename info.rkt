@@ -3,6 +3,7 @@
 (define deps '("base"
                "collections-lib"
                "algebraic"
+               "describe"
                "point-free"
                "threading-lib"
                "version-case"))
@@ -12,6 +13,7 @@
                      "sugar"
                      "collections-doc"
                      "functional-doc"
+                     "rackjure"
                      "sandbox-lib"
                      "at-exp-lib"))
 (define scribblings '(("scribblings/relation.scrbl" (multi-page))))
