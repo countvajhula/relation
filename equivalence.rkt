@@ -5,6 +5,7 @@
          racket/contract/base
          racket/generic
          racket/function
+         racket/dict
          racket/vector
          racket/stream
          racket/class
@@ -15,7 +16,8 @@
          (only-in algebraic/prelude
                   &&
                   ||)
-         describe)
+         describe
+         kw-utils/kw-hash-lambda)
 
 (require "private/util.rkt")
 
@@ -47,11 +49,13 @@
                    #:rest (listof comparable?)
                    boolean?)]
           [group-by (->* ((listof comparable?))
-                         (#:key (or/c (-> comparable? comparable?)
+                         ((-> comparable? comparable?)
+                          #:key (or/c (-> comparable? comparable?)
                                       #f))
                          (listof list?))]
           [=/classes (->* ((listof comparable?))
-                          (#:key (or/c (-> comparable? comparable?)
+                          ((-> comparable? comparable?)
+                           #:key (or/c (-> comparable? comparable?)
                                        #f))
                           (listof list?))]
           (generic-set (->* ()
@@ -139,9 +143,20 @@
       (with-handlers ([exn:fail:contract? (λ (err) #f)])
         (check-pairwise equal? args))))
 
-(define (group-by #:key [key #f] collection)
-  (let ([key (or key identity)])
-    (b:group-by key collection =)))
+(define group-by
+  (kw-hash-case-lambda #:kws kw-hash
+    [(collection)
+     (let ([key (if (dict-has-key? kw-hash '#:key)
+                    (ref kw-hash '#:key)
+                    identity)])
+       (b:group-by key collection =))]
+    [(key collection)
+     (if (dict-has-key? kw-hash '#:key)
+         (raise-arguments-error 'group-by
+                                "Duplicate keys provided"
+                                "key" key
+                                "keywords" kw-hash)
+         (group-by #:key key collection))]))
 
 (define (≠ #:key [key #f] . args)
   (not (apply = #:key key args)))

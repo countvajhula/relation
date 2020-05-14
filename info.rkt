@@ -4,6 +4,7 @@
                "collections-lib"
                "algebraic"
                "describe"
+               "kw-utils"
                "point-free"
                "threading-lib"
                "version-case"))
