@@ -60,7 +60,6 @@
           [function-cons (-> procedure? function? function?)]
           [apply/steps (unconstrained-domain-> sequence?)]
           [compose (-> procedure? ... function?)]
-          [power (-> integer? procedure? function?)]
           [curry (unconstrained-domain-> function?)]
           [curryr (unconstrained-domain-> function?)]
           [conjoin (-> procedure? ... function?)]
@@ -115,6 +114,7 @@
            vs)))
 
 (struct function (components composer side args)
+  ; maybe incorporate a power into the function type
   #:transparent
   #:property prop:procedure
   (lambda/arguments
@@ -161,7 +161,11 @@
      (function (-reverse (function-components self))
                (function-composer self)
                (function-side self)
-               (function-args self)))])
+               (function-args self)))]
+  #:methods gen:countable
+  [(define/generic -length length)
+   (define (length self)
+     (-length (function-components self)))])
 
 (define (make-function #:compose-with [composer (monoid b:compose values)]
                        #:curry-on [curry-on 'left]
@@ -191,18 +195,18 @@
             (function-side f)
             (function-args f)))
 
-(define (fold-into-tail lst)
+(define (~fold-into-tail lst)
   (cond [(empty? lst) (raise-arguments-error 'fold-into-tail
                                              "Tail must be a list")]
         [(and (list? (first lst))
               (empty? (rest lst)))
          (first lst)]
         [else (cons (first lst)
-                    (fold-into-tail (rest lst)))]))
+                    (~fold-into-tail (rest lst)))]))
 
 (define/arguments (apply/steps args)
   (let ([f (first (arguments-positional args))]
-        [args (make-arguments (fold-into-tail
+        [args (make-arguments (~fold-into-tail
                                (rest (arguments-positional args)))
                               (arguments-keyword args))])
     (if (empty? f)
@@ -221,14 +225,6 @@
                                                   v))))))))))
 
 (define compose f)
-
-(define (~power n f)
-  ; maybe incorporate a power into the function type
-  (if (= n 0)
-      function-null
-      (function-cons f (~power (sub1 n) f))))
-
-(define power (f ~power))
 
 (define/arguments (curry args)
   (let ([f (first (arguments-positional args))]
