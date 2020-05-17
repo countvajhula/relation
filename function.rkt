@@ -70,8 +70,8 @@
           [!! (-> procedure? function?)]))
 
 (define (unthunk f . args)
-  (λ ignored-args
-    (apply f args)))
+  (f:thunk*
+   (apply f args)))
 
 (define (iff pred f g)
   (λ (v)
