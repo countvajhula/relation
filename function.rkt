@@ -174,19 +174,19 @@
      (-length (function-components self)))])
 
 (define (make-function #:compose-with [composer (monoid b:compose values)]
-                       #:curry-on [curry-on 'left]
+                       #:curry-on [side 'left]
                        . fs)
   (function fs
             composer
-            curry-on
+            side
             empty-arguments))
 
 (define (make-threading-function #:compose-with [composer (monoid b:compose values)]
-                                 #:curry-on [curry-on 'left]
+                                 #:curry-on [side 'left]
                                  . fs)
   (function (reverse fs)
             composer
-            curry-on
+            side
             empty-arguments))
 
 (define f make-function)
@@ -194,9 +194,9 @@
 (define f> make-threading-function)
 
 (define (function-null #:compose-with [composer (monoid b:compose values)]
-                       #:curry-on [curry-on 'left])
+                       #:curry-on [side 'left])
   (make-function #:compose-with composer
-                 #:curry-on curry-on))
+                 #:curry-on side))
 
 (define (function-cons proc f)
   (function (cons proc (function-components f))

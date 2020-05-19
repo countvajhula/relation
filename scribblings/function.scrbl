@@ -64,22 +64,22 @@ This module provides a @racket[function] type intended as a drop-in alternative 
 
 @deftogether[(
   @defproc[(make-function [#:compose-with composer monoid? (monoid b:compose values)]
-                          [#:curry-on curry-on symbol? 'left]
+                          [#:curry-on side symbol? 'left]
                           [g procedure?]
                           ...)
            any/c]
   @defproc[(f [#:compose-with composer monoid? (monoid b:compose values)]
-              [#:curry-on curry-on symbol? 'left]
+              [#:curry-on side symbol? 'left]
               [g procedure?]
               ...)
            any/c]
   @defproc[(make-threading-function [#:compose-with composer monoid? (monoid b:compose values)]
-                                    [#:curry-on curry-on symbol? 'left]
+                                    [#:curry-on side symbol? 'left]
                                     [g procedure?]
                                     ...)
            any/c]
   @defproc[(f> [#:compose-with composer monoid? (monoid b:compose values)]
-               [#:curry-on curry-on symbol? 'left]
+               [#:curry-on side symbol? 'left]
                [g procedure?]
                ...)
            any/c]
@@ -165,7 +165,7 @@ This module provides a @racket[function] type intended as a drop-in alternative 
   @defproc[(function-cons [v procedure?] [w function?])
            function?]
   @defproc[(function-null [#:compose-with composer monoid? (monoid b:compose values)]
-                          [#:curry-on curry-on symbol? 'left])
+                          [#:curry-on side symbol? 'left])
            any/c]
   )]{
  Constructors for the @racket[function] type analogous to @racket[cons] and @racket[null] for lists. @racket[function-null] also serves as the identity value for composition.
