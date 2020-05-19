@@ -21,7 +21,6 @@
                     (only-in racket (foldl f:foldl)
                                     (foldr f:foldr)
                                     (append b:append))
-                    (only-in racket/function curry curryr)
                     (only-in data/collection length
                                              repeat
                                              sequenceof
@@ -41,7 +40,6 @@
                                                       index-of
                                                       foldl
                                                       foldl/steps)
-                                           racket/function
                                            relation
                                            racket/set
                                            racket/stream))))

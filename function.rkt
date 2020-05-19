@@ -17,7 +17,10 @@
 
 (provide (contract-out
           [unthunk (-> procedure? any/c ... procedure?)]
-          [iff (-> (-> any/c boolean?) procedure? procedure? procedure?)]
+          [if-f (-> (unconstrained-domain-> boolean?)
+                    procedure?
+                    procedure?
+                    procedure?)]
           [flip (-> procedure? procedure?)]
           [flip$ (-> procedure? procedure?)]
           [flip* (-> procedure? procedure?)]
@@ -73,11 +76,11 @@
   (f:thunk*
    (apply f args)))
 
-(define (iff pred f g)
-  (λ (v)
-    (if (pred v)
-        (f v)
-        (g v))))
+(define (if-f pred f g)
+  (λ args
+    (if (apply pred args)
+        (apply f args)
+        (apply g args))))
 
 (define (flip f)
   (λ (x y . args)

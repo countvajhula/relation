@@ -16,6 +16,7 @@
                      "collections-doc"
                      "functional-doc"
                      "rackjure"
+                     "threading-doc"
                      "sandbox-lib"
                      "at-exp-lib"))
 (define scribblings '(("scribblings/relation.scrbl" (multi-page))))

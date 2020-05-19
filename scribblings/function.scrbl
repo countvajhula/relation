@@ -14,6 +14,7 @@
                                       (negate b:negate))
                     (only-in racket/generator sequence->generator)
                     (prefix-in b: racket/function)
+                    arguments
                     (prefix-in f: data/functor)]]
 
 @(define eval-for-docs
@@ -21,11 +22,12 @@
                  [sandbox-error-output 'string]
                  [sandbox-memory-limit #f])
                  (make-evaluator 'racket/base
-                                 '(require data/maybe)
-                                 '(require relation)
-                                 '(require racket/set)
-                                 '(require racket/generator)
-                                 '(require racket/stream))))
+                                 '(require data/maybe
+                                           arguments
+                                           relation
+                                           racket/set
+                                           racket/generator
+                                           racket/stream))))
 
 @title{Functional Primitives}
 
@@ -33,12 +35,31 @@
 
 Elementary types and utilities to simplify the use and manipulation of functions.
 
-This module provides a @racket[function] type intended as a drop-in alternative to built-in Racket functions. The advantage of using it is that it implements some high-level generic interfaces that make it easy to treat functions as sequences (that is, for the purposes of composition order) and as monoids (for the purpose of composing them). In addition, several general-purpose elementary functional utilities are provided to make working with functions more convenient.
+This module provides a @racket[function] type intended as a drop-in alternative to built-in Racket functions. This function type is usually no different from using normal functions, but as a higher-level entity, it provides greater visibility of the make-up of the function, allowing more flexibility in customizing the nature of composition, supporting natural semantics when used with standard sequence utilities, and more seamless use of currying. In addition, several general-purpose utilities are provided to support programming in the @hyperlink["https://en.wikipedia.org/wiki/Functional_programming"]{functional style}.
 
 @section[#:tag "function:types"]{Types}
 
-@defthing[function struct?]{
- The elementary type that represents any procedure, whether elementary or composed. It is curried by default.
+@defstruct[function ([components list?]
+                     [composer monoid?]
+                     [side symbol?]
+                     [args arguments?])
+                    #:omit-constructor]{
+  The elementary type that represents any procedure, whether elementary or composed. It is inherently @hyperlink["https://en.wikipedia.org/wiki/Currying"]{curried}, meaning that partially supplying arguments results in a new function parametrized by these already-provided arguments.
+@itemlist[
+@item{@racket[components] - A list of functions that comprise this one.}
+@item{@racket[composer] - The definition of composition for this function. By default (when constructed using @racket[make-function]), this is the usual function composition, i.e. @racketlink[b:compose]{compose} together with @racketlink[values]{values} as the identity.}
+@item{@racket[side] - The side on which the function is curried.}
+@item{@racket[args] - The arguments that parametrize (i.e. have already been passed to) this function.}]
+}
+
+@defstruct[monoid ([f (-> procedure? procedure? procedure?)]
+                   [id procedure?])
+                  #:omit-constructor]{
+ A composer of functions, generalizing "normal" function composition to support any definition of composition. Any suitable notion of function composition (and hence instances of this @racket[monoid] type) must include:
+
+ @itemlist[
+   @item{@racketid[f] - A @hyperlink["https://en.wikipedia.org/wiki/Higher-order_function"]{higher-order} @hyperlink["https://en.wikipedia.org/wiki/Closure_(mathematics)"]{closed} @hyperlink["https://en.wikipedia.org/wiki/Binary_function"]{binary function}, i.e. a function taking in two functions and producing a single one}
+   @item{@racket[id] - An @hyperlink["https://en.wikipedia.org/wiki/Identity_element"]{identity} function appropriate for the composition.}]
 }
 
 @deftogether[(
@@ -48,98 +69,25 @@ This module provides a @racket[function] type intended as a drop-in alternative 
   @defproc[(f [g procedure?]
               ...)
            any/c]
-  @defproc[(make-right-function [g procedure?]
-                                ...)
+  @defproc[(make-threading-function [g procedure?]
+                                    ...)
            any/c]
   @defproc[(f> [g procedure?]
-              ...)
+               ...)
            any/c]
   )]{
-  A constructor for creating functions from other functions. @racket[f] functions are left-curried (the default), while @racket[f>] functions are right-curried.
+  A constructor for creating functions from other functions. @racket[f] functions compose right-to-left (the default), while @racket[f>] functions compose left-to-right (like @other-doc['(lib "scribblings/threading.scrbl")]), which some consider more intuitive. @racket[f] is an alias for the more verbose @racket[make-function], and likewise, @racket[f>] is an alias for @racket[make-threading-function].
 
   @examples[
       #:eval eval-for-docs
       (f add1)
       (f add1 ->number)
       ((f ->string add1 ->number) "12")
+      ((f> ->number add1 ->string) "12")
       (define (str-append x y z) (string-append x y z))
       ((f str-append) "hello")
       ((((f str-append) "hello") "there") "friend")
-      ((((f> str-append) "hello") "there") "friend")
     ]
-}
-
-@defproc[(function-components [g function?])
-         list?]{
-
-  An accessor to get the list of functions that comprise the composite function @racket[g].
-
-@examples[
-    #:eval eval-for-docs
-    (function-components (f add1 ->number))
-  ]
-}
-
-@defproc[(function-composer [g function?])
-         list?]{
-
-  An accessor to get the function used for composing the component functions in @racket[g]. By default this is the usual function composition, @racketlink[b:compose]{compose}, but it could be any @hyperlink["https://en.wikipedia.org/wiki/Higher-order_function"]{higher-order} @hyperlink["https://en.wikipedia.org/wiki/Binary_function"]{binary function}, i.e. a function taking in two functions and producing a single one.
-
-@examples[
-    #:eval eval-for-docs
-    (function-composer (f add1 ->number))
-    (function-composer (conjoin positive? integer?))
-    (function-composer (disjoin positive? integer?))
-  ]
-}
-
-@defproc[(function-identity [g function?])
-         list?]{
-
-  An accessor to get the @hyperlink["https://en.wikipedia.org/wiki/Identity_element"]{identity function} to be used in the composition specified in @racket[g]. This should be specified in tandem with, rather than independently of, the @racket[composer] attribute, since any definition of composition must simultaneously specify both the composition procedure as well as the identity value for the composition (if any). By default the composition function @racketlink[b:compose]{compose} is used together with @racket[values] as the identity function, but it should be whatever function is appropriate as an identity for the chosen composition. For instance, for @racketlink[conjoin]{conjoining} functions, a function returning @racket[false] is the appropriate identity.
-
-@examples[
-    #:eval eval-for-docs
-    (function-identity (f add1 ->number))
-    (function-identity (conjoin positive? integer?))
-    (function-identity (disjoin positive? integer?))
-  ]
-}
-
-@defproc[(function-side [g function?])
-         symbol?]{
-
-  An accessor to get the side on which the function is curried.
-
-@examples[
-    #:eval eval-for-docs
-    (function-side (f add1 ->number))
-    (function-side (f> add1 ->number))
-  ]
-}
-
-@defproc[(function-args [g function?])
-         arguments?]{
-
-  An accessor to get the arguments that have already been supplied to the function.
-
-@examples[
-    #:eval eval-for-docs
-    (define (str-append x y z) (string-append x y z))
-    (function-args ((f str-append) "hello" "there"))
-  ]
-}
-
-@defproc[(function? [v any/c])
-         boolean?]{
-
-  A predicate to check if a value is a @racket[function].
-
-@examples[
-    #:eval eval-for-docs
-    (function? (f add1 ->number))
-    (function? add1)
-  ]
 }
 
 @section[#:tag "function:utilities"]{Utilities}
@@ -159,17 +107,17 @@ This module provides a @racket[function] type intended as a drop-in alternative 
   ]
 }
 
-@defproc[(iff [pred (-> any/c boolean?)]
-              [f procedure?]
-              [g procedure?])
+@defproc[(if-f [pred (-> any/c boolean?)]
+               [f procedure?]
+               [g procedure?])
          procedure?]{
 
  Analogous to @racket[if], checks the predicate @racket[pred] against an input value and applies either @racket[f] or @racket[g] to it depending on the result.
 
 @examples[
     #:eval eval-for-docs
-    ((iff positive? add1 sub1) 3)
-    (map (iff positive? add1 sub1) (list 3 -3))
+    ((if-f positive? add1 sub1) 3)
+    (map (if-f positive? add1 sub1) (list 3 -3))
   ]
 }
 
@@ -237,25 +185,11 @@ This module provides a @racket[function] type intended as a drop-in alternative 
                   ...)
          function?]{
 
- Analogous to @racketlink[b:compose]{compose}, but yields a @racket[function] rather than a primitive Racket @seclink["procedures" "procedure" #:doc '(lib "scribblings/reference/reference.scrbl")].
+ Analogous to @racketlink[b:compose]{compose}, but yields a @racket[function] rather than a primitive Racket @seclink["procedures" "procedure" #:doc '(lib "scribblings/reference/reference.scrbl")]. This is simply an alias for @racket[f].
 
 @examples[
     #:eval eval-for-docs
     (compose add1 ->string)
-  ]
-}
-
-@defproc[(power [n integer?]
-                [g function?])
-         function?]{
-
- Composes a function with itself @racket[n] times.
-
-@examples[
-    #:eval eval-for-docs
-    (power 2 add1)
-    ((power 2 add1) 3)
-    ((power 10 add1) 3)
   ]
 }
 
@@ -270,7 +204,7 @@ This module provides a @racket[function] type intended as a drop-in alternative 
           function?]
  )]{
 
- Analogous to @racketlink[b:curry]{curry} and @racketlink[b:curryr]{curryr}, but these yield a @racket[function] rather than a primitive Racket @seclink["procedures" "procedure" #:doc '(lib "scribblings/reference/reference.scrbl")]. Since @racketlink[function]{functions} are curried by default, explicitly invoking curry is usually not necessary, but can be useful in cases where evaluation needs to be delayed until additional arguments are received. An explicit call to curry will not immediately evaluate to a result even if sufficient arguments have been provided for the invocation to produce a result.
+ Analogous to @racketlink[b:curry]{curry} and @racketlink[b:curryr]{curryr}, but these yield a @racket[function] rather than a primitive Racket @seclink["procedures" "procedure" #:doc '(lib "scribblings/reference/reference.scrbl")]. Since @racketlink[function]{functions} are inherently curried, explicitly invoking curry is usually not necessary, but can be useful in cases where evaluation needs to be delayed until additional arguments are received. An explicit call to curry will not immediately evaluate to a result even if sufficient arguments have been provided for the invocation to produce a result.
 
 @examples[
     #:eval eval-for-docs
