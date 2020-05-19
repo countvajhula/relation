@@ -124,7 +124,7 @@
   #:defaults ([function?
                (define append compose)
                (define (appendable-identity self)
-                 function-null)]
+                 (function-null))]
               [procedure?
                (define (append appendable other)
                  (if (eq? other ID)

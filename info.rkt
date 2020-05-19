@@ -12,6 +12,7 @@
 (define build-deps '("scribble-lib"
                      "scribble-abbrevs"
                      "racket-doc"
+                     "algebraic"
                      "sugar"
                      "collections-doc"
                      "functional-doc"

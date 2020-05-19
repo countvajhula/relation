@@ -59,7 +59,10 @@
                     #:curry-on symbol?)
                    #:rest (listof procedure?)
                    function?)]
-          [function-null function?]
+          [function-null (->* ()
+                              (#:compose-with monoid?
+                               #:curry-on symbol?)
+                              function?)]
           [function-cons (-> procedure? function? function?)]
           [apply/steps (unconstrained-domain-> sequence?)]
           [compose (-> procedure? ... function?)]
@@ -190,7 +193,10 @@
 
 (define f> make-threading-function)
 
-(define function-null (make-function))
+(define (function-null #:compose-with [composer (monoid b:compose values)]
+                       #:curry-on [curry-on 'left])
+  (make-function #:compose-with composer
+                 #:curry-on curry-on))
 
 (define (function-cons proc f)
   (function (cons proc (function-components f))
