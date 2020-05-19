@@ -13,7 +13,8 @@
          racket/sequence
          (only-in racket/function
                   identity
-                  negate)
+                  negate
+                  thunk)
          threading
          (only-in data/collection
                   for-each)

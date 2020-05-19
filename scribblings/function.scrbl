@@ -129,7 +129,7 @@ This module provides a @racket[function] type intended as a drop-in alternative 
   @defproc[(flip* [g procedure?])
            procedure?])]{
 
- @racket[flip] yields a function identical to the one passed in, but with the first two argument positions swapped, @racket[flip$] swaps the first and last argument positions, while @racket[flip*] reverses the entire list of arguments.
+ @racket[flip] yields a function identical to the one passed in, but with the first two argument positions swapped, @racket[flip$] passes the first argument in the last argument position (leaving other arguments in the original relative positions), while @racket[flip*] reverses the entire list of arguments.
 
 @examples[
     #:eval eval-for-docs
@@ -223,7 +223,7 @@ This module provides a @racket[function] type intended as a drop-in alternative 
           function?]
  )]{
 
- Analogous to @racketlink[b:conjoin]{conjoin}, this yields a @racket[function] whose composition method is @racketlink[b:conjoin]{conjoin} rather than @racketlink[b:compose]{compose}.
+ Analogous to @racketlink[b:conjoin]{conjoin}, this yields a @racket[function] whose composition method is @racketlink[b:conjoin]{conjoin} rather than @racketlink[b:compose]{compose}. @racket[&&] is provided as a convenient alias, following the convention in @other-doc['(lib "algebraic/scribblings/algebraic.scrbl")].
 
 @examples[
     #:eval eval-for-docs
@@ -243,7 +243,7 @@ This module provides a @racket[function] type intended as a drop-in alternative 
           function?]
  )]{
 
- Analogous to @racketlink[b:disjoin]{disjoin}, this yields a @racket[function] whose composition method is @racketlink[b:disjoin]{disjoin} rather than @racketlink[b:compose]{compose}.
+ Analogous to @racketlink[b:disjoin]{disjoin}, this yields a @racket[function] whose composition method is @racketlink[b:disjoin]{disjoin} rather than @racketlink[b:compose]{compose}. @racket[||] is provided as a convenient alias, following the convention in @other-doc['(lib "algebraic/scribblings/algebraic.scrbl")].
 
 @examples[
     #:eval eval-for-docs

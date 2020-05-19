@@ -8,8 +8,24 @@
                     racket/generic
                     (except-in racket = equal? group-by drop length assoc)
                     (only-in racket (= b:=) (equal? b:equal?) (assoc b:assoc) (group-by b:group-by))
+                    (only-in racket/function identity)
 					(only-in rackjure/egal egal?)
                     (only-in data/collection drop length sequenceof)]]
+
+@(define eval-for-docs
+  (parameterize ([sandbox-output 'string]
+                 [sandbox-error-output 'string]
+                 [sandbox-memory-limit #f])
+                 (make-evaluator 'racket/base
+                                 '(require (except-in data/collection
+                                                      append
+                                                      index-of
+                                                      foldl
+                                                      foldl/steps)
+                                           (only-in racket/function identity)
+                                           relation
+                                           racket/set
+                                           racket/stream))))
 
 @title{Equivalence Relations}
 
@@ -24,30 +40,6 @@ Racket offers several built-in operators to check for some form of equivalence. 
 This module provides a generic interface that overrides the standard @racketlink[b:=]{=} operator to allow its use with any type, delegating to built-in equality checks to perform the most appropriate comparison depending on the type of the values being compared. It also supports additional parameters to express @hyperlink["https://en.wikipedia.org/wiki/Equivalence_relation"]{broader notions of equivalence} than simple equality -- since, indeed, any idea of equality presupposes a definition in relation to which two objects are indistinguishable.
 
 The @racket[=] relation provided in this module is intended to express the notion of "equality" in all cases, but, at least for the moment, does not usually differentiate between mutable and immutable versions of a data type. For that, consider using @racket[egal?].
-
-@(define eval-for-docs
-  (parameterize ([sandbox-output 'string]
-                 [sandbox-error-output 'string]
-                 [sandbox-memory-limit #f])
-                 (make-evaluator 'racket/base
-                                 '(require (except-in data/collection
-                                                      append
-                                                      index-of
-                                                      foldl
-                                                      foldl/steps))
-				                 '(require relation)
-								 '(require racket/set)
-								 '(require racket/stream))))
-
-@title{Equivalence Relations}
-
-@defmodule[relation/equivalence]
-
-A generic interface and utilities for comparing data.
-
-By default, the built-in equivalence operator @racketlink[b:=]{=} operates on @tech/reference{numbers} specifically, while the operators @racket[eq?], @racket[eqv?] and @racketlink[b:equal?]{equal?} are more suitable for other comparisons depending on the type of the values being compared. Additionally, there are type-specific comparison operators, for instance @racket[char=?] and @racket[string=?], that may be used if the type is known.
-
-This module provides a generic interface that overrides the standard @racketlink[b:=]{=} operator to allow its use with any comparable type and not only numbers, performing the most appropriate comparison depending on the type of the values being compared. It also supports additional parameters to express broader notions of equivalence than simple equality. You can also provide an implementation for the interface in custom types so that they can be compared using the same standard equality operator and the generic utilities available in this module.
 
 @section[#:tag "equivalence:interface"]{Interface}
 
