@@ -21,6 +21,8 @@
                     procedure?
                     procedure?
                     procedure?)]
+          [true-f (unconstrained-domain-> boolean?)]
+          [false-f (unconstrained-domain-> boolean?)]
           [flip (-> procedure? procedure?)]
           [flip$ (-> procedure? procedure?)]
           [flip* (-> procedure? procedure?)]
@@ -84,6 +86,14 @@
     (if (apply pred args)
         (apply f args)
         (apply g args))))
+
+(define true-f
+  (procedure-rename (f:const #t)
+                    'true-f))
+
+(define false-f
+  (procedure-rename (f:const #f)
+                    'false-f))
 
 (define (flip f)
   (λ (x y . args)
@@ -274,14 +284,14 @@
 (define (conjoin . fs)
   (function fs
             (monoid f:conjoin
-                    (f:const #t))
+                    true-f)
             'left
             empty-arguments))
 
 (define (disjoin . fs)
   (function fs
             (monoid f:disjoin
-                    (f:const #f))
+                    false-f)
             'left
             empty-arguments))
 
