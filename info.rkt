@@ -6,6 +6,7 @@
                "describe"
                "point-free"
                "threading-lib"
+               "mischief"
                "version-case"))
 (define build-deps '("scribble-lib"
                      "scribble-abbrevs"
