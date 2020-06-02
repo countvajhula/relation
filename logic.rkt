@@ -8,7 +8,8 @@
                   curry)
          (only-in data/collection
                   (apply d:apply))
-         (for-syntax racket/base))
+         (for-syntax racket/base)
+         mischief/shorthand)
 
 (provide :=
          =!
@@ -45,8 +46,6 @@
 
 (define none? (compose not any?))
 
-(define-syntax-rule (:= body ...)
-  (define body ...))
+(define-alias := define)
 
-(define-syntax-rule (=! id expr)
-  (set! id expr))
+(define-alias =! set!)
