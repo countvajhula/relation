@@ -6,12 +6,14 @@
          @for-label[relation/function
                     relation/transform
                     data/maybe
+					(only-in data/collection sequence?)
                     (rename-in racket (compose b:compose)
                                       (curry b:curry)
                                       (curryr b:curryr)
                                       (conjoin b:conjoin)
                                       (disjoin b:disjoin)
-                                      (negate b:negate))
+                                      (negate b:negate)
+									  (sequence? b:sequence?))
                     (only-in racket/generator sequence->generator)
                     (prefix-in b: racket/function)
                     arguments
@@ -67,22 +69,22 @@ This module provides a @racket[function] type intended as a drop-in alternative 
                           [#:curry-on side symbol? 'left]
                           [g procedure?]
                           ...)
-           any/c]
+           function?]
   @defproc[(f [#:compose-with composer monoid? (monoid b:compose values)]
               [#:curry-on side symbol? 'left]
               [g procedure?]
               ...)
-           any/c]
+           function?]
   @defproc[(make-threading-function [#:compose-with composer monoid? (monoid b:compose values)]
                                     [#:curry-on side symbol? 'left]
                                     [g procedure?]
                                     ...)
-           any/c]
+           function?]
   @defproc[(f> [#:compose-with composer monoid? (monoid b:compose values)]
                [#:curry-on side symbol? 'left]
                [g procedure?]
                ...)
-           any/c]
+           function?]
   )]{
   A constructor for creating functions from other functions. @racket[f] functions compose right-to-left (the default), while @racket[f>] functions compose left-to-right (like @other-doc['(lib "scribblings/threading.scrbl")]), which some consider more intuitive. @racket[f] is an alias for the more verbose @racket[make-function], and likewise, @racket[f>] is an alias for @racket[make-threading-function].
 
@@ -100,91 +102,12 @@ This module provides a @racket[function] type intended as a drop-in alternative 
 
 @section[#:tag "function:utilities"]{Utilities}
 
-@defproc[(unthunk [g procedure?]
-                  ...)
-         procedure?]{
-
- Converts a procedure accepting no arguments to one accepting an arbitrary number of arguments (which are all ignored upon invocation).
-
-@examples[
-    #:eval eval-for-docs
-    (define gen (unthunk (sequence->generator '(1 2 3))))
-    (gen "some")
-    (gen 'ignored)
-    (gen "arguments" 'a 'b 42)
-  ]
-}
-
-@defproc[(if-f [pred (-> any/c boolean?)]
-               [f procedure?]
-               [g procedure?])
-         procedure?]{
-
- Analogous to @racket[if], checks the predicate @racket[pred] against an input value and applies either @racket[f] or @racket[g] to it depending on the result.
-
-@examples[
-    #:eval eval-for-docs
-    ((if-f positive? add1 sub1) 3)
-    (map (if-f positive? add1 sub1) (list 3 -3))
-  ]
-}
-
-@deftogether[(
-  @defproc[(true-f [v any])
-           boolean?]
-  @defproc[(false-f [v any])
-           boolean?]
-  )]{
-
-  @racket[true-f] is a function that always returns @racket[#t], while @racket[false-f] is a function that always returns @racket[#f]. Both accept an arbitrary number of arguments (disregarding all of them).
-
-@examples[
-    #:eval eval-for-docs
-	(true-f)
-	(true-f 3 1 #:key 'hi)
-	(false-f)
-	(false-f 3 1 #:key 'hi)
-  ]
-}
-
-@deftogether[(
-  @defproc[(flip [g procedure?])
-           procedure?]
-  @defproc[(flip$ [g procedure?])
-           procedure?]
-  @defproc[(flip* [g procedure?])
-           procedure?])]{
-
- @racket[flip] yields a function identical to the one passed in, but with the first two argument positions swapped, @racket[flip$] passes the first argument in the last argument position (leaving other arguments in the original relative positions), while @racket[flip*] reverses the entire list of arguments.
-
-@examples[
-    #:eval eval-for-docs
-    ((flip string-append) "my" "hello" "friend")
-    ((flip$ string-append) "friend" "hello" "my")
-    ((flip* string-append) "friend" "my" "hello")
-  ]
-}
-
-@defproc[(lift [g procedure?])
-         procedure?]{
-
- "Lifts" a function operating on ordinary values to a function operating on a functor (for instance, a list of such values) in the natural way. This is a thin wrapper around @racketlink[f:map]{map}, and may lend clarity in cases where you want to derive such a function but not necessarily apply it immediately.
-
-@examples[
-    #:eval eval-for-docs
-    (define list-add1 (lift add1))
-    (->list (list-add1 (list 1 2 3)))
-    (->list ((lift ->string) (list 1 2 3)))
-    ((lift add1) (just 3))
-  ]
-}
-
 @deftogether[(
   @defproc[(function-cons [v procedure?] [w function?])
            function?]
   @defproc[(function-null [#:compose-with composer monoid? (monoid b:compose values)]
                           [#:curry-on side symbol? 'left])
-           any/c]
+           function?]
   )]{
  Constructors for the @racket[function] type analogous to @racket[cons] and @racket[null] for lists. @racket[function-null] also serves as the identity value for composition.
 
@@ -198,7 +121,7 @@ This module provides a @racket[function] type intended as a drop-in alternative 
 @defproc[(apply/steps [g function?]
                       [v any/c] ... [lst list?]
                       [#:<kw> kw-arg any/c] ...)
-         any]{
+         sequence?]{
 
  Similar to @racket[apply], but yields a sequence corresponding to the values at each stage of application of the function @racket[g].
 
@@ -299,5 +222,84 @@ This module provides a @racket[function] type intended as a drop-in alternative 
     (!! positive?)
     ((!! positive?) -5)
     ((!! positive?) 5)
+  ]
+}
+
+@defproc[(unthunk [g procedure?]
+                  ...)
+         procedure?]{
+
+ Converts a procedure accepting no arguments to one accepting an arbitrary number of arguments (which are all ignored upon invocation).
+
+@examples[
+    #:eval eval-for-docs
+    (define gen (unthunk (sequence->generator '(1 2 3))))
+    (gen "some")
+    (gen 'ignored)
+    (gen "arguments" 'a 'b 42)
+  ]
+}
+
+@defproc[(if-f [pred (-> any/c boolean?)]
+               [f procedure?]
+               [g procedure?])
+         procedure?]{
+
+ Analogous to @racket[if], checks the predicate @racket[pred] against an input value and applies either @racket[f] or @racket[g] to it depending on the result.
+
+@examples[
+    #:eval eval-for-docs
+    ((if-f positive? add1 sub1) 3)
+    (map (if-f positive? add1 sub1) (list 3 -3))
+  ]
+}
+
+@deftogether[(
+  @defproc[(true-f [v any])
+           boolean?]
+  @defproc[(false-f [v any])
+           boolean?]
+  )]{
+
+  @racket[true-f] is a function that always returns @racket[#t], while @racket[false-f] is a function that always returns @racket[#f]. Both accept an arbitrary number of arguments (disregarding all of them).
+
+@examples[
+    #:eval eval-for-docs
+	(true-f)
+	(true-f 3 1 #:key 'hi)
+	(false-f)
+	(false-f 3 1 #:key 'hi)
+  ]
+}
+
+@deftogether[(
+  @defproc[(flip [g procedure?])
+           procedure?]
+  @defproc[(flip$ [g procedure?])
+           procedure?]
+  @defproc[(flip* [g procedure?])
+           procedure?])]{
+
+ @racket[flip] yields a function identical to the one passed in, but with the first two argument positions swapped, @racket[flip$] passes the first argument in the last argument position (leaving other arguments in the original relative positions), while @racket[flip*] reverses the entire list of arguments.
+
+@examples[
+    #:eval eval-for-docs
+    ((flip string-append) "my" "hello" "friend")
+    ((flip$ string-append) "friend" "hello" "my")
+    ((flip* string-append) "friend" "my" "hello")
+  ]
+}
+
+@defproc[(lift [g procedure?])
+         procedure?]{
+
+ "Lifts" a function operating on ordinary values to a function operating on a functor (for instance, a list of such values) in the natural way. This is a thin wrapper around @racketlink[f:map]{map}, and may lend clarity in cases where you want to derive such a function but not necessarily apply it immediately.
+
+@examples[
+    #:eval eval-for-docs
+    (define list-add1 (lift add1))
+    (->list (list-add1 (list 1 2 3)))
+    (->list ((lift ->string) (list 1 2 3)))
+    ((lift add1) (just 3))
   ]
 }

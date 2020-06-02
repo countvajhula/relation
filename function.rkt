@@ -27,20 +27,12 @@
           [flip$ (-> procedure? procedure?)]
           [flip* (-> procedure? procedure?)]
           [lift (-> procedure? function?)]
-          [monoid? (-> any/c boolean?)]
-          [monoid (-> procedure? any/c monoid?)]
-          [monoid-f (-> monoid? procedure?)]
-          [monoid-id (-> monoid? procedure?)]
-          [function? (-> any/c boolean?)]
-          [function (-> list?
-                        monoid?
-                        symbol?
-                        arguments?
-                        function?)]
-          [function-components (-> function? list?)]
-          [function-composer (-> function? (-> any/c any/c any/c))]
-          [function-side (-> function? symbol?)]
-          [function-args (-> function? arguments?)]
+          [struct monoid ((f procedure?)
+                          (id procedure?))]
+          [struct function ((components list?)
+                            (composer monoid?)
+                            (side symbol?)
+                            (args arguments?))]
           [make-function (->* ()
                               (#:compose-with monoid?
                                #:curry-on symbol?)
