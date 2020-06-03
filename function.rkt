@@ -237,37 +237,33 @@
 
 (define compose f)
 
+(define (~curry f side args-invocation)
+  (if (function? f)
+      (function (function-components f)
+                (function-composer f)
+                side
+                (if (= (function-side f) 'left)
+                    (arguments-merge (function-args f)
+                                     args-invocation)
+                    (arguments-merge args-invocation
+                                     (function-args f))))
+      (function (list f)
+                (monoid b:compose
+                        values)
+                side
+                args-invocation)))
+
 (define/arguments (curry args)
   (let ([f (first (arguments-positional args))]
         [pos (rest (arguments-positional args))]
         [kw (arguments-keyword args)])
-    (if (function? f)
-        (function (function-components f)
-                  (function-composer f)
-                  (function-side f)
-                  (arguments-merge (function-args f)
-                                   (make-arguments pos kw)))
-        (function (list f)
-                  (monoid b:compose
-                          values)
-                  'left
-                  (make-arguments pos kw)))))
+    (~curry f 'left (make-arguments pos kw))))
 
 (define/arguments (curryr args)
   (let ([f (first (arguments-positional args))]
         [pos (rest (arguments-positional args))]
         [kw (arguments-keyword args)])
-    (if (function? f)
-        (function (function-components f)
-                  (function-composer f)
-                  (function-side f)
-                  (arguments-merge (make-arguments pos kw)
-                                   (function-args f)))
-        (function (list f)
-                  (monoid b:compose
-                          values)
-                  'right
-                  (make-arguments pos kw)))))
+    (~curry f 'right (make-arguments pos kw))))
 
 (define (arguments-cons v args)
   (make-arguments (cons v (arguments-positional args))
