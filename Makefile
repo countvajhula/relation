@@ -12,6 +12,7 @@ help:
 	@echo "install - Install package along with dependencies"
 	@echo "remove - Remove package"
 	@echo "test - Run tests"
+	@echo "test-logic - Run tests for logical relations"
 	@echo "test-equivalence - Run tests for equivalence relations"
 	@echo "test-order - Run tests for order relations"
 	@echo "test-function - Run tests for functional primitives"
@@ -19,6 +20,7 @@ help:
 	@echo "test-algebraic - Run tests for algebraic operators"
 	@echo "docs - View docs in a browser"
 	@echo "profile - Run benchmarks to gauge relative performance against built-in interfaces"
+	@echo "profile-logic - Run benchmarks for logical relations"
 	@echo "profile-equivalence - Run benchmarks for equivalence relations"
 	@echo "profile-order - Run benchmarks for order relations"
 	@echo "profile-function - Run benchmarks for functional primitives"
@@ -130,4 +132,4 @@ profile-algebraic:
 
 profile: profile-logic profile-equivalence profile-order profile-function profile-transform profile-algebraic
 
-.PHONY:	help install remove build build-docs build-all check-deps clean test test-equivalence test-order test-function test-transform test-algebraic docs profile-logic profile-equivalence profile-order profile-function profile-transform profile-algebraic profile
+.PHONY:	help install remove build build-docs build-all check-deps clean test test-logic test-equivalence test-order test-function test-transform test-algebraic docs profile-logic profile-equivalence profile-order profile-function profile-transform profile-algebraic profile
