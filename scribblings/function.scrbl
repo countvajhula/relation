@@ -128,7 +128,7 @@ This module provides a @racket[function] type intended as a drop-in alternative 
 @examples[
     #:eval eval-for-docs
     (->list (apply/steps (f add1 sub1 add1) (list 3)))
-    (->list (apply/steps (f ->string add1 ->number) (list "1")))
+    (->list (apply/steps (f> ->number add1 ->string) (list "1")))
   ]
 }
 
