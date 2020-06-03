@@ -49,7 +49,7 @@ This module provides a @racket[function] type intended as a drop-in alternative 
   The elementary type that represents any procedure, whether elementary or composed. It is inherently @hyperlink["https://en.wikipedia.org/wiki/Currying"]{curried}, meaning that partially supplying arguments results in a new function parametrized by these already-provided arguments.
 @itemlist[
 @item{@racket[components] - A list of functions that comprise this one.}
-@item{@racket[composer] - The definition of composition for this function. By default (when constructed using @racket[make-function]), this is the usual function composition, i.e. @racketlink[b:compose]{compose} together with @racketlink[values]{values} as the identity.}
+@item{@racket[composer] - The definition of composition for this function. By default (when constructed using @racket[make-function]), this is the usual function composition, i.e. @racketlink[b:compose]{@racket[compose]} together with @racket[values] as the identity.}
 @item{@racket[side] - The side on which the function is curried.}
 @item{@racket[args] - The arguments that parametrize (i.e. have already been passed to) this function.}]
 }
@@ -65,22 +65,22 @@ This module provides a @racket[function] type intended as a drop-in alternative 
 }
 
 @deftogether[(
-  @defproc[(make-function [#:compose-with composer monoid? (monoid b:compose values)]
+  @defproc[(make-function [#:compose-with composer monoid? (monoid #, @racketlink[b:compose]{@racket[compose]} values)]
                           [#:curry-on side symbol? 'left]
                           [g procedure?]
                           ...)
            function?]
-  @defproc[(f [#:compose-with composer monoid? (monoid b:compose values)]
+  @defproc[(f [#:compose-with composer monoid? (monoid #, @racketlink[b:compose]{@racket[compose]} values)]
               [#:curry-on side symbol? 'left]
               [g procedure?]
               ...)
            function?]
-  @defproc[(make-threading-function [#:compose-with composer monoid? (monoid b:compose values)]
+  @defproc[(make-threading-function [#:compose-with composer monoid? (monoid #, @racketlink[b:compose]{@racket[compose]} values)]
                                     [#:curry-on side symbol? 'left]
                                     [g procedure?]
                                     ...)
            function?]
-  @defproc[(f> [#:compose-with composer monoid? (monoid b:compose values)]
+  @defproc[(f> [#:compose-with composer monoid? (monoid #, @racketlink[b:compose]{@racket[compose]} values)]
                [#:curry-on side symbol? 'left]
                [g procedure?]
                ...)
@@ -105,7 +105,7 @@ This module provides a @racket[function] type intended as a drop-in alternative 
 @deftogether[(
   @defproc[(function-cons [v procedure?] [w function?])
            function?]
-  @defproc[(function-null [#:compose-with composer monoid? (monoid b:compose values)]
+  @defproc[(function-null [#:compose-with composer monoid? (monoid #, @racketlink[b:compose]{@racket[compose]} values)]
                           [#:curry-on side symbol? 'left])
            function?]
   )]{
@@ -136,7 +136,7 @@ This module provides a @racket[function] type intended as a drop-in alternative 
                   ...)
          function?]{
 
- Analogous to @racketlink[b:compose]{compose}, but yields a @racket[function] rather than a primitive Racket @seclink["procedures" "procedure" #:doc '(lib "scribblings/reference/reference.scrbl")]. This is simply an alias for @racket[f].
+ Analogous to @racketlink[b:compose]{@racket[compose]}, but yields a @racket[function] rather than a primitive Racket @seclink["procedures" "procedure" #:doc '(lib "scribblings/reference/reference.scrbl")]. This is simply an alias for @racket[f].
 
 @examples[
     #:eval eval-for-docs
@@ -155,7 +155,7 @@ This module provides a @racket[function] type intended as a drop-in alternative 
           function?]
  )]{
 
- Analogous to @racketlink[b:curry]{curry} and @racketlink[b:curryr]{curryr}, but these yield a @racket[function] rather than a primitive Racket @seclink["procedures" "procedure" #:doc '(lib "scribblings/reference/reference.scrbl")]. Since @racketlink[function]{functions} are inherently curried, explicitly invoking curry is usually not necessary, but can be useful in cases where evaluation needs to be delayed until additional arguments are received. An explicit call to curry will not immediately evaluate to a result even if sufficient arguments have been provided for the invocation to produce a result.
+ Analogous to @racketlink[b:curry]{@racket[curry]} and @racketlink[b:curryr]{@racket[curryr]}, but these yield a @racket[function] rather than a primitive Racket @seclink["procedures" "procedure" #:doc '(lib "scribblings/reference/reference.scrbl")]. Since @racketlink[function]{functions} are inherently curried, explicitly invoking curry is usually not necessary, but can be useful in cases where evaluation needs to be delayed until additional arguments are received. An explicit call to curry will not immediately evaluate to a result even if sufficient arguments have been provided for the invocation to produce a result.
 
 @examples[
     #:eval eval-for-docs
@@ -174,7 +174,7 @@ This module provides a @racket[function] type intended as a drop-in alternative 
           function?]
  )]{
 
- Analogous to @racketlink[b:conjoin]{conjoin}, this yields a @racket[function] whose composition method is @racketlink[b:conjoin]{conjoin} rather than @racketlink[b:compose]{compose}. @racket[&&] is provided as a convenient alias, following the convention in @other-doc['(lib "algebraic/scribblings/algebraic.scrbl")].
+ Analogous to @racketlink[b:conjoin]{@racket[conjoin]}, this yields a @racket[function] whose composition method is @racketlink[b:conjoin]{@racket[conjoin]} rather than @racketlink[b:compose]{@racket[compose]}. @racket[&&] is provided as a convenient alias, following the convention in @other-doc['(lib "algebraic/scribblings/algebraic.scrbl")].
 
 @examples[
     #:eval eval-for-docs
@@ -194,7 +194,7 @@ This module provides a @racket[function] type intended as a drop-in alternative 
           function?]
  )]{
 
- Analogous to @racketlink[b:disjoin]{disjoin}, this yields a @racket[function] whose composition method is @racketlink[b:disjoin]{disjoin} rather than @racketlink[b:compose]{compose}. @racket[||] is provided as a convenient alias, following the convention in @other-doc['(lib "algebraic/scribblings/algebraic.scrbl")].
+ Analogous to @racketlink[b:disjoin]{@racket[disjoin]}, this yields a @racket[function] whose composition method is @racketlink[b:disjoin]{@racket[disjoin]} rather than @racketlink[b:compose]{@racket[compose]}. @racket[||] is provided as a convenient alias, following the convention in @other-doc['(lib "algebraic/scribblings/algebraic.scrbl")].
 
 @examples[
     #:eval eval-for-docs
@@ -215,7 +215,7 @@ This module provides a @racket[function] type intended as a drop-in alternative 
           function?]
  )]{
 
- Analogous to @racketlink[b:negate]{negate}, this yields a @racket[function] whose result is the boolean negation of the result of applying @racket[g].
+ Analogous to @racketlink[b:negate]{@racket[negate]}, this yields a @racket[function] whose result is the boolean negation of the result of applying @racket[g].
 
 @examples[
     #:eval eval-for-docs
@@ -293,7 +293,7 @@ This module provides a @racket[function] type intended as a drop-in alternative 
 @defproc[(lift [g procedure?])
          procedure?]{
 
- "Lifts" a function operating on ordinary values to a function operating on a functor (for instance, a list of such values) in the natural way. This is a thin wrapper around @racketlink[f:map]{map}, and may lend clarity in cases where you want to derive such a function but not necessarily apply it immediately.
+ "Lifts" a function operating on ordinary values to a function operating on a functor (for instance, a list of such values) in the natural way. This is a thin wrapper around @racketlink[f:map]{@racket[map]}, and may lend clarity in cases where you want to derive such a function but not necessarily apply it immediately.
 
 @examples[
     #:eval eval-for-docs
