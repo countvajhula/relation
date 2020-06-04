@@ -255,20 +255,20 @@ This module provides a @racket[function] type intended as a drop-in alternative 
 }
 
 @deftogether[(
-  @defproc[(true-f [v any])
+  @defproc[(true. [v any])
            boolean?]
-  @defproc[(false-f [v any])
+  @defproc[(false. [v any])
            boolean?]
   )]{
 
-  @racket[true-f] is a function that always returns @racket[#t], while @racket[false-f] is a function that always returns @racket[#f]. Both accept an arbitrary number of arguments (disregarding all of them).
+  @racket[true.] is a function that always returns @racket[#t], while @racket[false.] is a function that always returns @racket[#f]. Both accept an arbitrary number of arguments (disregarding all of them).
 
 @examples[
     #:eval eval-for-docs
-	(true-f)
-	(true-f 3 1 #:key 'hi)
-	(false-f)
-	(false-f 3 1 #:key 'hi)
+	(true.)
+	(true. 3 1 #:key 'hi)
+	(false.)
+	(false. 3 1 #:key 'hi)
   ]
 }
 
