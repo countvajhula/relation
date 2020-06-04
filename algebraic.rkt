@@ -12,6 +12,7 @@
                     (foldl/steps d:foldl/steps)
                     (append d:append))
          point-free
+         relation/logic
          relation/equivalence
          relation/function
          version-case)
@@ -298,32 +299,6 @@
       ((id op) example)
       v))
 
-(define (id operation)
-  (cond [(member operation (list + add))
-         addable-identity]
-        [(member operation (list * multiply))
-         multipliable-identity]
-        [(member operation (list .. append))
-         appendable-identity]
-        [else (raise-argument-error 'id
-                                    @~a{A canonical operation such as addition
-                                        or concatenation for which the identity
-                                        is inferable.}
-                                    operation)]))
-
-(define (inverse operation)
-  (cond [(member operation (list + add))
-         addable-inverse]
-        [(member operation (list * multiply))
-         multipliable-inverse]
-        [(member operation (list .. append))
-         appendable-inverse]
-        [else (raise-argument-error 'inverse
-                                    @~a{A canonical operation such as addition
-                                        or concatenation for which the inverse
-                                        is inferable.}
-                                    operation)]))
-
 (define (.. . vs)
   (if (empty? vs)
       ID
@@ -355,8 +330,31 @@
 
 (define ∘ ..)
 
-(define (undefined? v)
-  (eq? v undefined))
+(define (id operation)
+  (cond [(member operation (list + add b:+))
+         addable-identity]
+        [(member operation (list * multiply b:*))
+         multipliable-identity]
+        [(member operation (list .. append b:compose b:append))
+         appendable-identity]
+        [else (raise-argument-error 'id
+                                    @~a{A canonical operation such as addition
+                                        or concatenation for which the identity
+                                        is inferable.}
+                                    operation)]))
+
+(define (inverse operation)
+  (cond [(member operation (list + add b:+))
+         addable-inverse]
+        [(member operation (list * multiply b:*))
+         multipliable-inverse]
+        [(member operation (list .. append b:compose b:append))
+         appendable-inverse]
+        [else (raise-argument-error 'inverse
+                                    @~a{A canonical operation such as addition
+                                        or concatenation for which the inverse
+                                        is inferable.}
+                                    operation)]))
 
 (define (fold f
               #:into [base undefined]

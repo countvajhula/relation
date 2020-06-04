@@ -261,7 +261,7 @@ This module provides a @racket[function] type intended as a drop-in alternative 
            boolean?]
   )]{
 
-  @racket[true.] is a function that always returns @racket[#t], while @racket[false.] is a function that always returns @racket[#f]. Both accept an arbitrary number of arguments (disregarding all of them).
+  @racket[true.] is an agreeable function that always returns @racket[#t], while @racket[false.] is a contrarian that always returns @racket[#f]. Both accept an arbitrary number of arguments (disregarding all of them).
 
 @examples[
     #:eval eval-for-docs
