@@ -31,6 +31,7 @@
          gen:addable
          addable/c
          ID
+         ^
          (contract-out
           [reify (->* (any/c any/c)
                       (procedure?)
@@ -415,3 +416,5 @@
         (if (> n 0)
             result
             ((inverse op) result)))))
+
+(define ^ (curryr power))

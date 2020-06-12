@@ -486,7 +486,7 @@ In the event no operands are received in the course of a computation, the result
 }
 
 @defproc[(sum [vs (listof addable?)])
-		 addable?]{
+         addable?]{
 
  Equivalent to @racket[(apply + vs)], this supports @tech/reference{numbers} in the usual way, but also supports any other @racketlink[gen:addable]{addable} type, for instance, @tech/reference{vectors}.
 
@@ -498,7 +498,7 @@ In the event no operands are received in the course of a computation, the result
 }
 
 @defproc[(product [vs (listof multipliable?)])
-		 multipliable?]{
+         multipliable?]{
 
  Equivalent to @racket[(apply * vs)], this supports @tech/reference{numbers} in the usual way, but also supports any other @racketlink[gen:multipliable]{multipliable} type.
 
@@ -508,12 +508,18 @@ In the event no operands are received in the course of a computation, the result
   ]
 }
 
-@defproc[(power [v any/c]
-                [n integer?]
-                [op procedure? ..])
-		 any/c]{
+@deftogether[(
+ @defproc[(power [v any/c]
+                 [n integer?]
+                 [op procedure? ..])
+		  any/c]
+ @defproc[(^ [v any/c]
+             [n integer?]
+             [op procedure? ..])
+		  any/c]
+  )]{
 
-  Compose @racket[v] with itself @racket[n] times with the @racket[op] operation. If @racket[n] is negative, the result is the @racket[inverse] of the value computed with a positive exponent. This generalizes the idea of a numeric "power" to @hyperlink["https://en.wikipedia.org/wiki/Exponentiation#Monoids"]{any type} and composing operation.
+  Compose @racket[v] with itself @racket[n] times with the @racket[op] operation. If @racket[n] is negative, the result is the @racket[inverse] of the value computed with a positive exponent. This generalizes the idea of a numeric "power" to @hyperlink["https://en.wikipedia.org/wiki/Exponentiation#Monoids"]{any type} and composing operation. @racket[^] is a right-curried form of @racket[power], useful in cases where we want to abstract over the numeric power @racket[n] rather than the value @racket[v].
 
 @examples[
     #:eval eval-for-docs
@@ -523,5 +529,7 @@ In the event no operands are received in the course of a computation, the result
     (power 2 3 *)
     (power 2 -3 *)
     (power 2 -3 +)
+    (((^ 3) add1) 4)
+    (->list (((^ 3) rest) (list 1 2 3 4 5 6 7 8 9 10)))
   ]
 }
