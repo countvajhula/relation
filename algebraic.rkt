@@ -406,7 +406,7 @@
       (stream-cons (apply (first fs) vs)
                    (apply gather (rest fs) vs))))
 
-(define (power v n [op ..])
+(define (~power v n op)
   (if (= n 0)
       (reify ID v op)
       (let ([result (fold #:into ID
@@ -417,4 +417,7 @@
             result
             ((inverse op) result)))))
 
-(define ^ (curryr power))
+(define (power v n [op ..])
+  (~power v n op))
+
+(define ^ (curryr ~power ..))

@@ -514,12 +514,11 @@ In the event no operands are received in the course of a computation, the result
                  [op procedure? ..])
 		  any/c]
  @defproc[(^ [v any/c]
-             [n integer?]
-             [op procedure? ..])
-		  any/c]
+             [n integer?])
+          any/c]
   )]{
 
-  Compose @racket[v] with itself @racket[n] times with the @racket[op] operation. If @racket[n] is negative, the result is the @racket[inverse] of the value computed with a positive exponent. This generalizes the idea of a numeric "power" to @hyperlink["https://en.wikipedia.org/wiki/Exponentiation#Monoids"]{any type} and composing operation. @racket[^] is a right-curried form of @racket[power], useful in cases where we want to abstract over the numeric power @racket[n] rather than the value @racket[v].
+  Compose @racket[v] with itself @racket[n] times with the @racket[op] operation. If @racket[n] is negative, the result is the @racket[inverse] of the value computed with a positive exponent. This generalizes the idea of a numeric "power" to @hyperlink["https://en.wikipedia.org/wiki/Exponentiation#Monoids"]{any type} and composing operation. @racket[^] is a right-curried form of @racket[power], useful in cases where we want to abstract over the numeric power @racket[n] rather than the value @racket[v], for append-like compositions specifically (such as function composition).
 
 @examples[
     #:eval eval-for-docs
