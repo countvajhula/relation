@@ -40,6 +40,7 @@
                                                       index-of
                                                       foldl
                                                       foldl/steps)
+                                           (only-in racket/math sqr)
                                            relation
                                            racket/set
                                            racket/stream))))
@@ -485,7 +486,23 @@ In the event no operands are received in the course of a computation, the result
   ]
 }
 
-@defproc[(sum [vs (listof addable?)])
+@defproc[(join [vs (sequenceof appendable?)])
+         appendable?]{
+
+ Equivalent to @racket[(apply .. vs)], this stitches together a sequence containing elements of any @racketlink[gen:appendable]{appendable} type, for instance, @tech/reference{strings}, @tech/reference{lists}, or @seclink["procedures" "procedures" #:doc '(lib "scribblings/reference/reference.scrbl")].
+
+@examples[
+    #:eval eval-for-docs
+    (join (list "hello" " " "there"))
+    (join (stream '(1 2 3) '(4 5 6)))
+    (join (list number->string add1 sqr))
+    (join (list 1 2 3 4))
+    (join (list #(1 2 3) #(1 2 3) #(1 2 3)))
+    (join (list (stream 1 2 3) (stream 1 2 3) (stream 1 2 3)))
+  ]
+}
+
+@defproc[(sum [vs (sequenceof addable?)])
          addable?]{
 
  Equivalent to @racket[(apply + vs)], this supports @tech/reference{numbers} in the usual way, but also supports any other @racketlink[gen:addable]{addable} type, for instance, @tech/reference{vectors}.
@@ -497,7 +514,7 @@ In the event no operands are received in the course of a computation, the result
   ]
 }
 
-@defproc[(product [vs (listof multipliable?)])
+@defproc[(product [vs (sequenceof multipliable?)])
          multipliable?]{
 
  Equivalent to @racket[(apply * vs)], this supports @tech/reference{numbers} in the usual way, but also supports any other @racketlink[gen:multipliable]{multipliable} type.

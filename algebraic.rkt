@@ -56,6 +56,7 @@
           [/ (-> multipliable? multipliable? ... multipliable?)]
           [+ (-> addable? ... addable?)]
           [- (-> addable? addable? ... addable?)]
+          [join (-> (sequenceof appendable?) appendable?)]
           [sum (-> (sequenceof addable?) addable?)]
           [product (-> (sequenceof multipliable?) multipliable?)]
           [power (->* (any/c integer?)
@@ -319,6 +320,8 @@
   (if (empty? vs)
       ID
       (foldl add vs #:order 'bab)))
+
+(define join (curry apply ..))
 
 (define sum (curry apply +))
 

@@ -104,6 +104,13 @@
                       #:into #f)
                 #f
                 "boolean #f base value")
+  ;; join
+  (check-equal? (join '()) ID)
+  (check-equal? (join '(1 2 3 4)) 10)
+  (check-equal? (join '(#(1 2 3) #(1 2 3))) #(1 2 3 1 2 3))
+  (check-equal? (join '("hi" "there")) "hithere")
+  (check-equal? ((join (list add1 sub1)) 1) 1)
+  (check-exn exn:fail:contract? (thunk (join '(hi there))))
   ;; sum
   (check-equal? (sum '()) ID)
   (check-equal? (sum '(1 2 3 4)) 10)
