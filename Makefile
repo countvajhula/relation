@@ -12,20 +12,20 @@ help:
 	@echo "install - Install package along with dependencies"
 	@echo "remove - Remove package"
 	@echo "test - Run tests"
-	@echo "test-logic - Run tests for logical relations"
-	@echo "test-equivalence - Run tests for equivalence relations"
-	@echo "test-order - Run tests for order relations"
-	@echo "test-function - Run tests for functional primitives"
-	@echo "test-transform - Run tests for type transformers"
-	@echo "test-algebraic - Run tests for algebraic operators"
+	@echo "test-with-errortrace - Run tests with error tracing"
+	@echo "errortrace - Alias for test-with-errortrace"
 	@echo "docs - View docs in a browser"
 	@echo "profile - Run benchmarks to gauge relative performance against built-in interfaces"
-	@echo "profile-logic - Run benchmarks for logical relations"
-	@echo "profile-equivalence - Run benchmarks for equivalence relations"
-	@echo "profile-order - Run benchmarks for order relations"
-	@echo "profile-function - Run benchmarks for functional primitives"
-	@echo "profile-transform - Run benchmarks for type transformers"
-	@echo "profile-algebraic - Run benchmarks for algebraic operators"
+	@echo "test-<module> - Run tests for <module>"
+	@echo "errortrace-<module> - Run tests for <module> with error tracing"
+	@echo "profile-<module> - Run benchmarks for <module>"
+	@echo "Modules:"
+	@echo "  logic"
+	@echo "  equivalence"
+	@echo "  order"
+	@echo "  function"
+	@echo "  transform"
+	@echo "  algebraic"
 
 # Primarily for use by CI.
 # Installs dependencies as well as linking this as a package.
@@ -97,6 +97,28 @@ test-transform:
 test-algebraic:
 	raco test -x tests/algebraic.rkt
 
+errortrace-logic:
+	racket -l errortrace -l racket -e '(require (submod "tests/logic.rkt" test))'
+
+errortrace-equivalence:
+	racket -l errortrace -l racket -e '(require (submod "tests/equivalence.rkt" test))'
+
+errortrace-order:
+	racket -l errortrace -l racket -e '(require (submod "tests/order.rkt" test))'
+
+errortrace-function:
+	racket -l errortrace -l racket -e '(require (submod "tests/function.rkt" test))'
+
+errortrace-transform:
+	racket -l errortrace -l racket -e '(require (submod "tests/transform.rkt" test))'
+
+errortrace-algebraic:
+	racket -l errortrace -l racket -e '(require (submod "tests/algebraic.rkt" test))'
+
+test-with-errortrace: errortrace-logic errortrace-equivalence errortrace-order errortrace-function errortrace-transform errortrace-algebraic
+
+errortrace: test-with-errortrace
+
 docs:
 	raco docs $(PACKAGE-NAME)
 
@@ -132,4 +154,4 @@ profile-algebraic:
 
 profile: profile-logic profile-equivalence profile-order profile-function profile-transform profile-algebraic
 
-.PHONY:	help install remove build build-docs build-all check-deps clean test test-logic test-equivalence test-order test-function test-transform test-algebraic docs profile-logic profile-equivalence profile-order profile-function profile-transform profile-algebraic profile
+.PHONY:	help install remove build build-docs build-all check-deps clean test test-logic test-equivalence test-order test-function test-transform test-algebraic errortrace-logic errortrace-equivalence errortrace-order errortrace-function errortrace-transform errortrace-algebraic test-with-errortrace errortrace docs profile-logic profile-equivalence profile-order profile-function profile-transform profile-algebraic profile
