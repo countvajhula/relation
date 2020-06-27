@@ -249,4 +249,7 @@
      (check-false (assoc 'b (list))))))
 
 (module+ test
-  (run-tests tests))
+  (let ()
+    ;; avoid evaluating to (and printing) number of failed tests
+    (run-tests tests)
+    (void)))

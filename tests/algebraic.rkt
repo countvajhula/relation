@@ -26,6 +26,8 @@
      (check-equal? (.. '(1 2 3) '(4 5 6)) '(1 2 3 4 5 6))
      (check-equal? (.. #(1 2 3) #(4 5 6)) #(1 2 3 4 5 6))
      (check-equal? (set-count (.. (set 1 2 3) (set 3 4 5))) 5)
+     (check-equal? ((.. ->string add1 ->number) "23") "24")
+     (check-equal? ((..> ->number add1 ->string) "23") "24")
      ;; TODO: why doesn't this work?
      ;; (check-equal? (.. (hash 'a 1 'b 2) (hash 'c 3)) (hash 'a 1 'b 2 'c 3))
      (check-equal? (->list (.. (stream 1 2 3) (stream 4 5 6))) (list 1 2 3 4 5 6))
@@ -183,4 +185,7 @@
      (check-equal? (reify ID (set 1)) (set)))))
 
 (module+ test
-  (run-tests tests))
+  (let ()
+    ;; avoid evaluating to (and printing) number of failed tests
+    (run-tests tests)
+    (void)))

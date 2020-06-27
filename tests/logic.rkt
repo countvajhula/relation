@@ -41,4 +41,7 @@
      (check-equal? (none? (stream #t #t)) (not (or #t #t))))))
 
 (module+ test
-  (run-tests tests))
+  (let ()
+    ;; avoid evaluating to (and printing) number of failed tests
+    (run-tests tests)
+    (void)))

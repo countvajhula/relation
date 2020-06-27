@@ -285,9 +285,13 @@ In the event no operands are received in the course of a computation, the result
                        appendable?]
               @defproc[(∘ [v appendable?]
                           ...)
-                       appendable?])]{
+                       appendable?]
+              @defproc[(..> [v appendable?]
+                            ...)
+                       appendable?]
+ )]{
 
- Performs the canonical "append-like" operation on the data based on its type, taking an arbitrary number of arguments. The special value @racket[ID] serves as the generic identity value for all composition operations when the type of the operands is not known. In particular, this value is the result when no operands are provided.
+ Performs the canonical "append-like" operation on the data based on its type, taking an arbitrary number of arguments. @racket[..] and its alias @racket[∘] compose right-to-left, while @racket[..>] composes left-to-right. The special value @racket[ID] serves as the generic identity value for all composition operations when the type of the operands is not known. In particular, this value is the result when no operands are provided.
 
 @examples[
     #:eval eval-for-docs
@@ -295,6 +299,7 @@ In the event no operands are received in the course of a computation, the result
     (.. '(1 2 3) '(4 5 6))
     (.. (hash 'a 1 'b 2) (hash 'c 3))
     ((.. ->string +) 3 4)
+    ((..> + ->string) 3 4)
     (∘ "hi" " " "there")
   ]
 }

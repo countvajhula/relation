@@ -154,4 +154,7 @@
      (check-equal? ((->procedure (list add1 add1)) 3) 5))))
 
 (module+ test
-  (run-tests tests))
+  (let ()
+    ;; avoid evaluating to (and printing) number of failed tests
+    (run-tests tests)
+    (void)))

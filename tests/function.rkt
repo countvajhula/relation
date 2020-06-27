@@ -130,4 +130,7 @@
      (check-true ((negate negative?) 0)))))
 
 (module+ test
-  (run-tests tests))
+  (let ()
+    ;; avoid evaluating to (and printing) number of failed tests
+    (run-tests tests)
+    (void)))

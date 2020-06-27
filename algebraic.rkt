@@ -51,6 +51,7 @@
           [id (-> procedure? procedure?)]
           [inverse (-> procedure? procedure?)]
           [.. (-> appendable? ... appendable?)]
+          [..> (-> appendable? ... appendable?)]
           [∘ (-> appendable? ... appendable?)]
           [* (-> multipliable? ... multipliable?)]
           [/ (-> multipliable? multipliable? ... multipliable?)]
@@ -305,6 +306,11 @@
   (if (empty? vs)
       ID
       (foldl append vs #:order 'bab)))
+
+(define (..> . vs)
+  (if (empty? vs)
+      ID
+      (foldl append vs)))
 
 (define (* . vs)
   (if (empty? vs)
