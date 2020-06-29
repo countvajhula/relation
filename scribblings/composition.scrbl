@@ -3,7 +3,7 @@
          scribble-abbrevs/manual
          scribble/example
          racket/sandbox
-         @for-label[relation/algebraic
+         @for-label[relation/composition
                     relation/transform
                     relation/logic
                     racket/generic
@@ -45,9 +45,11 @@
                                            racket/set
                                            racket/stream))))
 
-@title{Algebraic Operators}
+@title{Composing Operations}
 
-@defmodule[relation/algebraic]
+@defmodule[relation/composition]
+
+@margin-note{This module was formerly named @racket[relation/algebraic]. Any code using @racket[relation/algebraic] directly should be changed to use @racket[relation/composition] instead. The former alias is still provided alongside the new one for backwards compatibility, but will be removed in a future version.}
 
 Generic algebraic operators for composing data.
 
@@ -55,7 +57,7 @@ The built-in operators @racket[+] and @racket[*] operate on numbers specifically
 
 This module generalizes the standard algebraic operators to work on any type that supports a "canonical" notion of addition, multiplication, or concatenation. This allows our intuitions about addition and other forms of composition to extend over all appropriate types via the use of the common generic operators @racket[+], @racket[*] and @racket[..].
 
-@section[#:tag "algebraic:interfaces"]{Interfaces}
+@section[#:tag "composition:interfaces"]{Interfaces}
 
 This module provides three generic interfaces -- @racket[gen:appendable], @racket[gen:multipliable], and @racket[gen:addable]. These are meant to represent the canonical "idea" of the operations of concatenation, multiplication and addition, respectively, whose behavior may be customized for each type via these generic interfaces, and used via the common operators @racket[..] (concatenation), @racket[*] (multiplication), and @racket[+] (addition).
 
@@ -278,7 +280,7 @@ In the event no operands are received in the course of a computation, the result
 
 }
 
-@section[#:tag "algebraic:utilities"]{Utilities}
+@section[#:tag "composition:utilities"]{Utilities}
 
 @deftogether[(@defproc[(.. [v appendable?]
                            ...)

@@ -20,7 +20,7 @@
                   for-each)
          (except-in relation/function
                     negate)
-         relation/algebraic)
+         relation/composition)
 
 (provide (contract-out
           [->boolean (-> any/c boolean?)]

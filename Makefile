@@ -25,7 +25,7 @@ help:
 	@echo "  order"
 	@echo "  function"
 	@echo "  transform"
-	@echo "  algebraic"
+	@echo "  composition"
 
 # Primarily for use by CI.
 # Installs dependencies as well as linking this as a package.
@@ -94,8 +94,8 @@ test-function:
 test-transform:
 	raco test -x tests/transform.rkt
 
-test-algebraic:
-	raco test -x tests/algebraic.rkt
+test-composition:
+	raco test -x tests/composition.rkt
 
 errortrace-logic:
 	racket -l errortrace -l racket -e '(require (submod "tests/logic.rkt" test))'
@@ -112,10 +112,10 @@ errortrace-function:
 errortrace-transform:
 	racket -l errortrace -l racket -e '(require (submod "tests/transform.rkt" test))'
 
-errortrace-algebraic:
-	racket -l errortrace -l racket -e '(require (submod "tests/algebraic.rkt" test))'
+errortrace-composition:
+	racket -l errortrace -l racket -e '(require (submod "tests/composition.rkt" test))'
 
-test-with-errortrace: errortrace-logic errortrace-equivalence errortrace-order errortrace-function errortrace-transform errortrace-algebraic
+test-with-errortrace: errortrace-logic errortrace-equivalence errortrace-order errortrace-function errortrace-transform errortrace-composition
 
 errortrace: test-with-errortrace
 
@@ -147,11 +147,11 @@ profile-transform:
 	raco profile dev/profile/transform/builtin.rkt | grep "Total cpu time"
 	raco profile dev/profile/transform/relation.rkt | grep "Total cpu time"
 
-profile-algebraic:
-	echo "Profiling algebraic operators..."
-	raco profile dev/profile/algebraic/builtin.rkt | grep "Total cpu time"
-	raco profile dev/profile/algebraic/relation.rkt | grep "Total cpu time"
+profile-composition:
+	echo "Profiling composition operators..."
+	raco profile dev/profile/composition/builtin.rkt | grep "Total cpu time"
+	raco profile dev/profile/composition/relation.rkt | grep "Total cpu time"
 
-profile: profile-logic profile-equivalence profile-order profile-function profile-transform profile-algebraic
+profile: profile-logic profile-equivalence profile-order profile-function profile-transform profile-composition
 
-.PHONY:	help install remove build build-docs build-all check-deps clean test test-logic test-equivalence test-order test-function test-transform test-algebraic errortrace-logic errortrace-equivalence errortrace-order errortrace-function errortrace-transform errortrace-algebraic test-with-errortrace errortrace docs profile-logic profile-equivalence profile-order profile-function profile-transform profile-algebraic profile
+.PHONY:	help install remove build build-docs build-all check-deps clean test test-logic test-equivalence test-order test-function test-transform test-composition errortrace-logic errortrace-equivalence errortrace-order errortrace-function errortrace-transform errortrace-composition test-with-errortrace errortrace docs profile-logic profile-equivalence profile-order profile-function profile-transform profile-composition profile

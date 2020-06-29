@@ -4,7 +4,7 @@
          scribble/example
          racket/sandbox
          @for-label[relation/logic
-                    (only-in relation/algebraic fold)
+                    (only-in relation/composition fold)
                     racket/undefined
                     racket]]
 

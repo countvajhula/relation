@@ -7,14 +7,14 @@
          "order.rkt"
          "function.rkt"
          "transform.rkt"
-         "algebraic.rkt")
+         "composition.rkt")
 
 (provide (all-from-out "logic.rkt"
                        "equivalence.rkt"
                        "order.rkt"
                        "function.rkt"
                        "transform.rkt"
-                       "algebraic.rkt"))
+                       "composition.rkt"))
 
 (module+ main
   ;; (Optional) main submodule. Put code here if you need it to be executed when

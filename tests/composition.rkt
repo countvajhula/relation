@@ -18,7 +18,7 @@
 
 (define tests
   (test-suite
-   "Tests for algebraic operators"
+   "Tests for composition operators"
 
    ;; append
    (check-equal? (.. "hi" " " "there") "hi there")

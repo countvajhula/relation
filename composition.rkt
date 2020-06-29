@@ -17,9 +17,6 @@
          relation/function
          version-case)
 
-(displayln @~a{DEPRECATION WARNING: relation/algebraic is deprecated. @;
-               Use relation/composition instead.})
-
 (version-case
  [(version< (version) "7.5.0.14")
   (define string-append
