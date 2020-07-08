@@ -195,7 +195,7 @@ See also: @other-doc['(lib "sugar/scribblings/sugar.scrbl")].
   ]
 }
 
-@defproc[(->generator [v any/c] [return any/c])
+@defproc[(->generator [v any/c] [return any/c (void)])
          generator?]{
 
  Maps the input data to a @tech/reference{generator}. If a @racket[return] value is provided, it will be used as the return value of the generator once the sequence @racket[v] has been exhausted. Any sequence can be transformed into a generator, and vice versa. This allows us to leverage sequence patterns for generators in a natural way, for instance cons-ing and extending generators to produce additional values by transforming them into streams and then back again.
