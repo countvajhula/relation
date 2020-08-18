@@ -23,6 +23,7 @@
                     procedure?)]
           [true. (unconstrained-domain-> boolean?)]
           [false. (unconstrained-domain-> boolean?)]
+          [arg (-> exact-nonnegative-integer? procedure?)]
           [flip (-> procedure? procedure?)]
           [flip$ (-> procedure? procedure?)]
           [flip* (-> procedure? procedure?)]
@@ -86,6 +87,10 @@
 (define false.
   (procedure-rename (f:const #f)
                     'false.))
+
+(define (arg n)
+  (λ args
+    (nth args n)))
 
 (define (flip f)
   (λ (x y . args)

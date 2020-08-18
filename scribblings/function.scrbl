@@ -28,6 +28,7 @@
                                            arguments
                                            relation
                                            racket/set
+                                           (only-in racket/list range)
                                            racket/generator
                                            racket/stream))))
 
@@ -269,6 +270,23 @@ This module provides a @racket[function] type intended as a drop-in alternative 
 	(true. 3 1 #:key 'hi)
 	(false.)
 	(false. 3 1 #:key 'hi)
+  ]
+}
+
+@defproc[(arg [n exact-nonnegative-integer?])
+         procedure?]{
+
+ Produces a function whose value is simply its @racket[n]th argument.
+
+@examples[
+    #:eval eval-for-docs
+    ((arg 0) "hi" "there")
+    ((arg 2) "hi" "there" 'abc 'pqr)
+    ((arg 3) -2 -1 0 1 2 3)
+    (apply (arg 3) (range 10))
+    (regexp-replace* #rx"\\[\\[(cat|dog)\\]\\]"
+                     "The [[cat]] and the [[dog]] in the hat."
+                     (arg 1))
   ]
 }
 
