@@ -1,6 +1,9 @@
 .. image:: https://travis-ci.org/countvajhula/relation.svg?branch=master
     :target: https://travis-ci.org/countvajhula/relation
 
+.. image:: https://coveralls.io/repos/github/countvajhula/relation/badge.svg?branch=master
+    :target: https://coveralls.io/github/countvajhula/relation?branch=master
+
 relation
 ========
 Generic interfaces and convenient utilities for using relations in Racket.
