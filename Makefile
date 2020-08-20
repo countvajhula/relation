@@ -12,6 +12,7 @@ help:
 	@echo "install - Install package along with dependencies"
 	@echo "remove - Remove package"
 	@echo "test - Run tests"
+	@echo "cover - Check test coverage"
 	@echo "test-with-errortrace - Run tests with error tracing"
 	@echo "errortrace - Alias for test-with-errortrace"
 	@echo "docs - View docs in a browser"
@@ -118,6 +119,10 @@ errortrace-composition:
 test-with-errortrace: errortrace-logic errortrace-equivalence errortrace-order errortrace-function errortrace-transform errortrace-composition
 
 errortrace: test-with-errortrace
+
+cover:
+	raco cover -b -n dev -n algebraic.rkt -p $(PACKAGE-NAME)
+	open coverage/index.html
 
 docs:
 	raco docs $(PACKAGE-NAME)

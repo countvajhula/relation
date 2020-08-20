@@ -52,3 +52,6 @@ script:
   - make install
   - make check-deps
   - make test
+
+after_success:
+  - raco cover -n dev -n algebraic.rkt -bf coveralls -d $TRAVIS_BUILD_DIR/coverage -p relation
