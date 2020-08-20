@@ -12,9 +12,11 @@ help:
 	@echo "install - Install package along with dependencies"
 	@echo "remove - Remove package"
 	@echo "test - Run tests"
-	@echo "cover - Check test coverage"
 	@echo "test-with-errortrace - Run tests with error tracing"
 	@echo "errortrace - Alias for test-with-errortrace"
+	@echo "cover - Run test coverage checker and view report"
+	@echo "coverage-check - Run test coverage checker"
+	@echo "coverage-report - View test coverage report"
 	@echo "docs - View docs in a browser"
 	@echo "profile - Run benchmarks to gauge relative performance against built-in interfaces"
 	@echo "test-<module> - Run tests for <module>"
@@ -120,9 +122,13 @@ test-with-errortrace: errortrace-logic errortrace-equivalence errortrace-order e
 
 errortrace: test-with-errortrace
 
-cover:
+coverage-check:
 	raco cover -b -n dev -n algebraic.rkt -p $(PACKAGE-NAME)
+
+coverage-report:
 	open coverage/index.html
+
+cover: coverage-check coverage-report
 
 docs:
 	raco docs $(PACKAGE-NAME)
@@ -159,4 +165,4 @@ profile-composition:
 
 profile: profile-logic profile-equivalence profile-order profile-function profile-transform profile-composition
 
-.PHONY:	help install remove build build-docs build-all check-deps clean test test-logic test-equivalence test-order test-function test-transform test-composition errortrace-logic errortrace-equivalence errortrace-order errortrace-function errortrace-transform errortrace-composition test-with-errortrace errortrace docs profile-logic profile-equivalence profile-order profile-function profile-transform profile-composition profile
+.PHONY:	help install remove build build-docs build-all check-deps clean test test-logic test-equivalence test-order test-function test-transform test-composition errortrace-logic errortrace-equivalence errortrace-order errortrace-function errortrace-transform errortrace-composition test-with-errortrace errortrace docs profile-logic profile-equivalence profile-order profile-function profile-transform profile-composition profile cover coverage-check coverage-report
