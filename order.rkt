@@ -17,51 +17,52 @@
          orderable/c
          (contract-out
           [orderable? (-> any/c boolean?)]
-          [< (->* (orderable?)
-                  (#:key (or/c (-> orderable? orderable?)
+          ;; TODO: improve these contracts to ensure that arguments are
+          ;; orderable? (rather than any/c) when no key is provided
+          [< (->* (any/c)
+                  (#:key (or/c (-> any/c orderable?)
                                #f))
-                  #:rest (listof orderable?)
+                  #:rest list?
                   boolean?)]
-          [≤ (->* (orderable?)
-                  (#:key (or/c (-> orderable? orderable?)
+          [≤ (->* (any/c)
+                  (#:key (or/c (-> any/c orderable?)
                                #f))
-                  #:rest (listof orderable?)
+                  #:rest list?
                   boolean?)]
-          [<= (->* (orderable?)
-                   (#:key (or/c (-> orderable? orderable?)
+          [<= (->* (any/c)
+                   (#:key (or/c (-> any/c orderable?)
                                 #f))
-                   #:rest (listof orderable?)
+                   #:rest list?
                    boolean?)]
-          [≥ (->* (orderable?)
-                  (#:key (or/c (-> orderable? orderable?)
+          [≥ (->* (any/c)
+                  (#:key (or/c (-> any/c orderable?)
                                #f))
-                  #:rest (listof orderable?)
+                  #:rest list?
                   boolean?)]
-          [>= (->* (orderable?)
-                   (#:key (or/c (-> orderable? orderable?)
+          [>= (->* (any/c)
+                   (#:key (or/c (-> any/c orderable?)
                                 #f))
-                   #:rest (listof orderable?)
+                   #:rest list?
                    boolean?)]
-          [> (->* (orderable?)
-                  (#:key (or/c (-> orderable? orderable?)
+          [> (->* (any/c)
+                  (#:key (or/c (-> any/c orderable?)
                                #f))
-                  #:rest (listof orderable?)
+                  #:rest list?
                   boolean?)]
-          (sort (->* (procedure?
-                      (sequenceof orderable?))
-                     (#:key (or/c (-> orderable? orderable?)
+          (sort (->* (procedure? sequence?)
+                     (#:key (or/c (-> any/c orderable?)
                                   #f))
-                     (sequenceof orderable?)))
-          (min (->* (orderable?)
-                    (#:key (or/c (-> orderable? orderable?)
+                     sequence?))
+          (min (->* (any/c)
+                    (#:key (or/c (-> any/c orderable?)
                                  #f))
-                    #:rest (listof orderable?)
-                    orderable?))
-          (max (->* (orderable?)
-                    (#:key (or/c (-> orderable? orderable?)
+                    #:rest list?
+                    any/c))
+          (max (->* (any/c)
+                    (#:key (or/c (-> any/c orderable?)
                                  #f))
-                    #:rest (listof orderable?)
-                    orderable?))))
+                    #:rest list?
+                    any/c))))
 
 (define-generics orderable
   (less-than? orderable other)

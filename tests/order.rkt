@@ -41,6 +41,7 @@
    (check-true (< #:key string-length "z" "yy" "xxx"))
    (check-false (< #:key string-length "xxx" "zzz" "yyy"))
    (check-false (< #:key string-length "xxx" "yy" "z"))
+   (check-true (< #:key car (cons 1 2) (cons 3 1) (cons 4 1)) "contract accepts unorderable values")
 
    ;; less than or equal to
    (check-true (≤ 1 2 3) "monotonically increasing")
@@ -72,6 +73,7 @@
    (check-false (≤ #:key string-length "xxx" "yy" "z"))
    (check-true (<= 2 3))
    (check-false (<= 3 2))
+   (check-true (≤ #:key car (cons 1 2) (cons 3 1) (cons 4 1)) "contract accepts unorderable values")
 
    ;; greater than or equal to
    (check-false (≥ 1 2 3) "monotonically increasing")
@@ -103,6 +105,7 @@
    (check-true (≥ #:key string-length "xxx" "yy" "z"))
    (check-false (>= 2 3))
    (check-true (>= 3 2))
+   (check-false (≥ #:key car (cons 1 2) (cons 3 1) (cons 4 1)) "contract accepts unorderable values")
 
    ;; greater than
    (check-false (> 1 2 3) "monotonically increasing")
@@ -132,6 +135,7 @@
    (check-false (> #:key string-length "z" "yy" "xxx"))
    (check-false (> #:key string-length "xxx" "zzz" "yyy"))
    (check-true (> #:key string-length "xxx" "yy" "z"))
+   (check-false (> #:key car (cons 1 2) (cons 3 1) (cons 4 1)) "contract accepts unorderable values")
 
    ;; custom types
    ((λ ()
@@ -188,6 +192,7 @@
    (check-equal? (sort > (list "cherry" "banana" "apple")) (list "cherry" "banana" "apple"))
    (check-equal? (sort > #:key string-length (list "x" "yy" "zzz")) (list "zzz" "yy" "x"))
    (check-equal? (sort > #:key string-length (list "zzz" "yy" "x")) (list "zzz" "yy" "x"))
+   (check-equal? (sort < #:key car '((1 . 2) (4 . 1) (3 . 1))) '((1 . 2) (3 . 1) (4 . 1)) "contract accepts unorderable values")
 
    ;; min
    (check-equal? (min 1 2 3) 1 "monotonically increasing")
@@ -217,6 +222,7 @@
    (check-equal? (min #:key string-length "z" "yy" "xxx") "z")
    (check memq (min #:key string-length "xxx" "zzz" "yyy") '("xxx" "yyy" "zzz"))
    (check-equal? (min #:key string-length "xxx" "yy" "z") "z")
+   (check-equal? (apply min #:key car '((1 . 2) (0 . 1) (3 . 1))) '(0 . 1) "contract accepts unorderable values")
 
    ;; max
    (check-equal? (max 1 2 3) 3 "monotonically increasing")
@@ -245,7 +251,8 @@
    ;(check-equal? (max (set 1 2) (set 3 4)) "incomparable sets")
    (check-equal? (max #:key string-length "z" "yy" "xxx") "xxx")
    (check memq (max #:key string-length "xxx" "zzz" "yyy") '("xxx" "yyy" "zzz"))
-   (check-equal? (max #:key string-length "xxx" "yy" "z") "xxx")))
+   (check-equal? (max #:key string-length "xxx" "yy" "z") "xxx")
+   (check-equal? (apply max #:key car '((1 . 2) (0 . 1) (3 . 1))) '(3 . 1) "contract accepts unorderable values")))
 
 (module+ test
   (just-do

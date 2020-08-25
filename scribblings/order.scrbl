@@ -119,8 +119,8 @@ This module provides a generic interface that overrides these standard operators
 
  The following utilities are provided which work with any type that implements the @racket[gen:orderable] interface.
 
-@defproc[(< [#:key key (-> orderable? orderable?) #f]
-            [v orderable?]
+@defproc[(< [#:key key (-> any/c orderable?) #f]
+            [v any/c]
             ...)
          boolean?]{
 
@@ -135,12 +135,12 @@ This module provides a generic interface that overrides these standard operators
   ]
 }
 
-@deftogether[(@defproc[(<= [#:key key (-> orderable? orderable?) #f]
-                           [v orderable?]
+@deftogether[(@defproc[(<= [#:key key (-> any/c orderable?) #f]
+                           [v any/c]
                            ...)
                        boolean?]
-              @defproc[(≤ [#:key key (-> orderable? orderable?) #f]
-                          [v orderable?]
+              @defproc[(≤ [#:key key (-> any/c orderable?) #f]
+                          [v any/c]
                           ...)
                        boolean?])]{
 
@@ -155,12 +155,12 @@ This module provides a generic interface that overrides these standard operators
   ]
 }
 
-@deftogether[(@defproc[(>= [#:key key (-> orderable? orderable?) #f]
-                           [v orderable?]
+@deftogether[(@defproc[(>= [#:key key (-> any/c orderable?) #f]
+                           [v any/c]
                            ...)
                        boolean?]
-              @defproc[(≥ [#:key key (-> orderable? orderable?) #f]
-                          [v orderable?]
+              @defproc[(≥ [#:key key (-> any/c orderable?) #f]
+                          [v any/c]
                           ...)
                        boolean?])]{
 
@@ -175,8 +175,8 @@ This module provides a generic interface that overrides these standard operators
   ]
 }
 
-@defproc[(> [#:key key (-> orderable? orderable?) #f]
-            [v orderable?]
+@defproc[(> [#:key key (-> any/c orderable?) #f]
+            [v any/c]
             ...)
          boolean?]{
 
@@ -191,10 +191,10 @@ This module provides a generic interface that overrides these standard operators
   ]
 }
 
-@defproc[(min [#:key key (-> orderable? orderable?) #f]
-              [v orderable?]
+@defproc[(min [#:key key (-> any/c orderable?) #f]
+              [v any/c]
               ...)
-         orderable?]{
+         any/c]{
 
  Returns the minimum value according to the canonical order relation for the arguments, which is determined by their type. If @racket[key] is provided, it is applied to the arguments prior to the comparison (this pattern is often referred to as "argmin" in math and programming literature). The values are compared using the canonical comparison for their type.
 
@@ -209,10 +209,10 @@ This module provides a generic interface that overrides these standard operators
   ]
 }
 
-@defproc[(max [#:key key (-> orderable? orderable?) #f]
-              [v orderable?]
+@defproc[(max [#:key key (-> any/c orderable?) #f]
+              [v any/c]
               ...)
-         orderable?]{
+         any/c]{
 
  Returns the maximum value according to the canonical order relation for the arguments, which is determined by their type. If @racket[key] is provided, it is applied to the arguments prior to the comparison (this pattern is often referred to as "argmax" in math and programming literature). The values are compared using the canonical comparison for their type.
 
@@ -228,9 +228,9 @@ This module provides a generic interface that overrides these standard operators
 }
 
 @defproc[(sort [less-than? (one-of/c < >)]
-               [#:key key (-> orderable? orderable?) #f]
-               [seq (sequenceof orderable?)])
-         (sequenceof orderable?)]{
+               [#:key key (-> any/c orderable?) #f]
+               [seq sequence?])
+         sequence?]{
 
  Like @racketlink[b:sort]{sort} but accepts arbitrary sequences as input, and employs a generic order relation (either @racket[<] or @racket[>]) as the comparison procedure.
 
