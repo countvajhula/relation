@@ -29,6 +29,7 @@
                                            relation
                                            racket/set
                                            (only-in racket/list range)
+                                           (only-in racket/math sqr)
                                            racket/generator
                                            racket/stream))))
 
@@ -208,11 +209,9 @@ This module provides a @racket[function] type intended as a drop-in alternative 
 }
 
 @deftogether[(
- @defproc[(negate [g procedure?]
-                   ...)
+ @defproc[(negate [g procedure?])
           function?]
- @defproc[(!! [g procedure?]
-              ...)
+ @defproc[(!! [g procedure?])
           function?]
  )]{
 
@@ -227,6 +226,7 @@ This module provides a @racket[function] type intended as a drop-in alternative 
 }
 
 @defproc[(unthunk [g procedure?]
+                  [v any/c]
                   ...)
          procedure?]{
 
@@ -319,5 +319,19 @@ This module provides a @racket[function] type intended as a drop-in alternative 
     (->list (list-add1 (list 1 2 3)))
     (->list ((lift ->string) (list 1 2 3)))
     ((lift add1) (just 3))
+  ]
+}
+
+@defproc[(pack [g procedure?]
+               [v any/c]
+               ...)
+         procedure?]{
+
+ "Pack" the provided arguments into a list and map them individually under @racket[g].
+
+@examples[
+    #:eval eval-for-docs
+    (pack sqr 1 2 3 4)
+    (pack ->string 1 2 3)
   ]
 }

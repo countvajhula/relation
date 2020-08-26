@@ -28,6 +28,7 @@
           [flip$ (-> procedure? procedure?)]
           [flip* (-> procedure? procedure?)]
           [lift (-> procedure? function?)]
+          [pack (-> procedure? any/c ... sequence?)]
           [struct monoid ((f procedure?)
                           (id procedure?))]
           [struct function ((components list?)
@@ -106,6 +107,9 @@
 
 (define (lift f)
   (curry f:map f))
+
+(define (pack f . args)
+  (sequence->list (map f args)))
 
 (define (~min-arity-value arity)
   (cond [(number? arity) arity]
