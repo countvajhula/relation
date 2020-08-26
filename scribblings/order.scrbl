@@ -198,14 +198,14 @@ This module provides a generic interface that overrides these standard operators
 
  Returns the minimum value according to the canonical order relation for the arguments, which is determined by their type. If @racket[key] is provided, it is applied to the arguments prior to the comparison (this pattern is often referred to as "argmin" in math and programming literature). The values are compared using the canonical comparison for their type.
 
-@margin-note{In the case of a nonlinear order (i.e. where there is no greatest or least element), @racket[min] would return an arbitrary local minimum. You should typically only use this function when you know that a global minimum exists.}
+@margin-note{In the case of a nonlinear order (i.e. where there are incomparable elements), @racket[min] would return an arbitrary local minimum. You should typically only use this function when you know that a global minimum exists.}
 
 @examples[
     #:eval eval-for-docs
     (min 3 2 1)
-    (min "cherry" "banana" "apple")
+    (min "cherry" "banana" "apple" "pear")
     (min (set 1 2) (set 1) (set 1 2 3))
-    (min #:key length "apple" "banana" "cherry")
+    (min #:key length "apple" "banana" "cherry" "pear")
   ]
 }
 
@@ -216,14 +216,14 @@ This module provides a generic interface that overrides these standard operators
 
  Returns the maximum value according to the canonical order relation for the arguments, which is determined by their type. If @racket[key] is provided, it is applied to the arguments prior to the comparison (this pattern is often referred to as "argmax" in math and programming literature). The values are compared using the canonical comparison for their type.
 
-@margin-note{In the case of a nonlinear order (i.e. where there is no greatest or least element), @racket[max] would return an arbitrary local maximum. You should typically only use this function when you know that a global maximum exists.}
+@margin-note{In the case of a nonlinear order (i.e. where there are incomparable elements), @racket[max] would return an arbitrary local maximum. You should typically only use this function when you know that a global maximum exists.}
 
 @examples[
     #:eval eval-for-docs
     (max 3 2 1)
-    (max "cherry" "banana" "apple")
+    (max "cherry" "banana" "apple" "pear")
     (max (set 1 2) (set 1) (set 1 2 3))
-    (max #:key length "apple" "banana" "cherry")
+    (max #:key length "apple" "banana" "cherry" "pear")
   ]
 }
 

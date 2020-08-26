@@ -327,7 +327,7 @@ This module provides a @racket[function] type intended as a drop-in alternative 
                ...)
          procedure?]{
 
- "Pack" the provided arguments into a list and map them individually under @racket[g].
+ "Pack" the provided arguments into a list and map them individually under @racket[g]. While @racket[map] allows a function operating on individual arguments to operate on such arguments provided as a list, @racket[pack] analogously allows the function to operate on such arguments provided directly as multiple arguments.
 
 @examples[
     #:eval eval-for-docs
