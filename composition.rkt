@@ -112,6 +112,10 @@
                                                       'bab)])
                             #:rest [seqs (listof (sequenceof any/c))]
                             [result any/c])]
+          [onto (-> (sequenceof procedure?)
+                    any/c
+                    ...
+                    any/c)]
           [gather (-> (sequenceof procedure?)
                       any/c
                       ...
@@ -409,11 +413,13 @@
 (define foldr/steps (curry fold/steps #:direction 'right))
 (define foldl/steps (curry fold/steps #:direction 'left))
 
-(define (gather fs . vs)
+(define (onto fs . vs)
   (if (empty? fs)
       empty-stream
       (stream-cons (apply (first fs) vs)
-                   (apply gather (rest fs) vs))))
+                   (apply onto (rest fs) vs))))
+
+(define gather onto) ; backwards compat
 
 (define (~power v n op)
   (if (= n 0)

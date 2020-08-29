@@ -470,26 +470,28 @@ In the event no operands are received in the course of a computation, the result
   ]
 }
 
-@defproc[(gather [fs (sequenceof procedure?)]
-                 [v any/c]
-                 ...)
+@defproc[(onto [fs (sequenceof procedure?)]
+               [v any/c]
+               ...)
 		 sequence?]{
 
-  A kind of "dual" to the usual @racket[map] operation where we map a function over values, @racket[gather] instead maps a value over functions. Specifically, this applies each function in the input sequence of functions to the provided arguments, independently, lazily yielding a corresponding sequence of results. Each of the input functions must have an arity that accepts the provided number of arguments.
+  A kind of "dual" to the usual @racket[map] operation where we map @italic{values} under a @italic{function}, @racket[onto] instead maps @italic{functions} onto a @italic{value}. Specifically, this applies each function in the input sequence of functions to the provided arguments, independently, lazily yielding a corresponding sequence of results. Each of the input functions must have an arity that accepts the provided number of arguments.
+
+@margin-note{This utility was formerly known as @racket[gather]. It is still provided under that name for backwards compatibility, but the old name will be removed in a future version. The new name was chosen to match a similar utility found in the @hyperlink["http://www.paulgraham.com/bel.html"]{Bel} dialect of Lisp.}
 
 @examples[
     #:eval eval-for-docs
-    (->list (gather (list add1 sub1 ->string) 0))
-    (->list (gather (list + * min max) 7 6))
+    (->list (onto (list add1 sub1 ->string) 0))
+    (->list (onto (list + * min max) 7 6))
     (define (conjoin . fs)
-      (.. all? (curry gather fs)))
+      (.. all? (curry onto fs)))
     ((conjoin positive? even? integer?) 4)
     (define (n·xⁿ [n 0])
       (stream-cons (.. (curry * n)
                        (curryr expt n))
                    (n·xⁿ (add1 n))))
-    (->list (take 10 (gather (n·xⁿ) 3)))
-    (->list (take 10 (gather (map .. (repeat ->string) (n·xⁿ)) 3)))
+    (->list (take 10 (onto (n·xⁿ) 3)))
+    (->list (take 10 (onto (map .. (repeat ->string) (n·xⁿ)) 3)))
   ]
 }
 

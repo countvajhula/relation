@@ -147,13 +147,13 @@
    (check-equal? ((power add1 1) 3) 4)
    (check-equal? ((power add1 0) 3) 3)
    (check-exn exn:fail:contract? (thunk (power '("hi" "there"))))
-   ;; gather
-   (check-equal? (->list (gather (list add1 sub1 ->string) 23)) '(24 22 "23"))
-   (check-equal? (->list (gather (list add1) 23)) '(24))
-   (check-equal? (->list (gather '() 23)) '())
-   (check-equal? (->list (gather '() "hi" "there")) '())
-   (check-equal? (->list (gather (list ..) "hi" "there")) '("hithere"))
-   (check-equal? (->list (gather (list + *) 7 6)) '(13 42))
+   ;; onto
+   (check-equal? (->list (onto (list add1 sub1 ->string) 23)) '(24 22 "23"))
+   (check-equal? (->list (onto (list add1) 23)) '(24))
+   (check-equal? (->list (onto '() 23)) '())
+   (check-equal? (->list (onto '() "hi" "there")) '())
+   (check-equal? (->list (onto (list ..) "hi" "there")) '("hithere"))
+   (check-equal? (->list (onto (list + *) 7 6)) '(13 42))
    ;; composition identity
    (check-equal? (.. ID) ID)
    (check-equal? (.. '(1 2 3) ID) '(1 2 3))
