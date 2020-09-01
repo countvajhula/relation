@@ -130,36 +130,43 @@
            (monoid-id self)
            vs)))
 
-(struct function (components composer side args)
+(define (eval-function f)
+  (let ([components (function-components f)]
+        [composer (function-composer f)]
+        [args (function-args f)])
+    (apply/arguments (apply composer components)
+                    args)))
+
+(define (eval-if-saturated f)
+  (let* ([components (function-components f)]
+         [args (function-args f)])
+    (with-handlers ([exn:fail:contract:arity?
+                     (λ (exn)
+                       (if (> (length (arguments-positional args))
+                              (~min-arity (last components)))
+                           (raise exn)
+                           f))])
+      (eval-function f))))
+
+(struct function (components
+                  composer
+                  side
+                  args)
   ; maybe incorporate a power into the function type
   #:transparent
   #:property prop:procedure
   (lambda/arguments
    packed-args
    (let* ([self (first (arguments-positional packed-args))]
-          [components (function-components self)]
-          [composer (function-composer self)]
           [side (function-side self)]
-          [pos (rest (arguments-positional packed-args))]
-          [kw (arguments-keyword packed-args)]
-          [args-invocation (make-arguments pos kw)]
-          [args (if (= (function-side self) 'left)
-                    (arguments-merge (function-args self)
-                                     args-invocation)
-                    (arguments-merge args-invocation
-                                     (function-args self)))])
-     (with-handlers ([exn:fail:contract:arity?
-                      (λ (exn)
-                        (if (> (length (arguments-positional args))
-                               (~min-arity (last (function-components self))))
-                            (raise exn)
-                            (let ([curry-proc (if (= side 'left)
-                                                  curry
-                                                  curryr)])
-                              (apply/arguments curry-proc
-                                               (arguments-cons self args-invocation)))))])
-       (apply/arguments (apply composer components)
-                        args))))
+          [curry-proc (if (= side 'left)
+                          curry
+                          curryr)]
+          [curried-f
+           (curry-proc
+            (apply/arguments curry-proc
+                             packed-args))])
+     (eval-if-saturated curried-f)))
   #:methods gen:sequence
   [(define/generic -empty? empty?)
    (define/generic -first first)
