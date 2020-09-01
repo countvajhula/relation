@@ -39,21 +39,25 @@
 
 Elementary types and utilities to simplify the use and manipulation of functions.
 
-This module provides a @racket[function] type intended as a drop-in alternative to built-in Racket functions. This function type is usually no different from using normal functions, but as a higher-level entity, it provides greater visibility of the make-up of the function, allowing more flexibility in customizing the nature of composition, supporting natural semantics when used with standard sequence utilities, and more seamless use of currying. In addition, several general-purpose utilities are provided to support programming in the @hyperlink["https://en.wikipedia.org/wiki/Functional_programming"]{functional style}.
+This module provides general-purpose utilities to support programming in the @hyperlink["https://en.wikipedia.org/wiki/Functional_programming"]{functional style}. As part of its operation, this module defines and provides a @racket[function] type intended as a drop-in alternative to built-in Racket functions. This function type is usually no different from using normal functions, but as a higher-level entity, it provides greater visibility of the make-up of the function, allowing more flexibility in customizing the nature of composition, supporting natural semantics when used with standard sequence utilities, and more seamless use of currying.
 
 @section[#:tag "function:types"]{Types}
 
 @defstruct[function ([components list?]
                      [composer monoid?]
                      [side symbol?]
-                     [args arguments?])
+                     [left-args list?]
+                     [right-args list?]
+                     [kw-args hash?])
                     #:omit-constructor]{
   The elementary type that represents any procedure, whether elementary or composed. It is inherently @hyperlink["https://en.wikipedia.org/wiki/Currying"]{curried}, meaning that partially supplying arguments results in a new function parametrized by these already-provided arguments.
 @itemlist[
 @item{@racket[components] - A list of functions that comprise this one.}
 @item{@racket[composer] - The definition of composition for this function. By default (when constructed using @racket[make-function]), this is the usual function composition, i.e. @racketlink[b:compose]{@racket[compose]} together with @racket[values] as the identity.}
 @item{@racket[side] - The side on which the function is curried.}
-@item{@racket[args] - The arguments that parametrize (i.e. have already been passed to) this function.}]
+@item{@racket[left-args] - The arguments that parametrize this function on the left (e.g. passed in by left-currying).}
+@item{@racket[right-args] - The arguments that parametrize this function on the right (e.g. passed in by right-currying).}
+@item{@racket[kw-args] - The keyword arguments that parametrize (i.e. have already been passed to) this function.}]
 }
 
 @defstruct[monoid ([f (-> procedure? procedure? procedure?)]
@@ -117,6 +121,19 @@ This module provides a @racket[function] type intended as a drop-in alternative 
     #:eval eval-for-docs
     (function-cons add1 (f ->number))
     ((function-cons add1 (function-null)) 3)
+  ]
+}
+
+@defproc[(function-arguments [g function?]
+                             ...)
+         arguments?]{
+
+ Returns an @racketlink[arguments]{arguments} structure representing the arguments that parameterize (i.e. have already been passed to) the function @racket[g].
+
+@examples[
+    #:eval eval-for-docs
+    (function-arguments (curry + 1 2 3))
+    (function-arguments (curry = #:key string-upcase "apple"))
   ]
 }
 

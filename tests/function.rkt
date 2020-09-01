@@ -81,6 +81,8 @@
    (check-equal? ((function-cons add1 (f sub1)) 3) 3)
    (check-equal? ((function-cons add1 (function-null)) 3) 4)
    (check-equal? ((function-cons positive? (function-cons integer? (function-null #:compose-with (monoid f:conjoin (const #t))))) 5) #t)
+   (check-equal? (function-arguments (curry + 1 2 3)) (make-arguments (list 1 2 3) (hash)))
+   (check-equal? (function-arguments (curry = #:key string-upcase "apple")) (make-arguments (list "apple") (hash '#:key string-upcase)))
    (check-equal? (->list (apply/steps (f add1 sub1 add1) (list 3))) (list 4 3 4))
    (check-equal? (->list (apply/steps (f ->string sub1 fold) #:into 2 + (list (list 1 2 3 4)))) (list 12 11 "11"))
    (check-equal? ((compose add1 sub1) 3) 3)
