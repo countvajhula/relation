@@ -5,6 +5,7 @@
          racket/match
          racket/generic
          racket/stream
+         racket/hash
          arguments
          (prefix-in b: racket/base)
          (except-in data/collection
@@ -34,7 +35,9 @@
           [struct function ((components list?)
                             (composer monoid?)
                             (side symbol?)
-                            (args arguments?))]
+                            (left-args list?)
+                            (right-args list?)
+                            (kw-args hash?))]
           [make-function (->* ()
                               (#:compose-with monoid?
                                #:curry-on symbol?)
@@ -60,6 +63,7 @@
                                #:curry-on symbol?)
                               function?)]
           [function-cons (-> procedure? function? function?)]
+          [function-arguments (-> function? arguments?)]
           [apply/steps (unconstrained-domain-> sequence?)]
           [compose (-> procedure? ... function?)]
           [curry (unconstrained-domain-> function?)]
@@ -132,17 +136,18 @@
 
 (define (eval-function f)
   (let ([components (function-components f)]
-        [composer (function-composer f)]
-        [args (function-args f)])
+        [composer (function-composer f)])
     (apply/arguments (apply composer components)
-                    args)))
+                     (function-arguments f))))
 
 (define (eval-if-saturated f)
   (let* ([components (function-components f)]
-         [args (function-args f)])
+         [left-args (function-left-args f)]
+         [right-args (function-right-args f)])
     (with-handlers ([exn:fail:contract:arity?
                      (λ (exn)
-                       (if (> (length (arguments-positional args))
+                       (if (> (length (append left-args
+                                              right-args))
                               (~min-arity (last components)))
                            (raise exn)
                            f))])
@@ -151,7 +156,9 @@
 (struct function (components
                   composer
                   side
-                  args)
+                  left-args
+                  right-args
+                  kw-args)
   ; maybe incorporate a power into the function type
   #:transparent
   #:property prop:procedure
@@ -180,12 +187,16 @@
      (function (-rest (function-components self))
                (function-composer self)
                (function-side self)
-               (function-args self)))
+               (function-left-args self)
+               (function-right-args self)
+               (function-kw-args self)))
    (define (reverse self)
      (function (-reverse (function-components self))
                (function-composer self)
                (function-side self)
-               (function-args self)))]
+               (function-left-args self)
+               (function-right-args self)
+               (function-kw-args self)))]
   #:methods gen:countable
   [(define/generic -length length)
    (define (length self)
@@ -197,17 +208,19 @@
   (function fs
             composer
             side
-            empty-arguments))
+            null
+            null
+            (hash)))
+
+(define f make-function)
 
 (define (make-threading-function #:compose-with [composer (monoid b:compose values)]
                                  #:curry-on [side 'left]
                                  . fs)
-  (function (reverse fs)
-            composer
-            side
-            empty-arguments))
-
-(define f make-function)
+  (apply f
+         #:compose-with composer
+         #:curry-on side
+         (reverse fs)))
 
 (define f> make-threading-function)
 
@@ -220,7 +233,14 @@
   (function (cons proc (function-components f))
             (function-composer f)
             (function-side f)
-            (function-args f)))
+            (function-left-args f)
+            (function-right-args f)
+            (function-kw-args f)))
+
+(define (function-arguments f)
+  (make-arguments (append (function-left-args f)
+                          (function-right-args f))
+                  (function-kw-args f)))
 
 (define (~fold-into-tail lst)
   (cond [(empty? lst) (raise-arguments-error 'fold-into-tail
@@ -253,51 +273,63 @@
 
 (define compose f)
 
-(define (~curry f side args-invocation)
-  (if (function? f)
-      (function (function-components f)
-                (function-composer f)
-                side
-                (if (= (function-side f) 'left)
-                    (arguments-merge (function-args f)
-                                     args-invocation)
-                    (arguments-merge args-invocation
-                                     (function-args f))))
-      (function (list f)
-                (monoid b:compose
-                        values)
-                side
-                args-invocation)))
-
 (define/arguments (curry args)
   (let ([f (first (arguments-positional args))]
         [pos (rest (arguments-positional args))]
         [kw (arguments-keyword args)])
-    (~curry f 'left (make-arguments pos kw))))
+    (if (function? f)
+        (function (function-components f)
+                  (function-composer f)
+                  'left
+                  (append (function-left-args f)
+                          pos)
+                  (function-right-args f)
+                  (hash-union (function-kw-args f)
+                              kw))
+        (function (list f)
+                  (monoid b:compose
+                          values)
+                  'left
+                  pos
+                  null
+                  kw))))
 
 (define/arguments (curryr args)
   (let ([f (first (arguments-positional args))]
         [pos (rest (arguments-positional args))]
         [kw (arguments-keyword args)])
-    (~curry f 'right (make-arguments pos kw))))
+    (if (function? f)
+        (function (function-components f)
+                  (function-composer f)
+                  'right
+                  (function-left-args f)
+                  (append pos
+                          (function-right-args f))
+                  (hash-union (function-kw-args f)
+                              kw))
+        (function (list f)
+                  (monoid b:compose
+                          values)
+                  'right
+                  null
+                  pos
+                  kw))))
 
 (define (arguments-cons v args)
   (make-arguments (cons v (arguments-positional args))
                   (arguments-keyword args)))
 
 (define (conjoin . fs)
-  (function fs
-            (monoid f:conjoin
-                    true.)
-            'left
-            empty-arguments))
+  (apply f
+         #:compose-with (monoid f:conjoin
+                                true.)
+         fs))
 
 (define (disjoin . fs)
-  (function fs
-            (monoid f:disjoin
-                    false.)
-            'left
-            empty-arguments))
+  (apply f
+         #:compose-with (monoid f:disjoin
+                                false.)
+         fs))
 
 (define (negate g)
   (f not g))
