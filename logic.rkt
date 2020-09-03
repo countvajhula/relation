@@ -14,7 +14,7 @@
 (provide :=
          =!
          (contract-out
-          [undefined? (-> any/c boolean?)]
+          [undefined? predicate/c]
           [orf (-> any/c ... any/c)]
           [any? (-> sequence? any/c)]
           [andf (-> any/c ... any/c)]

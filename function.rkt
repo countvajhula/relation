@@ -16,6 +16,8 @@
                   (map f:map))
          relation/equivalence)
 
+(require "private/contract.rkt")
+
 (provide (contract-out
           [unthunk (-> procedure? any/c ... procedure?)]
           [if-f (-> (unconstrained-domain-> boolean?)
@@ -25,10 +27,10 @@
           [true. (unconstrained-domain-> boolean?)]
           [false. (unconstrained-domain-> boolean?)]
           [arg (-> exact-nonnegative-integer? procedure?)]
-          [flip (-> procedure? procedure?)]
-          [flip$ (-> procedure? procedure?)]
-          [flip* (-> procedure? procedure?)]
-          [lift (-> procedure? function?)]
+          [flip binary-functional/c]
+          [flip$ binary-functional/c]
+          [flip* binary-functional/c]
+          [lift binary-functional/c]
           [pack (-> procedure? any/c ... sequence?)]
           [struct monoid ((f procedure?)
                           (id procedure?))]
@@ -62,16 +64,16 @@
                               (#:compose-with monoid?
                                #:curry-on symbol?)
                               function?)]
-          [function-cons (-> procedure? function? function?)]
+          [function-cons (binary-constructor/c procedure? function?)]
           [function-arguments (-> function? arguments?)]
           [apply/steps (unconstrained-domain-> sequence?)]
-          [compose (-> procedure? ... function?)]
+          [compose (variadic-constructor/c procedure? function?)]
           [curry (unconstrained-domain-> function?)]
           [curryr (unconstrained-domain-> function?)]
-          [conjoin (-> procedure? ... function?)]
-          [&& (-> procedure? ... function?)]
-          [disjoin (-> procedure? ... function?)]
-          [|| (-> procedure? ... function?)]
+          [conjoin (variadic-constructor/c procedure? function?)]
+          [&& (variadic-constructor/c procedure? function?)]
+          [disjoin (variadic-constructor/c procedure? function?)]
+          [|| (variadic-constructor/c procedure? function?)]
           [negate (-> procedure? function?)]
           [!! (-> procedure? function?)]))
 

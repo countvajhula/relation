@@ -17,6 +17,8 @@
          relation/function
          version-case)
 
+(require "private/contract.rkt")
+
 (version-case
  [(version< (version) "7.5.0.14")
   (define string-append
@@ -36,30 +38,30 @@
           [reify (->* (any/c any/c)
                       (procedure?)
                       any/c)]
-          [appendable? (-> any/c boolean?)]
-          [append (-> appendable? appendable? appendable?)]
-          [appendable-identity (-> appendable? appendable?)]
-          [appendable-inverse (-> appendable? appendable?)]
-          [multipliable? (-> any/c boolean?)]
-          [multiply (-> multipliable? multipliable? multipliable?)]
-          [multipliable-identity (-> multipliable? multipliable?)]
-          [multipliable-inverse (-> multipliable? multipliable?)]
-          [addable? (-> any/c boolean?)]
-          [add (-> addable? addable? addable?)]
-          [addable-identity (-> addable? addable?)]
-          [addable-inverse (-> addable? addable?)]
-          [id (-> procedure? procedure?)]
-          [inverse (-> procedure? procedure?)]
-          [.. (-> appendable? ... appendable?)]
-          [..> (-> appendable? ... appendable?)]
-          [∘ (-> appendable? ... appendable?)]
-          [* (-> multipliable? ... multipliable?)]
+          [appendable? predicate/c]
+          [append (binary-composition/c appendable?)]
+          [appendable-identity (self-map/c appendable?)]
+          [appendable-inverse (self-map/c appendable?)]
+          [multipliable? predicate/c]
+          [multiply (binary-composition/c multipliable?)]
+          [multipliable-identity (self-map/c multipliable?)]
+          [multipliable-inverse (self-map/c multipliable?)]
+          [addable? predicate/c]
+          [add (binary-composition/c addable?)]
+          [addable-identity (self-map/c addable?)]
+          [addable-inverse (self-map/c addable?)]
+          [id binary-functional/c]
+          [inverse binary-functional/c]
+          [.. (variadic-composition/c appendable?)]
+          [..> (variadic-composition/c appendable?)]
+          [∘ (variadic-composition/c appendable?)]
+          [* (variadic-composition/c multipliable?)]
           [/ (-> multipliable? multipliable? ... multipliable?)]
-          [+ (-> addable? ... addable?)]
+          [+ (variadic-composition/c addable?)]
           [- (-> addable? addable? ... addable?)]
-          [join (-> (sequenceof appendable?) appendable?)]
-          [sum (-> (sequenceof addable?) addable?)]
-          [product (-> (sequenceof multipliable?) multipliable?)]
+          [join (reducer/c appendable?)]
+          [sum (reducer/c addable?)]
+          [product (reducer/c multipliable?)]
           [power (->* (any/c integer?)
                       (procedure?)
                       any/c)]

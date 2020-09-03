@@ -17,61 +17,41 @@
          describe
          relation/logic)
 
-(require "private/util.rkt")
+(require "private/util.rkt"
+         "private/contract.rkt")
 
 (define || disjoin)
 
 (provide gen:comparable
          comparable/c
          (contract-out
-          [comparable? (-> any/c boolean?)]
-          [gset? (-> any/c boolean?)]
+          [comparable? predicate/c]
+          [gset? predicate/c]
           [hash-code (-> comparable? fixnum?)]
           [secondary-hash-code (-> comparable? fixnum?)]
-          [= (->* (comparable?)
-                  (#:key (or/c (-> comparable? comparable?)
-                               #f))
-                  #:rest (listof comparable?)
-                  boolean?)]
-          [≠ (->* (comparable?)
-                  (#:key (or/c (-> comparable? comparable?)
-                               #f))
-                  #:rest (listof comparable?)
-                  boolean?)]
-          [/= (->* (comparable?)
-                   (#:key (or/c (-> comparable? comparable?)
-                                #f))
-                   #:rest (listof comparable?)
-                   boolean?)]
-          [!= (->* (comparable?)
-                   (#:key (or/c (-> comparable? comparable?)
-                                #f))
-                   #:rest (listof comparable?)
-                   boolean?)]
-          [group-by (-> (-> comparable? comparable?)
-                        (listof comparable?)
+          [= (variadic-comparison-predicate/c comparable?)]
+          [≠ (variadic-comparison-predicate/c comparable?)]
+          [/= (variadic-comparison-predicate/c comparable?)]
+          [!= (variadic-comparison-predicate/c comparable?)]
+          [group-by (-> (perception/c comparable?)
+                        list?
                         (listof list?))]
-          [=/classes (-> (-> comparable? comparable?)
-                         (listof comparable?)
+          [=/classes (-> (perception/c comparable?)
+                         list?
                          (listof list?))]
           (generic-set (->* ()
-                            (#:key (or/c (-> comparable? comparable?)
-                                         #f))
-                            #:rest (listof comparable?)
+                            (#:key (optional/c (perception/c comparable?)))
+                            #:rest list?
                             generic-set?))
-          (tail (->* (comparable? sequence?)
-                     (#:key (or/c (-> comparable? comparable?)
-                                  #f))
+          (tail (->* (any/c sequence?)
+                     (#:key (optional/c (perception/c comparable?)))
                      sequence?))
-          (member? (->* (comparable? sequence?)
-                        (#:key (or/c (-> comparable? comparable?)
-                                     #f))
+          (member? (->* (any/c sequence?)
+                        (#:key (optional/c (perception/c comparable?)))
                         boolean?))
-          (assoc (->* (comparable? (sequenceof pair?))
-                      (#:key (or/c (-> comparable? comparable?)
-                                   #f))
-                      (or/c pair?
-                            #f)))))
+          (assoc (->* (any/c (sequenceof pair?))
+                      (#:key (optional/c (perception/c comparable?)))
+                      (optional/c pair?)))))
 
 (define-generics comparable
   (equal? comparable other)

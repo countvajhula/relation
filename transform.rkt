@@ -22,35 +22,37 @@
                     negate)
          relation/composition)
 
+(require "private/contract.rkt")
+
 (provide (contract-out
-          [->boolean (-> any/c boolean?)]
-          [->string (-> any/c string?)]
-          [->number (-> any/c number?)]
-          [->inexact (-> any/c inexact?)]
-          [->exact (-> any/c exact?)]
+          [->boolean (perception/c boolean?)]
+          [->string (perception/c string?)]
+          [->number (perception/c number?)]
+          [->inexact (perception/c inexact?)]
+          [->exact (perception/c exact?)]
           [->integer (->* (any/c)
                           (#:round (one-of/c 'up
                                              'down
                                              'nearest))
                           integer?)]
-          [->list (-> any/c list?)]
-          [->vector (-> any/c vector?)]
-          [->symbol (-> any/c symbol?)]
-          [->keyword (-> any/c keyword?)]
-          [->bytes (-> any/c bytes?)]
-          [->char (-> any/c char?)]
-          [->stream (-> any/c stream?)]
+          [->list (perception/c list?)]
+          [->vector (perception/c vector?)]
+          [->symbol (perception/c symbol?)]
+          [->keyword (perception/c keyword?)]
+          [->bytes (perception/c bytes?)]
+          [->char (perception/c char?)]
+          [->stream (perception/c stream?)]
           [->generator (->* (any/c)
                             (any/c)
                             generator?)]
-          [->set (-> any/c set?)]
+          [->set (perception/c set?)]
           [->syntax (->* (any/c)
                          (syntax?)
                          syntax?)]
           [->symex (-> any/c any/c)]
           [->values (-> any/c any)]
-          [->dict (-> any/c dict?)]
-          [->procedure (-> any/c procedure?)]))
+          [->dict (perception/c dict?)]
+          [->procedure (perception/c procedure?)]))
 
 (define (->boolean v)
   (if v

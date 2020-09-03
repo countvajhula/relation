@@ -11,58 +11,24 @@
          (except-in relation/function
                     curryr))
 
-(require "private/util.rkt")
+(require "private/util.rkt"
+         "private/contract.rkt")
 
 (provide gen:orderable
          orderable/c
          (contract-out
-          [orderable? (-> any/c boolean?)]
-          ;; TODO: improve these contracts to ensure that arguments are
-          ;; orderable? (rather than any/c) when no key is provided
-          [< (->* (any/c)
-                  (#:key (or/c (-> any/c orderable?)
-                               #f))
-                  #:rest list?
-                  boolean?)]
-          [≤ (->* (any/c)
-                  (#:key (or/c (-> any/c orderable?)
-                               #f))
-                  #:rest list?
-                  boolean?)]
-          [<= (->* (any/c)
-                   (#:key (or/c (-> any/c orderable?)
-                                #f))
-                   #:rest list?
-                   boolean?)]
-          [≥ (->* (any/c)
-                  (#:key (or/c (-> any/c orderable?)
-                               #f))
-                  #:rest list?
-                  boolean?)]
-          [>= (->* (any/c)
-                   (#:key (or/c (-> any/c orderable?)
-                                #f))
-                   #:rest list?
-                   boolean?)]
-          [> (->* (any/c)
-                  (#:key (or/c (-> any/c orderable?)
-                               #f))
-                  #:rest list?
-                  boolean?)]
+          [orderable? predicate/c]
+          [< (variadic-comparison-predicate/c orderable?)]
+          [≤ (variadic-comparison-predicate/c orderable?)]
+          [<= (variadic-comparison-predicate/c orderable?)]
+          [≥ (variadic-comparison-predicate/c orderable?)]
+          [>= (variadic-comparison-predicate/c orderable?)]
+          [> (variadic-comparison-predicate/c orderable?)]
           (sort (->* (procedure? sequence?)
-                     (#:key (or/c (-> any/c orderable?)
-                                  #f))
+                     (#:key (optional/c (perception/c orderable?)))
                      sequence?))
-          (min (->* (any/c)
-                    (#:key (or/c (-> any/c orderable?)
-                                 #f))
-                    #:rest list?
-                    any/c))
-          (max (->* (any/c)
-                    (#:key (or/c (-> any/c orderable?)
-                                 #f))
-                    #:rest list?
-                    any/c))))
+          (min (variadic-comparison-selection/c orderable?))
+          (max (variadic-comparison-selection/c orderable?))))
 
 (define-generics orderable
   (less-than? orderable other)
