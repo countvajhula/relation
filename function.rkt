@@ -35,9 +35,7 @@
           [struct function ((components list?)
                             (composer monoid?)
                             (side symbol?)
-                            (left-args list?)
-                            (right-args list?)
-                            (kw-args hash?))]
+                            (args arguments?))]
           [make-function (->* ()
                               (#:compose-with monoid?
                                #:curry-on symbol?)
@@ -63,7 +61,6 @@
                                #:curry-on symbol?)
                               function?)]
           [function-cons (-> procedure? function? function?)]
-          [function-arguments (-> function? arguments?)]
           [apply/steps (unconstrained-domain-> sequence?)]
           [compose (-> procedure? ... function?)]
           [curry (unconstrained-domain-> function?)]
@@ -136,29 +133,26 @@
 
 (define (eval-function f)
   (let ([components (function-components f)]
-        [composer (function-composer f)])
+        [composer (function-composer f)]
+        [args (function-args f)])
     (apply/arguments (apply composer components)
-                     (function-arguments f))))
+                     args)))
 
 (define (eval-if-saturated f)
-  (let* ([components (function-components f)]
-         [left-args (function-left-args f)]
-         [right-args (function-right-args f)])
-    (with-handlers ([exn:fail:contract:arity?
-                     (λ (exn)
-                       (if (> (length (append left-args
-                                              right-args))
+  (with-handlers ([exn:fail:contract:arity?
+                   (λ (exn)
+                     (let ([components (function-components f)]
+                           [args (function-args f)])
+                       (if (> (length (arguments-positional args))
                               (~min-arity (last components)))
                            (raise exn)
-                           f))])
-      (eval-function f))))
+                           f)))])
+    (eval-function f)))
 
 (struct function (components
                   composer
                   side
-                  left-args
-                  right-args
-                  kw-args)
+                  args)
   ; maybe incorporate a power into the function type
   #:transparent
   #:property prop:procedure
@@ -187,16 +181,12 @@
      (function (-rest (function-components self))
                (function-composer self)
                (function-side self)
-               (function-left-args self)
-               (function-right-args self)
-               (function-kw-args self)))
+               (function-args self)))
    (define (reverse self)
      (function (-reverse (function-components self))
                (function-composer self)
                (function-side self)
-               (function-left-args self)
-               (function-right-args self)
-               (function-kw-args self)))]
+               (function-args self)))]
   #:methods gen:countable
   [(define/generic -length length)
    (define (length self)
@@ -208,9 +198,7 @@
   (function fs
             composer
             side
-            null
-            null
-            (hash)))
+            empty-arguments))
 
 (define f make-function)
 
@@ -233,14 +221,7 @@
   (function (cons proc (function-components f))
             (function-composer f)
             (function-side f)
-            (function-left-args f)
-            (function-right-args f)
-            (function-kw-args f)))
-
-(define (function-arguments f)
-  (make-arguments (append (function-left-args f)
-                          (function-right-args f))
-                  (function-kw-args f)))
+            (function-args f)))
 
 (define (~fold-into-tail lst)
   (cond [(empty? lst) (raise-arguments-error 'fold-into-tail
@@ -273,47 +254,32 @@
 
 (define compose f)
 
+(define (~curry f side args)
+  (if (function? f)
+      (function (function-components f)
+                (function-composer f)
+                side
+                (arguments-merge (function-args f)
+                                 args))
+      (function (list f)
+                (monoid b:compose
+                        values)
+                side
+                args)))
+
 (define/arguments (curry args)
-  (let ([f (first (arguments-positional args))]
-        [pos (rest (arguments-positional args))]
-        [kw (arguments-keyword args)])
-    (if (function? f)
-        (function (function-components f)
-                  (function-composer f)
-                  'left
-                  (append (function-left-args f)
-                          pos)
-                  (function-right-args f)
-                  (hash-union (function-kw-args f)
-                              kw))
-        (function (list f)
-                  (monoid b:compose
-                          values)
-                  'left
-                  pos
-                  null
-                  kw))))
+  (let* ([f (first (arguments-positional args))]
+         [pos (rest (arguments-positional args))]
+         [kw (arguments-keyword args)]
+         [args-invocation (make-arguments pos null kw)])
+    (~curry f 'left args-invocation)))
 
 (define/arguments (curryr args)
-  (let ([f (first (arguments-positional args))]
-        [pos (rest (arguments-positional args))]
-        [kw (arguments-keyword args)])
-    (if (function? f)
-        (function (function-components f)
-                  (function-composer f)
-                  'right
-                  (function-left-args f)
-                  (append pos
-                          (function-right-args f))
-                  (hash-union (function-kw-args f)
-                              kw))
-        (function (list f)
-                  (monoid b:compose
-                          values)
-                  'right
-                  null
-                  pos
-                  kw))))
+  (let* ([f (first (arguments-positional args))]
+         [pos (rest (arguments-positional args))]
+         [kw (arguments-keyword args)]
+         [args-invocation (make-arguments null pos kw)])
+    (~curry f 'right args-invocation)))
 
 (define (arguments-cons v args)
   (make-arguments (cons v (arguments-positional args))
