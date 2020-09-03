@@ -546,6 +546,8 @@ In the event no operands are received in the course of a computation, the result
 
   Compose @racket[v] with itself @racket[n] times with the @racket[op] operation. If @racket[n] is negative, the result is the @racket[inverse] of the value computed with a positive exponent. This generalizes the idea of a numeric "power" to @hyperlink["https://en.wikipedia.org/wiki/Exponentiation#Monoids"]{any type} and composing operation. @racket[^] is a right-curried form of @racket[power], useful in cases where we want to abstract over the numeric power @racket[n] rather than the value @racket[v], for append-like compositions specifically (such as function composition).
 
+@margin-note{Whenever a function produces an output of the same type as its input (i.e. in mathematical terms it is a self-map), it has a well-defined notion of "powers." For example, @racket[cdr] is a self-map on lists, but @racket[car] is not.}
+
 @examples[
     #:eval eval-for-docs
     ((power add1 3) 5)
