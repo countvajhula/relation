@@ -244,19 +244,11 @@
                           (function-right-args f))
                   (function-kw-args f)))
 
-(define (~fold-into-tail lst)
-  (cond [(empty? lst) (raise-arguments-error 'fold-into-tail
-                                             "Tail must be a list")]
-        [(and (list? (first lst))
-              (empty? (rest lst)))
-         (first lst)]
-        [else (cons (first lst)
-                    (~fold-into-tail (rest lst)))]))
-
 (define/arguments (apply/steps args)
   (let ([f (first (arguments-positional args))]
-        [args (make-arguments (~fold-into-tail
-                               (rest (arguments-positional args)))
+        ;; list* here to support rolling args into the tail in the syntax
+        ;; (apply/steps f arg1 arg2 ... rest-args)
+        [args (make-arguments (apply list* (rest (arguments-positional args)))
                               (arguments-keyword args))])
     (if (empty? f)
         (stream (apply/arguments f args))
