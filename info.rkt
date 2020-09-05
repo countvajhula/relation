@@ -8,6 +8,7 @@
                "point-free"
                "threading-lib"
                "mischief"
+               "social-contract"
                "version-case"))
 (define build-deps '("scribble-lib"
                      "scribble-abbrevs"

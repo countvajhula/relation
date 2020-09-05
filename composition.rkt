@@ -15,9 +15,8 @@
          relation/logic
          relation/equivalence
          relation/function
-         version-case)
-
-(require "private/contract.rkt")
+         version-case
+         contract/social)
 
 (version-case
  [(version< (version) "7.5.0.14")
@@ -50,8 +49,8 @@
           [add (binary-composition/c addable?)]
           [addable-identity (self-map/c addable?)]
           [addable-inverse (self-map/c addable?)]
-          [id binary-functional/c]
-          [inverse binary-functional/c]
+          [id functional/c]
+          [inverse functional/c]
           [.. (variadic-composition/c appendable?)]
           [..> (variadic-composition/c appendable?)]
           [∘ (variadic-composition/c appendable?)]

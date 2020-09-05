@@ -7,12 +7,12 @@
          (only-in racket/function
                   curryr)
          data/collection
+         contract/social
          relation/equivalence
          (except-in relation/function
                     curryr))
 
-(require "private/util.rkt"
-         "private/contract.rkt")
+(require "private/util.rkt")
 
 (provide gen:orderable
          orderable/c
@@ -25,7 +25,7 @@
           [>= (variadic-comparison-predicate/c orderable?)]
           [> (variadic-comparison-predicate/c orderable?)]
           (sort (->* (procedure? sequence?)
-                     (#:key (optional/c (perception/c orderable?)))
+                     (#:key (maybe/c (encoder/c orderable?)))
                      sequence?))
           (min (variadic-comparison-selection/c orderable?))
           (max (variadic-comparison-selection/c orderable?))))

@@ -18,41 +18,40 @@
          threading
          (only-in data/collection
                   for-each)
+         contract/social
          (except-in relation/function
                     negate)
          relation/composition)
 
-(require "private/contract.rkt")
-
 (provide (contract-out
-          [->boolean (perception/c boolean?)]
-          [->string (perception/c string?)]
-          [->number (perception/c number?)]
-          [->inexact (perception/c inexact?)]
-          [->exact (perception/c exact?)]
+          [->boolean (encoder/c boolean?)]
+          [->string (encoder/c string?)]
+          [->number (encoder/c number?)]
+          [->inexact (encoder/c inexact?)]
+          [->exact (encoder/c exact?)]
           [->integer (->* (any/c)
                           (#:round (one-of/c 'up
                                              'down
                                              'nearest))
                           integer?)]
-          [->list (perception/c list?)]
-          [->vector (perception/c vector?)]
-          [->symbol (perception/c symbol?)]
-          [->keyword (perception/c keyword?)]
-          [->bytes (perception/c bytes?)]
-          [->char (perception/c char?)]
-          [->stream (perception/c stream?)]
+          [->list (encoder/c list?)]
+          [->vector (encoder/c vector?)]
+          [->symbol (encoder/c symbol?)]
+          [->keyword (encoder/c keyword?)]
+          [->bytes (encoder/c bytes?)]
+          [->char (encoder/c char?)]
+          [->stream (encoder/c stream?)]
           [->generator (->* (any/c)
                             (any/c)
                             generator?)]
-          [->set (perception/c set?)]
+          [->set (encoder/c set?)]
           [->syntax (->* (any/c)
                          (syntax?)
                          syntax?)]
           [->symex (-> any/c any/c)]
           [->values (-> any/c any)]
-          [->dict (perception/c dict?)]
-          [->procedure (perception/c procedure?)]))
+          [->dict (encoder/c dict?)]
+          [->procedure (encoder/c procedure?)]))
 
 (define (->boolean v)
   (if v

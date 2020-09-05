@@ -15,10 +15,10 @@
                   splitf-at)
          data/collection
          describe
+         contract/social
          relation/logic)
 
-(require "private/util.rkt"
-         "private/contract.rkt")
+(require "private/util.rkt")
 
 (define || disjoin)
 
@@ -33,25 +33,25 @@
           [≠ (variadic-comparison-predicate/c comparable?)]
           [/= (variadic-comparison-predicate/c comparable?)]
           [!= (variadic-comparison-predicate/c comparable?)]
-          [group-by (-> (perception/c comparable?)
+          [group-by (-> (encoder/c comparable?)
                         list?
                         (listof list?))]
-          [=/classes (-> (perception/c comparable?)
+          [=/classes (-> (encoder/c comparable?)
                          list?
                          (listof list?))]
           (generic-set (->* ()
-                            (#:key (optional/c (perception/c comparable?)))
+                            (#:key (maybe/c (encoder/c comparable?)))
                             #:rest list?
                             generic-set?))
           (tail (->* (any/c sequence?)
-                     (#:key (optional/c (perception/c comparable?)))
+                     (#:key (maybe/c (encoder/c comparable?)))
                      sequence?))
           (member? (->* (any/c sequence?)
-                        (#:key (optional/c (perception/c comparable?)))
+                        (#:key (maybe/c (encoder/c comparable?)))
                         boolean?))
           (assoc (->* (any/c (sequenceof pair?))
-                      (#:key (optional/c (perception/c comparable?)))
-                      (optional/c pair?)))))
+                      (#:key (maybe/c (encoder/c comparable?)))
+                      (maybe/c pair?)))))
 
 (define-generics comparable
   (equal? comparable other)

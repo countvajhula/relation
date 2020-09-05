@@ -14,9 +14,8 @@
                     append)
          (only-in data/functor
                   (map f:map))
+         contract/social
          relation/equivalence)
-
-(require "private/contract.rkt")
 
 (provide (contract-out
           [unthunk (-> procedure? any/c ... procedure?)]
@@ -27,10 +26,10 @@
           [true. (unconstrained-domain-> boolean?)]
           [false. (unconstrained-domain-> boolean?)]
           [arg (-> exact-nonnegative-integer? procedure?)]
-          [flip binary-functional/c]
-          [flip$ binary-functional/c]
-          [flip* binary-functional/c]
-          [lift binary-functional/c]
+          [flip functional/c]
+          [flip$ functional/c]
+          [flip* functional/c]
+          [lift functional/c]
           [pack (-> procedure? any/c ... sequence?)]
           [struct monoid ((f procedure?)
                           (id procedure?))]
