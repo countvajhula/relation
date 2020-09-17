@@ -1,7 +1,8 @@
 #lang at-exp racket
 
 (require (prefix-in b: racket/base)
-         racket/contract/base
+         (except-in racket/contract/base
+                    predicate/c)
          racket/vector
          racket/set
          racket/dict
@@ -37,15 +38,15 @@
           [reify (->* (any/c any/c)
                       (procedure?)
                       any/c)]
-          [appendable? predicate/c]
+          [appendable? (predicate/c)]
           [append (binary-composition/c appendable?)]
           [appendable-identity (self-map/c appendable?)]
           [appendable-inverse (self-map/c appendable?)]
-          [multipliable? predicate/c]
+          [multipliable? (predicate/c)]
           [multiply (binary-composition/c multipliable?)]
           [multipliable-identity (self-map/c multipliable?)]
           [multipliable-inverse (self-map/c multipliable?)]
-          [addable? predicate/c]
+          [addable? (predicate/c)]
           [add (binary-composition/c addable?)]
           [addable-identity (self-map/c addable?)]
           [addable-inverse (self-map/c addable?)]

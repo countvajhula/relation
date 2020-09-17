@@ -2,7 +2,8 @@
 
 (require (only-in racket/base
                   (round b:round))
-         racket/contract/base
+         (except-in racket/contract/base
+                    predicate/c)
          racket/format
          racket/string
          racket/set
@@ -24,7 +25,7 @@
          relation/composition)
 
 (provide (contract-out
-          [->boolean (encoder/c boolean?)]
+          [->boolean (predicate/c)]
           [->string (encoder/c string?)]
           [->number (encoder/c number?)]
           [->inexact (encoder/c inexact?)]
@@ -54,9 +55,7 @@
           [->procedure (encoder/c procedure?)]))
 
 (define (->boolean v)
-  (if v
-      #t
-      #f))
+  (if v #t #f))
 
 (define (->string v)
   (cond [(string? v) (if (immutable? v)

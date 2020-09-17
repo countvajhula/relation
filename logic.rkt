@@ -1,7 +1,8 @@
 #lang racket/base
 
 
-(require racket/contract/base
+(require (except-in racket/contract/base
+                    predicate/c)
          racket/undefined
          racket/match
          (only-in racket/function
@@ -9,17 +10,18 @@
          (only-in data/collection
                   (apply d:apply))
          (for-syntax racket/base)
-         mischief/shorthand)
+         mischief/shorthand
+         contract/social)
 
 (provide :=
          =!
          (contract-out
-          [undefined? predicate/c]
-          [orf (-> any/c ... any/c)]
-          [any? (-> sequence? any/c)]
-          [andf (-> any/c ... any/c)]
-          [all? (-> sequence? any/c)]
-          [none? (-> sequence? any/c)]))
+          [undefined? (predicate/c)]
+          [orf (variadic-function/c any/c any/c)]
+          [any? (decoder/c sequence?)]
+          [andf (variadic-function/c any/c any/c)]
+          [all? (decoder/c sequence?)]
+          [none? (decoder/c sequence?)]))
 
 (define (undefined? v)
   (eq? v undefined))

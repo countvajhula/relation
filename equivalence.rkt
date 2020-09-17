@@ -2,7 +2,8 @@
 
 (require (prefix-in b: racket/base)
          racket/set
-         racket/contract/base
+         (except-in racket/contract/base
+                    predicate/c)
          racket/generic
          racket/function
          racket/dict
@@ -18,27 +19,24 @@
          contract/social
          relation/logic)
 
-(require "private/util.rkt")
+(require "private/util.rkt"
+         "private/contract.rkt")
 
 (define || disjoin)
 
 (provide gen:comparable
          comparable/c
          (contract-out
-          [comparable? predicate/c]
-          [gset? predicate/c]
-          [hash-code (-> comparable? fixnum?)]
-          [secondary-hash-code (-> comparable? fixnum?)]
+          [comparable? (predicate/c)]
+          [gset? (predicate/c)]
+          [hash-code (hash-function/c)]
+          [secondary-hash-code (hash-function/c)]
           [= (variadic-comparison-predicate/c comparable?)]
           [≠ (variadic-comparison-predicate/c comparable?)]
           [/= (variadic-comparison-predicate/c comparable?)]
           [!= (variadic-comparison-predicate/c comparable?)]
-          [group-by (-> (encoder/c comparable?)
-                        list?
-                        (listof list?))]
-          [=/classes (-> (encoder/c comparable?)
-                         list?
-                         (listof list?))]
+          [group-by (classifier/c comparable?)]
+          [=/classes (classifier/c comparable?)]
           (generic-set (->* ()
                             (#:key (maybe/c (encoder/c comparable?)))
                             #:rest list?

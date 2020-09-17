@@ -2,7 +2,8 @@
 
 (require (prefix-in b: racket/base)
          racket/set
-         racket/contract/base
+         (except-in racket/contract/base
+                    predicate/c)
          racket/generic
          (only-in racket/function
                   curryr)
@@ -12,12 +13,13 @@
          (except-in relation/function
                     curryr))
 
-(require "private/util.rkt")
+(require "private/util.rkt"
+         "private/contract.rkt")
 
 (provide gen:orderable
          orderable/c
          (contract-out
-          [orderable? predicate/c]
+          [orderable? (predicate/c)]
           [< (variadic-comparison-predicate/c orderable?)]
           [≤ (variadic-comparison-predicate/c orderable?)]
           [<= (variadic-comparison-predicate/c orderable?)]

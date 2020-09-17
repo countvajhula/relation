@@ -1,7 +1,8 @@
 #lang racket/base
 
 (require (prefix-in f: racket/function)
-         racket/contract/base
+         (except-in racket/contract/base
+                    predicate/c)
          racket/match
          racket/generic
          racket/stream
