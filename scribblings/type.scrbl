@@ -17,17 +17,72 @@
 								 '(require (only-in data/collection conj))
 								 '(require racket/stream))))
 
-@title{Type Transformers}
+@title{Types}
 
 @defmodule[relation/type]
 
-Generic utilities for transforming data into different types.
+@margin-note{This module was formerly named @racket[relation/transform]. Any code using @racket[relation/transform] directly should be changed to use @racket[relation/type] instead. The former alias is still provided alongside the new one for backwards compatibility, but will be removed in a future version.}
 
-The type transformers provided by Racket out of the box are @italic{type-specific}; for instance in order to convert data into a string, we would use @racket[symbol->string] if the data is a symbol, and @racket[number->string] if the data is a number. Likewise, converting a number to an integer from a more precise form, or vice versa, typically involves multiple steps and the method varies depending on the number's type.
+Generic utilities for constructing data and transforming it from one type to another.
 
-This module provides convenient interfaces to perform many such common type conversions, while keeping them agnostic to the source type. If mutable and immutable versions of a data type exist, these interfaces will return the immutable version.
+The type constructors and transformers provided by Racket out of the box are @italic{type-specific}; for instance in order to construct a list, we use @racket[cons] or @racket[list], and for a stream we'd use @racket[stream-cons] or @racket[stream]. Likewise, to convert data into a string, we would use @racket[symbol->string] if the data is a symbol, and @racket[number->string] if the data is a number. Similarly, converting a number to an integer from a more precise form, or vice versa, typically involves multiple steps and the method varies depending on the number's type.
+
+This module provides a generic type constructor that constructs a type by referring to a provided instance, and also provides convenient interfaces to perform many common type conversions, while keeping them agnostic to the source type. If mutable and immutable versions of a data type exist, these interfaces will return the immutable version.
 
 See also: @other-doc['(lib "sugar/scribblings/sugar.scrbl")].
+
+@section[#:tag "type:interface"]{Interface}
+
+@defthing[gen:form any/c]{
+
+ A @tech/reference{generic interface} that represents a form that an object takes, i.e. its "type." All built-in as well as @seclink["define-struct" #:doc '(lib "scribblings/guide/guide.scrbl")]{custom} types are @racket[gen:form].
+
+}
+
+@defproc[(make [form any/c] [element any/c] ...)
+         form?]{
+
+ A function taking a form and any number of elements and constructs a composite form out of them. @racket[form] is expected to be an instance of the structure type to which the generic interface is associated (or a subtype of the structure type). The function must return an instance of the structure type.
+
+ Every implementation of @racket[gen:form] must provide an implementation of @racket[make].
+}
+
+@defproc[(form? [v any/c])
+         boolean?]{
+
+ Predicate to check if a value is a form. In general, primitives in Racket such as numbers and characters are not forms, while composite types like @tech/reference{lists} and @tech/reference{dictionaries} are.
+
+@examples[
+    #:eval eval-for-docs
+    (form? 3)
+    (form? #\a)
+    (form? "cherry")
+    (form? (set))
+    (form? (hash))
+    (form? (list))
+    (form? (stream))
+  ]
+}
+
+@section[#:tag "type:constructors"]{Constructors}
+
+@defproc[(: [element any/c] ... [form any/c])
+         any/c]{
+
+ A generic constructor that creates a value of the same type as @racket[form] out of the provided @racket[elements]. This utility wraps @racket[make], providing a bit of syntactic sugar. In particular, the order of arguments is reversed to resemble the familiar @racket[cons] list constructor. Additionally, if none of the input values are @racket[form]s, then the @racket[element]s are simply @racket[cons]'d together (if there are two of them) or collected into a @racket[list] (if there are more).
+
+@examples[
+    #:eval eval-for-docs
+	(: 1 2)
+	(: 1 null)
+	(: 1 (list 2 3))
+	(: 1 2 3 4 (list 5 6))
+	(: 1 empty-stream)
+	(: 1 #(2 3))
+  ]
+}
+
+@section[#:tag "type:transformers"]{Transformers}
 
 @defproc[(->boolean [v any/c])
          boolean?]{

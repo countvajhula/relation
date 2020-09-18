@@ -13,6 +13,7 @@
          racket/stream
          racket/generator
          racket/sequence
+         racket/match
          (only-in racket/function
                   identity
                   negate
@@ -72,14 +73,16 @@
         [(form element)
          (conj form element)]
         [(form . elements)
-         (apply conj* form (reverse elements))]))]
-   [any/c
-    (define make
-      (case-lambda
-        [(form element) (cons element form)]
-        [args (apply (flip* list) args)]))]))
+         (apply conj* form (reverse elements))]))]))
 
-(define : (flip* make))
+(define (: . args)
+  (match args
+    [(list element form) (if (form? form)
+                             (make form element)
+                             (cons element form))]
+    [(list elements ... form) (if (form? form)
+                                  ((flip* make) args)
+                                  args)]))
 
 (define (->boolean v)
   (if v #t #f))
