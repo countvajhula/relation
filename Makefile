@@ -27,7 +27,7 @@ help:
 	@echo "  equivalence"
 	@echo "  order"
 	@echo "  function"
-	@echo "  transform"
+	@echo "  type"
 	@echo "  composition"
 
 # Primarily for use by CI.
@@ -94,8 +94,8 @@ test-order:
 test-function:
 	raco test -x tests/function.rkt
 
-test-transform:
-	raco test -x tests/transform.rkt
+test-type:
+	raco test -x tests/type.rkt
 
 test-composition:
 	raco test -x tests/composition.rkt
@@ -112,13 +112,13 @@ errortrace-order:
 errortrace-function:
 	racket -l errortrace -l racket -e '(require (submod "tests/function.rkt" test))'
 
-errortrace-transform:
-	racket -l errortrace -l racket -e '(require (submod "tests/transform.rkt" test))'
+errortrace-type:
+	racket -l errortrace -l racket -e '(require (submod "tests/type.rkt" test))'
 
 errortrace-composition:
 	racket -l errortrace -l racket -e '(require (submod "tests/composition.rkt" test))'
 
-test-with-errortrace: errortrace-logic errortrace-equivalence errortrace-order errortrace-function errortrace-transform errortrace-composition
+test-with-errortrace: errortrace-logic errortrace-equivalence errortrace-order errortrace-function errortrace-type errortrace-composition
 
 errortrace: test-with-errortrace
 
@@ -153,16 +153,16 @@ profile-function:
 	raco profile dev/profile/function/builtin.rkt | grep "Total cpu time"
 	raco profile dev/profile/function/relation.rkt | grep "Total cpu time"
 
-profile-transform:
+profile-type:
 	echo "Profiling type transformers..."
-	raco profile dev/profile/transform/builtin.rkt | grep "Total cpu time"
-	raco profile dev/profile/transform/relation.rkt | grep "Total cpu time"
+	raco profile dev/profile/type/builtin.rkt | grep "Total cpu time"
+	raco profile dev/profile/type/relation.rkt | grep "Total cpu time"
 
 profile-composition:
 	echo "Profiling composition operators..."
 	raco profile dev/profile/composition/builtin.rkt | grep "Total cpu time"
 	raco profile dev/profile/composition/relation.rkt | grep "Total cpu time"
 
-profile: profile-logic profile-equivalence profile-order profile-function profile-transform profile-composition
+profile: profile-logic profile-equivalence profile-order profile-function profile-type profile-composition
 
-.PHONY:	help install remove build build-docs build-all check-deps clean test test-logic test-equivalence test-order test-function test-transform test-composition errortrace-logic errortrace-equivalence errortrace-order errortrace-function errortrace-transform errortrace-composition test-with-errortrace errortrace docs profile-logic profile-equivalence profile-order profile-function profile-transform profile-composition profile cover coverage-check coverage-report
+.PHONY:	help install remove build build-docs build-all check-deps clean test test-logic test-equivalence test-order test-function test-type test-composition errortrace-logic errortrace-equivalence errortrace-order errortrace-function errortrace-type errortrace-composition test-with-errortrace errortrace docs profile-logic profile-equivalence profile-order profile-function profile-type profile-composition profile cover coverage-check coverage-report

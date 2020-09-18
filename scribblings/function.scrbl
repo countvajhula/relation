@@ -4,7 +4,7 @@
          scribble/example
          racket/sandbox
          @for-label[relation/function
-                    relation/transform
+                    relation/type
                     data/maybe
 					(only-in data/collection sequence?)
                     (rename-in racket (compose b:compose)

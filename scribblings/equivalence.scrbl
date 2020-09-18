@@ -4,7 +4,7 @@
          scribble/example
          racket/sandbox
          @for-label[relation/equivalence
-                    relation/transform
+                    relation/type
                     racket/generic
                     (except-in racket = equal? group-by drop length assoc)
                     (only-in racket (= b:=) (equal? b:equal?) (assoc b:assoc) (group-by b:group-by))

@@ -3,7 +3,7 @@
          scribble-abbrevs/manual
          scribble/example
 		 racket/sandbox
-         @for-label[relation/transform
+         @for-label[relation/type
                     (except-in racket < <= = >= >)
 					racket/generator]]
 
@@ -19,7 +19,7 @@
 
 @title{Type Transformers}
 
-@defmodule[relation/transform]
+@defmodule[relation/type]
 
 Generic utilities for transforming data into different types.
 

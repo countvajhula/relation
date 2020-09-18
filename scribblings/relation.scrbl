@@ -16,5 +16,5 @@ This collection provides generic relations and type-agnostic operators. Out of t
 @include-section["equivalence.scrbl"]
 @include-section["order.scrbl"]
 @include-section["function.scrbl"]
-@include-section["transform.scrbl"]
+@include-section["type.scrbl"]
 @include-section["composition.scrbl"]
