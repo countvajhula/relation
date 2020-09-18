@@ -4,6 +4,7 @@
                   (round b:round))
          (except-in racket/contract/base
                     predicate/c)
+         racket/generic
          racket/format
          racket/string
          racket/set
@@ -18,18 +19,21 @@
                   thunk)
          threading
          (only-in data/collection
-                  for-each)
+                  for-each
+                  collection?
+                  conj
+                  conj*)
          contract/social
          (except-in relation/function
                     negate)
          relation/composition)
 
-(provide gen:type
-         type/c
+(provide gen:form
+         form/c
          :
          (contract-out
-          [type? (predicate/c)]
-          [make (->* (type?) () #:rest list?)]
+          [form? (predicate/c)]
+          [make (->* (form?) () #:rest list? form?)]
           [->boolean (predicate/c)]
           [->string (encoder/c string?)]
           [->number (encoder/c number?)]
@@ -59,20 +63,20 @@
           [->dict (encoder/c dict?)]
           [->procedure (encoder/c procedure?)]))
 
-(define-generics type
-  (make type . elements)
+(define-generics form
+  (make form . elements)
   #:defaults
   ([collection?
     (define make
       (case-lambda
-        [(type element)
-         (conj type element)]
-        [(type . elements)
-         (apply conj* type (reverse elements))]))]
+        [(form element)
+         (conj form element)]
+        [(form . elements)
+         (apply conj* form (reverse elements))]))]
    [any/c
     (define make
       (case-lambda
-        [(type element) (cons element type)]
+        [(form element) (cons element form)]
         [args (apply (flip* list) args)]))]))
 
 (define : (flip* make))
