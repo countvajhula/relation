@@ -5,6 +5,7 @@
 		 racket/sandbox
          @for-label[relation/type
                     (except-in racket < <= = >= >)
+					(only-in data/collection collection? conj conj* gen:collection)
 					racket/generator]]
 
 @(define eval-for-docs
@@ -31,45 +32,18 @@ This module provides a generic type constructor that constructs a type by referr
 
 See also: @other-doc['(lib "sugar/scribblings/sugar.scrbl")].
 
-@section[#:tag "type:interface"]{Interface}
-
-@defthing[gen:form any/c]{
-
- A @tech/reference{generic interface} that represents a form that an object takes, i.e. its "type." All built-in as well as @seclink["define-struct" #:doc '(lib "scribblings/guide/guide.scrbl")]{custom} types are @racket[gen:form].
-
-}
-
-@defproc[(make [form any/c] [element any/c] ...)
-         form?]{
-
- A function taking a form and any number of elements and constructs a composite form out of them. @racket[form] is expected to be an instance of the structure type to which the generic interface is associated (or a subtype of the structure type). The function must return an instance of the structure type.
-
- Every implementation of @racket[gen:form] must provide an implementation of @racket[make].
-}
-
-@defproc[(form? [v any/c])
-         boolean?]{
-
- Predicate to check if a value is a form. In general, primitives in Racket such as numbers and characters are not forms, while composite types like @tech/reference{lists} and @tech/reference{dictionaries} are.
-
-@examples[
-    #:eval eval-for-docs
-    (form? 3)
-    (form? #\a)
-    (form? "cherry")
-    (form? (set))
-    (form? (hash))
-    (form? (list))
-    (form? (stream))
-  ]
-}
-
 @section[#:tag "type:constructors"]{Constructors}
 
-@defproc[(: [element any/c] ... [form any/c])
-         any/c]{
+@deftogether[(
+ @defproc[(make [form collection?] [element any/c] ...)
+          collection?]
+ @defproc[(: [element any/c] ... [form any/c])
+          any/c]
+  )]{
 
- A generic constructor that creates a value of the same type as @racket[form] out of the provided @racket[elements]. This utility wraps @racket[make], providing a bit of syntactic sugar. In particular, the order of arguments is reversed to resemble the familiar @racket[cons] list constructor. Additionally, if none of the input values are @racket[form]s, then the @racket[element]s are simply @racket[cons]'d together (if there are two of them) or collected into a @racket[list] (if there are more).
+ @racket[make] is a generic constructor that creates a value of the same type as @racket[form] out of the provided @racket[elements] and @racket[form] itself. This utility relies upon the @racket[gen:collection] interface for the means to create an instance of the desired type. @seclink["define-struct" #:doc '(lib "scribblings/guide/guide.scrbl")]{Custom types} must therefore specify an implementation of @racket[gen:collection] in order to support construction via @racket[make].
+
+ @racket[:] is a convenience wrapper around @racket[make] with a more familiar interface, mirroring the @racket[cons] list constructor in terms of argument order and the constructed result, and handling additional common cases outside the purview of @racket[make]. In particular, if @racket[form] is not a @tech[#:doc '(lib "scribblings/data/collection/collections.scrbl")]{generic collection}, then the @racket[elements] are simply @racket[cons]'d together (if there are two of them) or collected into a @racket[list] (if there are more).
 
 @examples[
     #:eval eval-for-docs
@@ -77,8 +51,9 @@ See also: @other-doc['(lib "sugar/scribblings/sugar.scrbl")].
 	(: 1 null)
 	(: 1 (list 2 3))
 	(: 1 2 3 4 (list 5 6))
-	(: 1 empty-stream)
+	(->list (: 1 empty-stream))
 	(: 1 #(2 3))
+	(: '(a . 1) (hash 'b 2 'c 3))
   ]
 }
 

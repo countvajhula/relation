@@ -29,12 +29,11 @@
                     negate)
          relation/composition)
 
-(provide gen:form
-         form/c
-         :
+(provide :
          (contract-out
-          [form? (predicate/c)]
-          [make (->* (form?) () #:rest list? form?)]
+          [make (case->
+                 (-> collection? any/c collection?)
+                 (-> collection? #:rest list? collection?))]
           [->boolean (predicate/c)]
           [->string (encoder/c string?)]
           [->number (encoder/c number?)]
@@ -64,25 +63,25 @@
           [->dict (encoder/c dict?)]
           [->procedure (encoder/c procedure?)]))
 
-(define-generics form
-  (make form . elements)
-  #:defaults
-  ([collection?
-    (define make
-      (case-lambda
-        [(form element)
-         (conj form element)]
-        [(form . elements)
-         (apply conj* form (reverse elements))]))]))
+(define make
+  (case-lambda
+    [(form element)
+     (conj form element)]
+    [(form . elements)
+     (apply conj* form elements)]))
 
 (define (: . args)
   (match args
-    [(list element form) (if (form? form)
-                             (make form element)
-                             (cons element form))]
-    [(list elements ... form) (if (form? form)
-                                  ((flip* make) args)
-                                  args)]))
+    [(list element form)
+     (if (collection? form)
+         (make form element)
+         (cons element form))]
+    [(list elements ... form)
+     (if (collection? form)
+         (apply make (if (vector? form)
+                         (cons form elements)
+                         (cons form (reverse elements))))
+         args)]))
 
 (define (->boolean v)
   (if v #t #f))

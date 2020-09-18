@@ -75,7 +75,7 @@ In order to support generic composition seamlessly, all of the composition inter
   ]
 }
 
-In the event no operands are received in the course of a computation, the result of composition would be @racket[ID], which would not be a usable result in utilities that are expecting a specific type such as a string. In such cases, the result could be converted to the expected type using one of the transformers in @seclink["Types" #:doc '(lib "relation/scribblings/relation.scrbl")]{relation/type} such as @racket[->string]. If you are not using a built-in type but rather a @seclink["define-struct" #:doc '(lib "scribblings/guide/guide.scrbl")]{custom type}, however, you could use the following more general utility to "reify" the generic identity value to a type of your choosing:
+In the event no operands are received in the course of a computation, the result of composition would be @racket[ID], which would not be a usable result in utilities that are expecting a specific type such as a string. In such cases, the result could be converted to the expected type using one of the transformers in @seclink["type:transformers" #:doc '(lib "relation/scribblings/relation.scrbl")]{relation/type} such as @racket[->string]. If you are not using a built-in type but rather a @seclink["define-struct" #:doc '(lib "scribblings/guide/guide.scrbl")]{custom type}, however, you could use the following more general utility to "reify" the generic identity value to a type of your choosing:
 
 @defproc[(reify [v any/c]
                 [example any/c]
