@@ -54,4 +54,4 @@ script:
   - make test
 
 after_success:
-  - raco cover -n dev -n algebraic.rkt -bf coveralls -d $TRAVIS_BUILD_DIR/coverage -p relation
+  - raco cover -n dev -n algebraic.rkt -n transform.rkt -bf coveralls -d $TRAVIS_BUILD_DIR/coverage -p relation

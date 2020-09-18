@@ -1,4 +1,4 @@
-#lang racket/base
+#lang at-exp racket/base
 
 (require (only-in racket/base
                   (round b:round))
@@ -23,6 +23,9 @@
          (except-in relation/function
                     negate)
          relation/composition)
+
+(displayln @~a{DEPRECATION WARNING: relation/transform is deprecated. @;
+               Use relation/type instead.})
 
 (provide (contract-out
           [->boolean (predicate/c)]

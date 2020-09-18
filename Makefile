@@ -123,7 +123,7 @@ test-with-errortrace: errortrace-logic errortrace-equivalence errortrace-order e
 errortrace: test-with-errortrace
 
 coverage-check:
-	raco cover -b -n dev -n algebraic.rkt -p $(PACKAGE-NAME)
+	raco cover -b -n dev -n algebraic.rkt -n transform.rkt -p $(PACKAGE-NAME)
 
 coverage-report:
 	open coverage/index.html
