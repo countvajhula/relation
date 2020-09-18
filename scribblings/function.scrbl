@@ -247,7 +247,7 @@ This module provides general-purpose utilities to support programming in the @hy
                   ...)
          procedure?]{
 
- Converts a procedure accepting no arguments to one accepting an arbitrary number of arguments (which are all ignored upon invocation).
+ Converts a procedure accepting no arguments to one accepting an arbitrary number of arguments (which are all ignored upon invocation). In other words, this converts a @racket[thunk] into a @racket[thunk*].
 
 @examples[
     #:eval eval-for-docs
