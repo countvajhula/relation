@@ -13,7 +13,14 @@
 
 (define tests
   (test-suite
-   "Tests for type transformers"
+   "Tests for type constructors and transformers"
+
+   (check-equal? (: 3 null) '(3))
+   (check-equal? (: 3 4) '(3 . 4))
+   (check-equal? (: 3 (list 1 2)) '(3 1 2))
+   (check-equal? (: 3 #(1 2)) #(1 2 3))
+   (check-equal? (: '(a . 1) '(d . 4) (hash 'b 2 'c 3)) (hash 'a 1 'b 2 'c 3 'd 4))
+   (check-equal? (: 1 2 3 (list 4 5 6)) '(1 2 3 4 5 6))
 
    (check-true (->boolean 0))
    (check-true (->boolean (list 1 2)))
