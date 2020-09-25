@@ -266,13 +266,13 @@
 
 (struct composition-identity ()
   #:transparent
-  #:methods gen:sequence
-  [(define (empty? seq)
+  #:methods gen:stream
+  [(define (stream-empty? seq)
      #t)
-   (define (first seq)
+   (define (stream-first seq)
      (error 'first
             "Nothing here!"))
-   (define (rest seq)
+   (define (stream-rest seq)
      (error 'rest
             "Nothing here!"))
    (define (reverse seq)
