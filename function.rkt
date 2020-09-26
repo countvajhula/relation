@@ -182,6 +182,9 @@
             (apply/arguments curry-proc
                              packed-args))])
      (eval-if-saturated curried-f)))
+  #:methods gen:collection
+  [(define (conj self elem)
+     (function-cons elem self))]
   #:methods gen:sequence
   [(define/generic -empty? empty?)
    (define/generic -first first)
