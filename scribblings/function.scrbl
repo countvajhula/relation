@@ -39,7 +39,7 @@
 
 Elementary types and utilities to simplify the use and manipulation of functions.
 
-This module provides general-purpose utilities to support programming in the @hyperlink["https://en.wikipedia.org/wiki/Functional_programming"]{functional style}. As part of its operation, this module defines and provides a @racket[function] type intended as a drop-in alternative to built-in Racket functions. This function type is usually no different from using normal functions, but as a higher-level entity, it provides greater visibility of the make-up of the function, allowing more flexibility in customizing the nature of composition, supporting natural semantics when used with standard sequence utilities, and more seamless use of currying.
+This module provides general-purpose utilities to support programming in the @hyperlink["https://en.wikipedia.org/wiki/Functional_programming"]{functional style}. As part of its operation, this module defines and provides a "rich" @racket[function] type intended as a drop-in alternative to built-in Racket functions. This function type is usually no different from using normal functions, but as a higher-level entity, it provides greater visibility of the make-up of the function, allowing more flexibility in customizing the nature of composition, supporting natural semantics when used with standard sequence utilities, and more seamless use of currying.
 
 @section[#:tag "function:types"]{Types}
 
@@ -50,7 +50,7 @@ This module provides general-purpose utilities to support programming in the @hy
                      [right-args list?]
                      [kw-args hash?])
                     #:omit-constructor]{
-  The elementary type that represents any procedure, whether elementary or composed. It is inherently @hyperlink["https://en.wikipedia.org/wiki/Currying"]{curried}, meaning that partially supplying arguments results in a new function parametrized by these already-provided arguments.
+  A type that represents any procedure, whether elementary or composed. It is inherently @hyperlink["https://en.wikipedia.org/wiki/Currying"]{curried}, meaning that partially supplying arguments results in a new function parametrized by these already-provided arguments.
 @itemlist[
 @item{@racket[components] - A list of functions that comprise this one.}
 @item{@racket[composer] - The definition of composition for this function. By default (when constructed using @racket[make-function]), this is the usual function composition, i.e. @racketlink[b:compose]{@racket[compose]} together with @racket[values] as the identity.}
@@ -104,6 +104,23 @@ This module provides general-purpose utilities to support programming in the @hy
       ((f str-append) "hello")
       ((((f str-append) "hello") "there") "friend")
     ]
+}
+
+@section[#:tag "function:syntax"]{Syntax}
+
+@deftogether[(
+  @defform[(lambda/function kw-formals body ...)]
+  @defform[(lambda/f kw-formals body ...)]
+  @defform[(λ/f kw-formals body ...)]
+)]{
+  Identical to @racket[lambda] except that it produces a @racket[function] rather than a primitive Racket function. @racket[lambda/f] and @racket[λ/f] are aliases for @racket[lambda/function].
+}
+
+@deftogether[(
+  @defform[(define/function (id kw-formals) body ...)]
+  @defform[(define/f kw-formals body ...)]
+)]{
+  Identical to the function form of @racket[define] except that it produces a @racket[function] rather than a primitive Racket function. @racket[define/f] is an alias for @racket[define/function].
 }
 
 @section[#:tag "function:utilities"]{Utilities}

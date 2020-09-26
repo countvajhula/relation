@@ -21,6 +21,39 @@
   (test-suite
    "Tests for functional primitives"
 
+   (test-case
+       "lambda function form"
+     (let ([ff (λ/f (a b) (+ a b))])
+       ;; positional args
+       (check-true (function? ff))
+       (check-equal? (ff 3 4) 7))
+     (let ([ff (λ/f (a b . args) (first args))])
+       ;; rest args
+       (check-true (function? ff))
+       (check-equal? (ff 3 4 11 6 3) 11))
+     (let ([ff (λ/f (a b #:key [key add1] . args)
+                    (join (map key (list* a b args))))])
+       ;; kw and rest args
+       (check-true (function? ff))
+       (check-equal? (ff 1 3 5 7) 20)
+       (check-equal? (ff #:key ->string 1 3 5 7) "1357")))
+   (test-case
+       "Define function form"
+     (define/f (add-two a b)
+       (+ a b))
+     (check-true (function? add-two))
+     (check-equal? (add-two 1 2) 3)
+
+     (define/f (first-rest a b . args)
+       (first args))
+     (check-true (function? first-rest))
+     (check-equal? (first-rest 1 2 7 6 3) 7)
+
+     (define/f (join-all a b #:key [key add1] . args)
+       (join (map key (list* a b args))))
+     (check-true (function? join-all))
+     (check-equal? (join-all 1 3 5 7) 20)
+     (check-equal? (join-all 1 3 #:key ->string 5 7) "1357"))
    (check-equal? ((unthunk (λ () 5))) 5)
    (check-equal? ((unthunk (λ () 5)) 1) 5)
    (check-equal? ((unthunk (λ () 5)) 1 2 3) 5)

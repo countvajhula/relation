@@ -15,10 +15,16 @@
                     append)
          (only-in data/functor
                   (map f:map))
+         mischief/shorthand
          contract/social
          relation/equivalence)
 
-(provide (contract-out
+(provide lambda/function
+         lambda/f
+         λ/f
+         define/function
+         define/f
+         (contract-out
           [unthunk (-> procedure? any/c ... procedure?)]
           [if-f (-> (unconstrained-domain-> boolean?)
                     procedure?
@@ -225,6 +231,21 @@
          (reverse fs)))
 
 (define f> make-threading-function)
+
+(define-syntax-rule (lambda/function kw-formals body ...)
+  (f (lambda kw-formals body ...)))
+
+(define-alias lambda/f lambda/function)
+
+(define-alias λ/f lambda/function)
+
+(define-syntax-rule (define/function (id kw-formals ... . rest-args)
+                      body ...)
+  (define id
+    (lambda/function (kw-formals ... . rest-args)
+                     body ...)))
+
+(define-alias define/f define/function)
 
 (define (function-null #:compose-with [composer (monoid b:compose values)]
                        #:curry-on [side 'left])
