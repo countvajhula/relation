@@ -283,10 +283,16 @@ See also: @other-doc['(lib "sugar/scribblings/sugar.scrbl")].
   ]
 }
 
+@deftogether[(
 @defproc[(->symex [v any/c])
-         any/c]{
+         any/c]
+@defproc[(string->symex [v any/c])
+         any/c]
+  )]{
 
- Maps a @tech/reference{syntax object} to its underlying @hyperlink["https://en.wikipedia.org/wiki/S-expression"]{symbolic expression}, the literal "code" that will be evaluated by the interpreter. If the input is already a symex, then it is left unchanged.
+ @racket[->symex] maps a @tech/reference{syntax object} to its underlying @hyperlink["https://en.wikipedia.org/wiki/S-expression"]{symbolic expression}, the literal "code" that will be evaluated by the interpreter. If the input is already a symex (also known in Racket as a @tech/reference{datum}), then it is left unchanged.
+
+ @racket[string->symex] maps a @tech/reference{string} to a symex by treating the string as a representation of a symex rather than as a symex itself (which it is, since a string by itself is a valid expression).
 
 @examples[
     #:eval eval-for-docs
@@ -295,6 +301,8 @@ See also: @other-doc['(lib "sugar/scribblings/sugar.scrbl")].
     (->symex #'(+ 1 2))
     (->symex #'(define (square x) (* x x)))
     (eval (->symex #'((λ (x) (* x x)) 4)))
+    (->symex "(+ 1 2)")
+    (string->symex "(+ 1 2)")
   ]
 }
 

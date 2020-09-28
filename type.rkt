@@ -62,6 +62,7 @@
                          (syntax?)
                          syntax?)]
           [->symex (-> any/c any/c)]
+          [string->symex (decoder/c string?)]
           [->values (-> any/c any)]
           [->dict (encoder/c dict?)]
           [->procedure (encoder/c procedure?)]))
@@ -273,6 +274,9 @@
 (define (->symex v)
   (cond [(syntax? v) (syntax->datum v)]
         [else v]))
+
+(define (string->symex v)
+  (read (open-input-string v)))
 
 (define (->values v)
   (cond [(vector? v) (vector->values v)]

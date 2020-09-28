@@ -146,6 +146,9 @@
                 (->set 'hi)))
 
    (check-equal? (->symex (->syntax (list 1 2 3))) '(1 2 3))
+   (check-equal? (string->symex "5") 5)
+   (check-equal? (string->symex "(+ 1 2)") '(+ 1 2))
+   (check-equal? (string->symex "abc") 'abc)
 
    (check-equal? (let-values ([(a b c) (->values (list 1 2 3))])
                    (list a b c)) (list 1 2 3))
