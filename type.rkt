@@ -14,6 +14,7 @@
          racket/generator
          racket/sequence
          racket/match
+         syntax/parse/define
          (only-in racket/function
                   identity
                   negate
@@ -30,6 +31,8 @@
          relation/composition)
 
 (provide :
+         make!
+         :!
          (contract-out
           [make (case->
                  (-> collection? any/c collection?)
@@ -82,6 +85,12 @@
                          (cons form elements)
                          (cons form (reverse elements))))
          args)]))
+
+(define-simple-macro (make! form:id elements ...)
+  (set! form (make form elements ...)))
+
+(define-simple-macro (:! elements ... form:id)
+  (set! form (: elements ... form)))
 
 (define (->boolean v)
   (if v #t #f))

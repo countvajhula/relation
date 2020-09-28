@@ -23,6 +23,9 @@
    (check-equal? (: '(a . 1) '(d . 4) (hash 'b 2 'c 3)) (hash 'a 1 'b 2 'c 3 'd 4))
    (check-equal? (: 1 2 3 (list 4 5 6)) '(1 2 3 4 5 6))
    (check-equal? (function-components (: ->string sqr (f add1))) (list ->string sqr add1))
+   (let ([s (set 1 2 3)])
+     (:! 2 3 4 s)
+     (check-equal? s (set 1 2 3 4)))
 
    (check-true (->boolean 0))
    (check-true (->boolean (list 1 2)))

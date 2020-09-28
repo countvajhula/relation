@@ -39,21 +39,36 @@ See also: @other-doc['(lib "sugar/scribblings/sugar.scrbl")].
           collection?]
  @defproc[(: [element any/c] ... [form any/c])
           any/c]
+ @defproc[(make! [form collection?] [element any/c] ...)
+          collection?]
+ @defproc[(:! [element any/c] ... [form any/c])
+          any/c]
   )]{
 
  @racket[make] is a generic constructor that creates a value of the same type as @racket[form] out of the provided @racket[elements] and @racket[form] itself. This utility relies upon the @racket[gen:collection] interface for the means to create an instance of the desired type. @seclink["define-struct" #:doc '(lib "scribblings/guide/guide.scrbl")]{Custom types} must therefore specify an implementation of @racket[gen:collection] in order to support construction via @racket[make].
 
  @racket[:] is a convenience wrapper around @racket[make] with a more familiar interface, mirroring the @racket[cons] list constructor in terms of argument order and the constructed result, and handling additional common cases outside the purview of @racket[make]. In particular, if @racket[form] is not a @tech[#:doc '(lib "scribblings/data/collection/collections.scrbl")]{generic collection}, then the @racket[elements] are simply @racket[cons]'d together (if there are two of them) or collected into a @racket[list] (if there are more).
 
+ @racket[make!] and @racket[:!] are similar except that they mutate the @racket[form] rather than construct the new object "functionally."
+
+ These constructors are a generic alternative to type-specific constructors like @racket[cons], @racket[stream-cons], @racket[set-add], @racket[hash-set], and so on (along with their mutative counterparts), with the caveat that for @tech/reference{streams}, the construction will not happen lazily since these generic versions are @seclink["procedures" #:doc '(lib "scribblings/reference/reference.scrbl")]{functions} rather than @tech/reference{macros}. For streams, unless you are just prototyping or running tests in a shell, you will want to use @racket[stream-cons] directly.
+
 @examples[
     #:eval eval-for-docs
 	(: 1 2)
+	(: 1 2 3 4 5)
 	(: 1 null)
 	(: 1 (list 2 3))
 	(: 1 2 3 4 (list 5 6))
 	(->list (: 1 empty-stream))
 	(: 1 #(2 3))
 	(: '(a . 1) (hash 'b 2 'c 3))
+	(define h (hash 'a 1 'b 2 'c 3))
+	(:! '(a . 5) h)
+	h
+	(define s (set 1 2 3))
+	(:! 2 3 4 s)
+	(->list s)
   ]
 }
 
