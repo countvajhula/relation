@@ -17,6 +17,7 @@
                   (map f:map))
          mischief/shorthand
          contract/social
+         relation/logic
          relation/equivalence)
 
 (provide lambda/function
@@ -151,14 +152,30 @@
 (define (eval-if-saturated f)
   (let* ([components (function-components f)]
          [left-args (function-left-args f)]
-         [right-args (function-right-args f)])
+         [right-args (function-right-args f)]
+         [pos-args (append left-args right-args)]
+         [kw-args (function-kw-args f)])
     (with-handlers ([exn:fail:contract:arity?
                      (λ (exn)
-                       (if (> (length (append left-args
-                                              right-args))
+                       (if (> (length pos-args)
                               (~min-arity (last components)))
                            (raise exn)
-                           f))])
+                           f))]
+                    [exn:fail:contract?
+                     ;; presence of a keyword argument results in a premature
+                     ;; contract failure that's not the arity error, even though
+                     ;; that's probably what it should be since providing additional
+                     ;; positional arguments results in expected behavior
+                     ;; additionally, also handle invalid keyword arg here
+                     (λ (exn)
+                       (let-values ([(req-kw opt-kw)
+                                     (procedure-keywords (last components))])
+                         (if (or (empty? kw-args)
+                                 (any?
+                                  (map (!! (in? (append req-kw opt-kw)))
+                                       (hash-keys kw-args))))
+                             (raise exn)
+                             f)))])
       (eval-function f))))
 
 (struct function (components

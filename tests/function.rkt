@@ -111,6 +111,14 @@
    (check-equal? ((curryr (curry .. "3") "4") "5") "354")
    (check-equal? ((curry (curryr .. "3") "4") "5") "453")
    (check-equal? ((curryr (curry power 2) *) 3) 8)
+   (test-case
+       "Currying in the presence of keyword arguments"
+     (define in? (curryr member?))
+     (check-true (in? 3 (list 1 2 3)))
+     (check-false (in? 4 (list 1 2 3)))
+     (check-true ((in? (list 1 2 3)) 3))
+     (check-true ((in? #:key ->number (list 1 2 3)) "3"))
+     (check-exn exn:fail:contract? (thunk ((in? #:key ->number #:dummy 'dummy (list 1 2 3)) "3"))))
    (check-equal? ((function-cons add1 (f sub1)) 3) 3)
    (check-equal? ((function-cons add1 (function-null)) 3) 4)
    (check-equal? ((function-cons positive? (function-cons integer? (function-null #:compose-with (monoid f:conjoin (const #t))))) 5) #t)
