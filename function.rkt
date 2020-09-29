@@ -8,6 +8,7 @@
          racket/stream
          racket/hash
          arguments
+         syntax/parse/define
          (prefix-in b: racket/base)
          (except-in data/collection
                     foldl
@@ -186,6 +187,7 @@
                   kw-args)
   ; maybe incorporate a power into the function type
   #:transparent
+
   #:property prop:procedure
   (lambda/arguments
    packed-args
@@ -199,9 +201,11 @@
             (apply/arguments curry-proc
                              packed-args))])
      (eval-if-saturated curried-f)))
+
   #:methods gen:collection
   [(define (conj self elem)
      (function-cons elem self))]
+
   #:methods gen:sequence
   [(define/generic -empty? empty?)
    (define/generic -first first)
@@ -225,6 +229,7 @@
                (function-left-args self)
                (function-right-args self)
                (function-kw-args self)))]
+
   #:methods gen:countable
   [(define/generic -length length)
    (define (length self)
@@ -259,8 +264,8 @@
 
 (define-alias λ/f lambda/function)
 
-(define-syntax-rule (define/function (id kw-formals ... . rest-args)
-                      body ...)
+(define-simple-macro (define/function (id:id kw-formals ... . rest-args)
+                       body ...)
   (define id
     (lambda/function (kw-formals ... . rest-args)
                      body ...)))
