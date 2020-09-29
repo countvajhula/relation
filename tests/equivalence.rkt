@@ -238,6 +238,10 @@
    (check-true (member? "HI" (generic-set #:key string? "hi" "there")))
    (check-false (member? #:key string? "HI" (generic-set "hi" "there")) "key ignored for generic sets")
    (check-true (member? "to" (generic-set #:key string-length "hi" "there")) "generic set key used as is")
+   (check-true ((in? (list 1 2 3)) 3))
+   (check-false ((in? (list 1 2 3)) 4))
+   (check-false ((in? (list 1 2 3)) "2"))
+   (check-true ((in? #:key ->number (list 1 2 3)) "2"))
 
    ;; assoc
    (check-equal? (assoc 'b (list '(a 1) '(b 2) '(c 3))) '(b 2))

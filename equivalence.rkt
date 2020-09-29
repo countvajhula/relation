@@ -26,6 +26,7 @@
 
 (provide gen:comparable
          comparable/c
+         in?
          (contract-out
           [comparable? (predicate/c)]
           [gset? (predicate/c)]
@@ -232,6 +233,8 @@
       (not (null? (tail #:key key
                         elem
                         (in col))))))
+
+(define in? (curryr member?))
 
 (define (assoc #:key [key #f] elem col)
   (if (empty? col)

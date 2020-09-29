@@ -203,12 +203,20 @@ True if the v's are equal. This uses the most appropriate equality check for the
   ]
 }
 
+@deftogether[(
 @defproc[(member? [#:key key (-> comparable? comparable?) #f]
                   [elem comparable?]
                   [col sequence?])
-         boolean?]{
+         boolean?]
+@defproc[(in? [#:key key (-> comparable? comparable?) #f]
+              [elem comparable?]
+              [col sequence?])
+         boolean?]
+ )]{
 
  A generic version of @racket[member] similar to @racket[tail] that checks if a value is present in a collection. Unlike @racket[tail], this returns a boolean value and supports non-ordered collections like @racketlink[set]{sets} where a tail is not well-defined. In the special case where @racket[col] is a @racket[generic-set], the @racket[key] provided to @racket[member?], if any, is ignored as it may conflict with the existing @racket[key] defining the equivalence relation in the generic set.
+
+ @racket[in?] is a right-curried version of @racket[member?], useful in cases where we may want to pre-specify the collection and apply the predicate to candidate elements.
 
 @examples[
     #:eval eval-for-docs
@@ -219,6 +227,9 @@ True if the v's are equal. This uses the most appropriate equality check for the
     (member? #:key string-upcase "BANANA" (list "apple" "banana" "cherry"))
     (member? "BANANA" (generic-set #:key string-upcase "apple" "banana" "cherry"))
     (member? "tomato" (generic-set #:key length "apple" "banana" "grape"))
+	((in? (list 1 2 3)) 3)
+	((in? (list 1 2 3)) "2")
+	((in? #:key ->number (list 1 2 3)) "2")
   ]
 }
 
