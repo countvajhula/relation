@@ -172,6 +172,10 @@
                        (let-values ([(req-kw opt-kw)
                                      (procedure-keywords (last components))])
                          (if (or (empty? kw-args)
+                                 ;; the arity error is masked in the presence of keyword
+                                 ;; args so we check for it again here
+                                 (> (length pos-args)
+                                    (~min-arity (last components)))
                                  (any?
                                   (map (!! (in? (append req-kw opt-kw)))
                                        (hash-keys kw-args))))
