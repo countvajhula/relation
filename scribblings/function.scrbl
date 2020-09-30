@@ -5,6 +5,8 @@
          racket/sandbox
          @for-label[relation/function
                     relation/type
+					(only-in relation/equivalence member?)
+					(only-in relation/composition ..)
                     data/maybe
 					(only-in data/collection sequence?)
                     (rename-in racket (compose b:compose)
@@ -20,18 +22,15 @@
                     (prefix-in f: data/functor)]]
 
 @(define eval-for-docs
-  (parameterize ([sandbox-output 'string]
-                 [sandbox-error-output 'string]
-                 [sandbox-memory-limit #f])
-                 (make-evaluator 'racket/base
-                                 '(require data/maybe
-                                           arguments
-                                           relation
-                                           racket/set
-                                           (only-in racket/list range)
-                                           (only-in racket/math sqr)
-                                           racket/generator
-                                           racket/stream))))
+   (make-base-eval #:lang 'racket/base
+                   '(require data/maybe
+                   arguments
+                   relation
+                   racket/set
+                   (only-in racket/list range)
+                   (only-in racket/math sqr)
+                   racket/generator
+                   racket/stream)))
 
 @title{Functional Primitives}
 
@@ -122,6 +121,32 @@ This module provides general-purpose utilities to support programming in the @hy
 )]{
   Identical to the function form of @racket[define] except that it produces a @racket[function] rather than a primitive Racket function. @racket[define/f] is an alias for @racket[define/function].
 }
+
+@section[#:tag "function:representation"]{Representation}
+
+ The printed representation of a @racket[function] has some features worthy of note. Let's look at an example.
+
+@examples[
+    #:eval eval-for-docs
+	(f add1 sqr)
+  ]
+
+ The first thing to note is that the printed representation is almost itself valid code to reproduce the function it represents. A prominent maxim of programming in the functional style is to write complex functions in terms of small, simple functions that can be composed together. The transparency of this representation is intended to support this habit, by enabling the makeup of such functions, whether simple or complex, to be easily scrutinized and manipulated. Specific clues encoded in the representation are as follows:
+ @codeblock{((arguments ...) _)} means that the function is @emph{left-curried} (the default), while @codeblock{(_ (arguments ...))} means that it is @emph{right-curried} (the @racket[_] indicates where fresh arguments will be placed in relation to the existing arguments).
+ @codeblock{(.. fn ...)} indicates that the method of composition is the usual one, i.e. @racket[compose],
+ @codeblock{(&& fn ...)} means the method of composition is @racket[conjoin],
+ @codeblock{(|| fn ...)} means @racket[disjoin], and
+ @codeblock{(?? fn ...)} indicates that the method of composition is not a standard one but a custom @racket[monoid].
+
+@examples[
+    #:eval eval-for-docs
+	(f add1 sqr)
+	(&& positive? odd?)
+	(|| positive? odd?)
+	(f #:compose-with (monoid (λ (f g) g) values) add1 sub1)
+	(curryr member? (list 1 2 3))
+  ]
+
 
 @section[#:tag "function:utilities"]{Utilities}
 

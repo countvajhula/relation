@@ -144,6 +144,10 @@
            (monoid-id self)
            vs)))
 
+(define usual-composition (monoid b:compose values))
+(define conjoin-composition (monoid f:conjoin true.))
+(define disjoin-composition (monoid f:disjoin false.))
+
 (define (eval-function f)
   (let ([components (function-components f)]
         [composer (function-composer f)])
@@ -237,9 +241,31 @@
   #:methods gen:countable
   [(define/generic -length length)
    (define (length self)
-     (-length (function-components self)))])
+     (-length (function-components self)))]
 
-(define (make-function #:compose-with [composer (monoid b:compose values)]
+  #:methods gen:custom-write
+  [(define (write-proc self port mode)
+     (define recur
+       (case mode
+         [(#t) write]
+         [(#f) display]
+         [else (λ (p port) (print p port mode))]))
+     (let* ([args (function-arguments self)]
+            [components (function-components self)]
+            [representation
+             (list 'λ
+                   (if (eq? (function-side self) 'left)
+                       (list args '_)
+                       (list '_ args))
+                   (list* (match (function-composer self)
+                            [(== usual-composition) '..]
+                            [(== conjoin-composition) '&&]
+                            [(== disjoin-composition) '||]
+                            [_ '??])
+                          components))])
+       (recur representation port)))])
+
+(define (make-function #:compose-with [composer usual-composition]
                        #:curry-on [side 'left]
                        . fs)
   (function fs
@@ -251,7 +277,7 @@
 
 (define f make-function)
 
-(define (make-threading-function #:compose-with [composer (monoid b:compose values)]
+(define (make-threading-function #:compose-with [composer usual-composition]
                                  #:curry-on [side 'left]
                                  . fs)
   (apply f
@@ -276,7 +302,7 @@
 
 (define-alias define/f define/function)
 
-(define (function-null #:compose-with [composer (monoid b:compose values)]
+(define (function-null #:compose-with [composer usual-composition]
                        #:curry-on [side 'left])
   (make-function #:compose-with composer
                  #:curry-on side))
@@ -331,8 +357,7 @@
                   (hash-union (function-kw-args f)
                               kw))
         (function (list f)
-                  (monoid b:compose
-                          values)
+                  usual-composition
                   'left
                   pos
                   null
@@ -352,8 +377,7 @@
                   (hash-union (function-kw-args f)
                               kw))
         (function (list f)
-                  (monoid b:compose
-                          values)
+                  usual-composition
                   'right
                   null
                   pos
@@ -365,14 +389,12 @@
 
 (define (conjoin . fs)
   (apply f
-         #:compose-with (monoid f:conjoin
-                                true.)
+         #:compose-with conjoin-composition
          fs))
 
 (define (disjoin . fs)
   (apply f
-         #:compose-with (monoid f:disjoin
-                                false.)
+         #:compose-with disjoin-composition
          fs))
 
 (define (negate g)
