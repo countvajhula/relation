@@ -266,6 +266,9 @@
 
 (struct composition-identity ()
   #:transparent
+  #:methods gen:collection
+  [(define (conj col elem)
+     (list elem))]
   #:methods gen:sequence
   [(define (empty? seq)
      #t)

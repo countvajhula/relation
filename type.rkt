@@ -35,6 +35,7 @@
          :!
          (contract-out
           [make (case->
+                 (-> collection?)
                  (-> collection? any/c collection?)
                  (-> collection? #:rest list? collection?))]
           [->boolean (predicate/c)]
@@ -69,6 +70,7 @@
 
 (define make
   (case-lambda
+    [() ID]
     [(form element)
      (conj form element)]
     [(form . elements)
@@ -76,6 +78,7 @@
 
 (define (: . args)
   (match args
+    [(list) (apply make args)]
     [(list element form)
      (if (collection? form)
          (make form element)

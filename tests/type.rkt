@@ -9,13 +9,25 @@
          racket/stream
          racket/sequence
          (only-in racket/function
-                  identity)
+                  identity
+                  thunk)
          "private/util.rkt")
 
 (define tests
   (test-suite
    "Tests for type constructors and transformers"
 
+   (check-equal? (make) ID)
+   (check-equal? (make null) null)
+   (check-equal? (make null 1) '(1))
+   (check-equal? (make null 1 2 3) '(3 2 1))
+   (check-exn exn:fail:contract? (thunk (make 1 2)))
+   (check-equal? (:) ID)
+   (check-equal? (: (:)) ID)
+   (check-equal? (: ID) ID)
+   (check-equal? (: 1 ID) '(1))
+   (check-equal? (: 1) '(1))
+   (check-equal? (: 1 2 3 ID) '(1 2 3))
    (check-equal? (: 3 null) '(3))
    (check-equal? (: 3 4) '(3 . 4))
    (check-equal? (: 3 (list 1 2)) '(3 1 2))
