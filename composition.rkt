@@ -116,15 +116,16 @@
                             [result any/c])]
           [sequencer (->* ((function/c) (function/c))
                           ((predicate/c)
-                           (function/c any/c collection?)
-                           (binary-constructor/c any/c collection?))
+                           (binary-constructor/c any/c collection?)
+                           (function/c any/c collection?))
                           sequencer?)]
           [sequencer-map (-> sequencer? (function/c))]
           [sequencer-gen (-> sequencer? (function/c))]
           [sequencer-stop? (-> sequencer? (predicate/c))]
-          [sequencer-tail (-> sequencer? (function/c any/c collection?))]
           [sequencer-cons (-> sequencer? (binary-constructor/c any/c collection?))]
-          [unfold (-> sequencer? any/c collection?)]
+          [sequencer-tail (-> sequencer? (function/c any/c collection?))]
+          [sequencer? (-> any/c boolean?)]
+          [unfold (-> sequencer? any/c stream?)]
           [unfoldl (-> sequencer? any/c collection?)]
           [unfoldr (-> sequencer? any/c collection?)]
           [onto (-> (sequenceof procedure?)
@@ -431,17 +432,18 @@
 (define foldr/steps (curry fold/steps #:direction 'right))
 (define foldl/steps (curry fold/steps #:direction 'left))
 
-(struct sequencer (map gen stop? tail cons)
+(struct sequencer (map gen stop? cons tail)
   #:transparent
   #:constructor-name make-sequencer
   #:omit-define-syntaxes)
 
+;; we'd like to use : instead of cons as the default here
 (define (sequencer map
                    gen
                    [stop? false.]
-                   [tail (λ (x) null)]
-                   [cons cons])
-  (make-sequencer map gen stop? tail cons))
+                   [cons cons]
+                   [tail (λ (x) null)])
+  (make-sequencer map gen stop? cons tail))
 
 (define (unfold seqr seed)
   (let ([f (sequencer-map seqr)]
@@ -453,14 +455,25 @@
         (stream-cons (f seed)
                      (unfold seqr (gen seed))))))
 
-(define unfoldl unfold)
+;; unfoldl is almost an alias for unfold but leverages the
+;; specified constructor, like unfoldr, and isn't lazy
+(define (unfoldl seqr seed)
+  (let ([f (sequencer-map seqr)]
+        [gen (sequencer-gen seqr)]
+        [stop? (sequencer-stop? seqr)]
+        [cons (sequencer-cons seqr)]
+        [tail (sequencer-tail seqr)])
+    (if (stop? seed)
+        (tail seed)
+        (cons (f seed)
+              (unfoldl seqr (gen seed))))))
 
 (define (unfoldr seqr seed)
   (let ([f (sequencer-map seqr)]
         [gen (sequencer-gen seqr)]
         [stop? (sequencer-stop? seqr)]
-        [tail (sequencer-tail seqr)]
-        [cons (sequencer-cons seqr)])
+        [cons (sequencer-cons seqr)]
+        [tail (sequencer-tail seqr)])
     (let loop ([seed seed]
                [seq (tail seed)])
       (if (stop? seed)

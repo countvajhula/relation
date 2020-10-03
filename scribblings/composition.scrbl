@@ -6,6 +6,7 @@
          @for-label[relation/composition
                     relation/type
                     relation/logic
+                    (only-in relation/function false.)
                     racket/generic
 					racket/undefined
                     (except-in racket +
@@ -25,6 +26,7 @@
                                              repeat
                                              sequenceof
                                              sequence?
+                                             collection?
                                              map
                                              gen:sequence
                                              (foldl d:foldl)
@@ -55,7 +57,7 @@ Generic algebraic operators for composing data.
 
 The built-in operators @racket[+] and @racket[*] operate on numbers specifically. Often, however, we are interested in performing operations "similar" to these for datatypes that aren't numbers, for which we would resort to type-specific operators like @racketlink[b:append "append"] for lists.
 
-This module generalizes the standard algebraic operators to work on any type that supports a "canonical" notion of addition, multiplication, or concatenation. This allows our intuitions about addition and other forms of composition to extend over all appropriate types via the use of the common generic operators @racket[+], @racket[*] and @racket[..].
+This module generalizes the standard algebraic operators to work on any type that supports a "canonical" notion of addition, multiplication, or concatenation. This allows our intuitions about addition and other forms of composition to extend over all appropriate types via the use of the common generic operators @racket[+], @racket[*] and @racket[..]. Additionally, a number of general-purpose utilities leveraging generic composition are provided.
 
 @section[#:tag "composition:interfaces"]{Interfaces}
 
@@ -281,6 +283,24 @@ In the event no operands are received in the course of a computation, the result
 
 }
 
+@section[#:tag "composition:types"]{Types}
+
+@defstruct*[sequencer ([map (-> any/c any/c)]
+                       [gen (-> any/c any/c)]
+                       [stop? (-> any/c boolean?)]
+                       [cons (-> any/c collection? collection?)]
+                       [tail (-> any/c collection?)])
+                      #:omit-constructor]{
+ A type representing the specification of an @racket[unfold] operation.
+
+ @itemlist[
+   @item{@racketid[map] - The function that will be applied to each seed value to produce the values of the resulting sequence.}
+   @item{@racket[gen] - The function that will be applied to each seed value to generate the next seed value.}
+   @item{@racket[stop?] - The condition applied to the seed value that, when true, terminates the unfold operation. If left unspecified, this defaults to @racket[false.], i.e. the unfold operation does not terminate, and must be used with a utility like @racket[take].}
+   @item{@racket[cons] - The constructor to be used in creating the resulting sequence. If left unspecified, this defaults to @racket[cons]. This value is used in @racket[unfoldl] and @racket[unfoldr] but it is ignored in @racket[unfold], which produces values lazily using @racket[stream-cons] instead.}
+   @item{@racket[tail] - The function applied to the seed value at the point when the unfold operation is terminated (or when it begins, in the case of @racket[unfoldr]), to produce the tail of the resulting sequence. If left unspecified, this is a function that returns @racket[null], i.e. an empty tail.}
+   ]}
+
 @section[#:tag "composition:utilities"]{Utilities}
 
 @deftogether[(@defproc[(.. [v appendable?]
@@ -418,6 +438,8 @@ In the event no operands are received in the course of a computation, the result
 
  In many common cases, modulating the folding direction and/or the argument order does not make a difference to the result. Specifically, in those cases where the operation is @hyperlink["https://en.wikipedia.org/wiki/Commutative_property"]{commutative} and @hyperlink["https://en.wikipedia.org/wiki/Closure_(mathematics)"]{closed}, it doesn't matter whether you use @racket[foldl] or @racket[foldr], or whether you use argument order @racket['abb] or @racket['bab]. The result would be the same. However, in cases where the operation is not closed, argument order becomes significant. As a general guideline, choose between @racket[foldl] and @racket[foldr] in cases where the operation is not commutative (a relatively common case, such as string concatenation), and between the two argument orders in cases where the operation isn't closed (a less common case, such as type constructors).
 
+ Additionally, note that @racket[foldl] computes values lazily, whereas @racket[foldr] is @emph{not} lazy.
+
  @racket[foldl] is equivalent to calling @racket[fold] with @racket[#:direction 'left], and @racket[foldr] is equivalent to calling @racket[fold] with @racket[#:direction 'right]. @racket[fold/steps] is equivalent to calling @racket[fold] with @racket[#:with-steps? #t].
 
 @examples[
@@ -471,8 +493,33 @@ In the event no operands are received in the course of a computation, the result
   ]
 }
 
+@deftogether[(
+  @defproc[(unfold [seqr sequencer?]
+                   [seed any/c])
+           stream?]
+  @defproc[(unfoldl [seqr sequencer?]
+                    [seed any/c])
+           collection?]
+  @defproc[(unfoldr [seqr sequencer?]
+                    [seed any/c])
+           collection?]
+  )]{
+
+ Similar to @hyperlink["https://docs.racket-lang.org/srfi/srfi-std/srfi-1.html?q=unfold#unfold"]{unfold} and @hyperlink["https://docs.racket-lang.org/srfi/srfi-std/srfi-1.html?q=unfold#unfold-right"]{unfold-right}, but generic versions that can produce any kind of collection rather than only lists. These also expect the functions specifying the unfolding operation to be included in a @racket[sequencer] rather than provided individually.
+
+@racket[unfold] is essentially the same as @racket[unfoldl], except that it returns values lazily. @racket[unfoldl] and @racket[unfoldr] are @emph{not} lazy.
+
+@examples[
+    #:eval eval-for-docs
+    (unfoldl (sequencer sqr add1 (λ (x) (> x 10)) cons) 1)
+    (unfoldr (sequencer sqr sub1 zero? cons) 10)
+    (unfoldl (sequencer car cdr null? cons) '(h e l l o))
+    (unfoldr (sequencer car cdr null? cons) '(h e l l o))
+  ]
+}
+
 @defproc[(onto [fs (sequenceof procedure?)]
-               [v any/c]
+			   [v any/c]
                ...)
 		 sequence?]{
 
