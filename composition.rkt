@@ -115,13 +115,18 @@
                             #:rest [seqs (listof (sequenceof any/c))]
                             [result any/c])]
           [sequencer (->* ((function/c) (function/c))
-                          ((predicate/c) (function/c any/c sequence?))
+                          ((predicate/c)
+                           (function/c any/c collection?)
+                           (binary-constructor/c any/c collection?))
                           sequencer?)]
           [sequencer-map (-> sequencer? (function/c))]
           [sequencer-gen (-> sequencer? (function/c))]
           [sequencer-stop? (-> sequencer? (predicate/c))]
-          [sequencer-tail (-> sequencer? (function/c any/c sequence?))]
-          [unfold (-> sequencer? any/c sequence?)]
+          [sequencer-tail (-> sequencer? (function/c any/c collection?))]
+          [sequencer-cons (-> sequencer? (binary-constructor/c any/c collection?))]
+          [unfold (-> sequencer? any/c collection?)]
+          [unfoldl (-> sequencer? any/c collection?)]
+          [unfoldr (-> sequencer? any/c collection?)]
           [onto (-> (sequenceof procedure?)
                     any/c
                     ...
@@ -426,7 +431,7 @@
 (define foldr/steps (curry fold/steps #:direction 'right))
 (define foldl/steps (curry fold/steps #:direction 'left))
 
-(struct sequencer (map gen stop? tail)
+(struct sequencer (map gen stop? tail cons)
   #:transparent
   #:constructor-name make-sequencer
   #:omit-define-syntaxes)
@@ -434,8 +439,9 @@
 (define (sequencer map
                    gen
                    [stop? false.]
-                   [tail (λ (x) null)])
-  (make-sequencer map gen stop? tail))
+                   [tail (λ (x) null)]
+                   [cons cons])
+  (make-sequencer map gen stop? tail cons))
 
 (define (unfold seqr seed)
   (let ([f (sequencer-map seqr)]
@@ -446,6 +452,21 @@
         (tail seed)
         (stream-cons (f seed)
                      (unfold seqr (gen seed))))))
+
+(define unfoldl unfold)
+
+(define (unfoldr seqr seed)
+  (let ([f (sequencer-map seqr)]
+        [gen (sequencer-gen seqr)]
+        [stop? (sequencer-stop? seqr)]
+        [tail (sequencer-tail seqr)]
+        [cons (sequencer-cons seqr)])
+    (let loop ([seed seed]
+               [seq (tail seed)])
+      (if (stop? seed)
+          seq
+          (loop (gen seed)
+                (cons (f seed) seq))))))
 
 (define (onto fs . vs)
   (if (empty? fs)

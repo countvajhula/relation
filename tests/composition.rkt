@@ -162,6 +162,55 @@
                                      cons
                                      lst)))
                      lst)))
+   (test-case
+       "unfoldr"
+     (check-equal? (->list
+                    (unfoldr (sequencer sqr
+                                        sub1
+                                        zero?)
+                             10))
+                   '(1 4 9 16 25 36 49 64 81 100))
+     (let ([lst '(h e l l o)])
+       (check-equal? (->list
+                      (unfoldr (sequencer car
+                                          cdr
+                                          null?)
+                               lst))
+                     (reverse lst)
+                     "reverse a proper list"))
+     (let ([head '(h e l l o)]
+           [tail '(_ t h e r e)])
+       (check-equal? (->list
+                      (unfoldr (sequencer car
+                                          cdr
+                                          null?
+                                          (lambda (x) tail))
+                               head))
+                     '(o l l e h _ t h e r e)
+                     "append reversed head onto tail"))
+     (check-equal?
+      (with-input-from-string
+        "the quick brown fox 4 5 6"
+        (thunk (->list
+                (unfoldr (sequencer values
+                                    (lambda (x) (read))
+                                    eof-object?)
+                         (read)))))
+      (reverse '(the quick brown fox 4 5 6))))
+   (test-case
+       "foldl and unfoldr are inverses"
+     (let ([lst '(h e l l o)])
+       (check-equal? (foldl #:into null
+                            cons
+                            (unfoldr (sequencer car cdr null?) lst))
+                     lst))
+     (let ([lst '(h e l l o)])
+       (check-equal? (->list
+                      (unfoldr (sequencer car cdr null?)
+                               (foldl #:into null
+                                      cons
+                                      lst)))
+                     lst)))
    ;; join
    (check-equal? (join '()) ID)
    (check-equal? (join '(1 2 3 4)) 10)
