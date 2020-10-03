@@ -116,47 +116,51 @@
    (test-case
        "unfold"
      (check-equal? (->list
-                    (unfold sqr
-                            add1
-                            1
-                            (λ (x) (> x 10))))
+                    (unfold (sequencer sqr
+                                       add1
+                                       (λ (x) (> x 10)))
+                            1))
                    '(1 4 9 16 25 36 49 64 81 100))
      (let ([lst '(h e l l o)])
-       (check-equal? (->list (unfold car cdr
-                                     lst
-                                     null?))
+       (check-equal? (->list
+                      (unfold (sequencer car
+                                         cdr
+                                         null?)
+                              lst))
                      lst
                      "copy a proper list"))
      (let ([head '(h e l l o)]
            [tail '(_ t h e r e)])
-       (check-equal? (->list (unfold car cdr
-                                     head
-                                     null?
-                                     (lambda (x) tail)))
+       (check-equal? (->list
+                      (unfold (sequencer car
+                                         cdr
+                                         null?
+                                         (lambda (x) tail))
+                              head))
                      '(h e l l o _ t h e r e)
                      "append head onto tail"))
      (check-equal?
       (with-input-from-string
         "the quick brown fox 4 5 6"
-        (thunk (->list (unfold values
-                               (lambda (x) (read))
-                               (read)
-                               eof-object?))))
+        (thunk (->list
+                (unfold (sequencer values
+                                   (lambda (x) (read))
+                                   eof-object?)
+                        (read)))))
       '(the quick brown fox 4 5 6)))
    (test-case
        "foldr and unfold are inverses"
      (let ([lst '(h e l l o)])
        (check-equal? (foldr #:into null
                             cons
-                            (unfold car cdr lst null?))
+                            (unfold (sequencer car cdr null?) lst))
                      lst))
      (let ([lst '(h e l l o)])
        (check-equal? (->list
-                      (unfold car cdr
+                      (unfold (sequencer car cdr null?)
                               (foldr #:into null
                                      cons
-                                     lst)
-                              null?))
+                                     lst)))
                      lst)))
    ;; join
    (check-equal? (join '()) ID)
