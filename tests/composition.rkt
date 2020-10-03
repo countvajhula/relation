@@ -11,6 +11,8 @@
          (prefix-in b: racket/base)
          racket/set
          racket/stream
+         racket/math
+         racket/port
          (only-in racket/function
                   identity
                   thunk)
@@ -111,6 +113,51 @@
                        #:into #f)
                  #f
                  "boolean #f base value")
+   (test-case
+       "unfold"
+     (check-equal? (->list
+                    (unfold sqr
+                            add1
+                            1
+                            (λ (x) (> x 10))))
+                   '(1 4 9 16 25 36 49 64 81 100))
+     (let ([lst '(h e l l o)])
+       (check-equal? (->list (unfold car cdr
+                                     lst
+                                     null?))
+                     lst
+                     "copy a proper list"))
+     (let ([head '(h e l l o)]
+           [tail '(_ t h e r e)])
+       (check-equal? (->list (unfold car cdr
+                                     head
+                                     null?
+                                     (lambda (x) tail)))
+                     '(h e l l o _ t h e r e)
+                     "append head onto tail"))
+     (check-equal?
+      (with-input-from-string
+        "the quick brown fox 4 5 6"
+        (thunk (->list (unfold values
+                               (lambda (x) (read))
+                               (read)
+                               eof-object?))))
+      '(the quick brown fox 4 5 6)))
+   (test-case
+       "foldr and unfold are inverses"
+     (let ([lst '(h e l l o)])
+       (check-equal? (foldr #:into null
+                            cons
+                            (unfold car cdr lst null?))
+                     lst))
+     (let ([lst '(h e l l o)])
+       (check-equal? (->list
+                      (unfold car cdr
+                              (foldr #:into null
+                                     cons
+                                     lst)
+                              null?))
+                     lst)))
    ;; join
    (check-equal? (join '()) ID)
    (check-equal? (join '(1 2 3 4)) 10)

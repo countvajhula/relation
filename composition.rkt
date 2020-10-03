@@ -114,6 +114,9 @@
                                                       'bab)])
                             #:rest [seqs (listof (sequenceof any/c))]
                             [result any/c])]
+          [unfold (->* ((function/c) (function/c) any/c)
+                       ((predicate/c) (function/c any/c sequence?))
+                       sequence?)]
           [onto (-> (sequenceof procedure?)
                     any/c
                     ...
@@ -417,6 +420,12 @@
 (define fold/steps (curry fold #:with-steps? #t))
 (define foldr/steps (curry fold/steps #:direction 'right))
 (define foldl/steps (curry fold/steps #:direction 'left))
+
+(define (unfold f gen seed [stop? false.] [tail-gen (λ (x) null)])
+  (if (stop? seed)
+      (tail-gen seed)
+      (stream-cons (f seed)
+                   (unfold f gen (gen seed) stop? tail-gen))))
 
 (define (onto fs . vs)
   (if (empty? fs)
