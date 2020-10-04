@@ -9,6 +9,7 @@
                     (only-in relation/function false.)
                     racket/generic
 					racket/undefined
+                    racket/match
                     (except-in racket +
                                       -
                                       *
@@ -44,6 +45,7 @@
                                                       foldl/steps)
                                            (only-in racket/math sqr)
                                            relation
+                                           racket/match
                                            racket/set
                                            racket/stream))))
 
@@ -515,6 +517,13 @@ In the event no operands are received in the course of a computation, the result
     (unfoldr (sequencer sqr sub1 zero? cons) 10)
     (unfoldl (sequencer car cdr null? cons) '(h e l l o))
     (unfoldr (sequencer car cdr null? cons) '(h e l l o))
+    (define naturals (unfold (sequencer values add1) 0))
+    (->list (take 10 naturals))
+    (define fibs (unfold (sequencer sum
+                                    (match-lambda
+                                      [(list a b) (list b (+ a b))]))
+                         (list 0 1)))
+    (->list (take 10 fibs))
   ]
 }
 
