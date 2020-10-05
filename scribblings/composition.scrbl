@@ -7,6 +7,7 @@
                     relation/type
                     relation/logic
                     (only-in relation/function false.)
+                    (only-in racket/function thunk*)
                     racket/generic
 					racket/undefined
                     racket/match
@@ -44,6 +45,7 @@
                                                       foldl
                                                       foldl/steps)
                                            (only-in racket/math sqr)
+                                           (only-in racket/function thunk*)
                                            relation
                                            racket/match
                                            racket/set
@@ -290,18 +292,21 @@ In the event no operands are received in the course of a computation, the result
 @defstruct*[sequencer ([map (-> any/c any/c)]
                        [gen (-> any/c any/c)]
                        [stop? (-> any/c boolean?)]
-                       [cons (-> any/c collection? collection?)]
-                       [tail (-> any/c collection?)])
+                       [tail (-> any/c collection?)]
+                       [cons (-> any/c collection? collection?)])
                       #:omit-constructor]{
  A type representing the specification of an @racket[unfold] operation.
 
  @itemlist[
    @item{@racketid[map] - The function that will be applied to each seed value to produce the values of the resulting sequence.}
    @item{@racket[gen] - The function that will be applied to each seed value to generate the next seed value.}
-   @item{@racket[stop?] - The condition applied to the seed value that, when true, terminates the unfold operation. If left unspecified, this defaults to @racket[false.], i.e. the unfold operation does not terminate, and must be used with a utility like @racket[take].}
-   @item{@racket[cons] - The constructor to be used in creating the resulting sequence. If left unspecified, this defaults to @racket[cons]. This value is used in @racket[unfoldl] and @racket[unfoldr] but it is ignored in @racket[unfold], which produces values lazily using @racket[stream-cons] instead.}
-   @item{@racket[tail] - The function applied to the seed value at the point when the unfold operation is terminated (or when it begins, in the case of @racket[unfoldr]), to produce the tail of the resulting sequence. If left unspecified, this is a function that returns @racket[null], i.e. an empty tail.}
-   ]}
+   @item{@racket[stop?] - The condition applied to the seed value that, when true, terminates the unfold operation. If left unspecified, this defaults to @racket[false.], i.e. the unfold operation does not terminate, and must be used together with a utility like @racket[take].}
+   @item{@racket[tail] - The function that will be applied to the seed value at the point when the unfold operation terminates (or when it begins, in the case of @racket[unfoldr]), to produce the tail of the resulting sequence. This attribute is typically used to indicate the @emph{type} of the resulting sequence. If left unspecified, it defaults to @racket[(thunk* ID)], that is, a function that returns @racket[ID]. This value is treated by @racket[:] as being roughly equivalent to @racket[null], resulting in the output sequence being a @tech/reference{list}. If a @tech/reference{hash} is desired instead, for example, this could be specified as @racket[(thunk* (hash))]}
+   @item{@racket[cons] - The constructor to be used in creating the resulting sequence. If left unspecified, this defaults to the generic type constructor, @racket[:], so that the type of the resulting sequence is determined by the type of its @racket[tail]. This value is used in @racket[unfoldl] and @racket[unfoldr] but it is ignored in @racket[unfold], which produces values lazily using @racket[stream-cons] instead.}
+   ]
+
+ @racket[map] and @racket[gen] are the only parameters that are always required, while @racket[stop?] is only required for @racket[unfoldl] and @racket[unfoldr], but not for @racket[unfold] (because the former are not lazy and thus require a finite stop condition). @racket[tail] is usually needed when the desired output sequence is not a @racket[list] or a @racket[stream], and @racket[cons] is rarely needed since it can usually be inferred from the tail.
+}
 
 @section[#:tag "composition:utilities"]{Utilities}
 
@@ -507,23 +512,34 @@ In the event no operands are received in the course of a computation, the result
            collection?]
   )]{
 
- Similar to @hyperlink["https://docs.racket-lang.org/srfi/srfi-std/srfi-1.html?q=unfold#unfold"]{unfold} and @hyperlink["https://docs.racket-lang.org/srfi/srfi-std/srfi-1.html?q=unfold#unfold-right"]{unfold-right}, but generic versions that can produce any kind of collection rather than only lists. These also expect the functions specifying the unfolding operation to be included in a @racket[sequencer] rather than provided individually.
+ Similar to @hyperlink["https://docs.racket-lang.org/srfi/srfi-std/srfi-1.html?q=unfold#unfold"]{unfold} and @hyperlink["https://docs.racket-lang.org/srfi/srfi-std/srfi-1.html?q=unfold#unfold-right"]{unfold-right}, but generic versions that can produce any kind of @techlink[#:doc '(lib "scribblings/data/collection/collections.scrbl") #:key "generic collection"]{collection} rather than only a @tech/guide{list}. These also expect the functions specifying the unfolding operation to be included in a @racket[sequencer] rather than provided individually.
 
-@racket[unfold] is essentially the same as @racket[unfoldl], except that it returns values lazily. @racket[unfoldl] and @racket[unfoldr] are @emph{not} lazy.
+ All of these operations leverage the generic type constructor @racket[:] by default, so that a constructor usually need not be provided in the @racket[sequencer] specification, and the type of the resulting sequence would be inferred from the type of the tail (which defaults to a @tech/reference{list}).
+
+ @racket[unfold] is essentially the same as @racket[unfoldl], except that it returns values lazily (i.e. produces a @tech/reference{stream}). @racket[unfoldl] and @racket[unfoldr] are @emph{not} lazy.
 
 @examples[
     #:eval eval-for-docs
-    (unfoldl (sequencer sqr add1 (λ (x) (> x 10)) cons) 1)
-    (unfoldr (sequencer sqr sub1 zero? cons) 10)
-    (unfoldl (sequencer car cdr null? cons) '(h e l l o))
-    (unfoldr (sequencer car cdr null? cons) '(h e l l o))
     (define naturals (unfold (sequencer values add1) 0))
     (->list (take 10 naturals))
+    (unfoldl (sequencer sqr add1 (λ (x) (> x 10))) 1)
+    (unfoldr (sequencer sqr sub1 zero?) 10)
+    (unfoldl (sequencer car cdr null?) '(h e l l o))
+    (unfoldr (sequencer car cdr null?) '(h e l l o))
     (define fibs (unfold (sequencer sum
                                     (match-lambda
                                       [(list a b) (list b (+ a b))]))
                          (list 0 1)))
     (->list (take 10 fibs))
+    (define symbol+1 (..> ->char ->number add1 ->char ->symbol))
+    (unfoldl
+      (sequencer values
+                 (λ (x)
+                   (cons (symbol+1 (car x))
+                         (add1 (cdr x))))
+                 (λ (x) (> (cdr x) 10))
+                 (thunk* (hash)))
+      '(a . 1))
   ]
 }
 
@@ -539,7 +555,7 @@ In the event no operands are received in the course of a computation, the result
 @examples[
     #:eval eval-for-docs
     (->list (onto (list add1 sub1 ->string) 0))
-    (->list (onto (list + * min max) 7 6))
+    (->list (onto (list + * min max) 7 6 9))
     (define (conjoin . fs)
       (.. all? (curry onto fs)))
     ((conjoin positive? even? integer?) 4)

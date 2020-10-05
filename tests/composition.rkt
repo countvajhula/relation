@@ -118,16 +118,14 @@
      (check-equal? (->list
                     (unfold (sequencer sqr
                                        add1
-                                       (λ (x) (> x 10))
-                                       cons)
+                                       (λ (x) (> x 10)))
                             1))
                    '(1 4 9 16 25 36 49 64 81 100))
      (let ([lst '(h e l l o)])
        (check-equal? (->list
                       (unfold (sequencer car
                                          cdr
-                                         null?
-                                         cons)
+                                         null?)
                               lst))
                      lst
                      "copy a proper list"))
@@ -137,7 +135,6 @@
                       (unfold (sequencer car
                                          cdr
                                          null?
-                                         cons
                                          (lambda (x) tail))
                               head))
                      '(h e l l o _ t h e r e)
@@ -148,8 +145,7 @@
         (thunk (->list
                 (unfold (sequencer values
                                    (lambda (x) (read))
-                                   eof-object?
-                                   cons)
+                                   eof-object?)
                         (read)))))
       '(the quick brown fox 4 5 6)))
    (test-case
@@ -157,11 +153,11 @@
      (let ([lst '(h e l l o)])
        (check-equal? (foldr #:into null
                             cons
-                            (unfold (sequencer car cdr null? cons) lst))
+                            (unfold (sequencer car cdr null?) lst))
                      lst))
      (let ([lst '(h e l l o)])
        (check-equal? (->list
-                      (unfold (sequencer car cdr null? cons)
+                      (unfold (sequencer car cdr null?)
                               (foldr #:into null
                                      cons
                                      lst)))
@@ -170,15 +166,13 @@
        "unfoldr"
      (check-equal? (unfoldr (sequencer sqr
                                        sub1
-                                       zero?
-                                       cons)
+                                       zero?)
                             10)
                    '(1 4 9 16 25 36 49 64 81 100))
      (let ([lst '(h e l l o)])
        (check-equal? (unfoldr (sequencer car
                                          cdr
-                                         null?
-                                         cons)
+                                         null?)
                               lst)
                      (reverse lst)
                      "reverse a proper list"))
@@ -187,7 +181,6 @@
        (check-equal? (unfoldr (sequencer car
                                          cdr
                                          null?
-                                         cons
                                          (lambda (x) tail))
                               head)
                      '(o l l e h _ t h e r e)
@@ -197,8 +190,7 @@
         "the quick brown fox 4 5 6"
         (thunk (unfoldr (sequencer values
                                    (lambda (x) (read))
-                                   eof-object?
-                                   cons)
+                                   eof-object?)
                         (read))))
       (reverse '(the quick brown fox 4 5 6))))
    (test-case
@@ -206,10 +198,10 @@
      (let ([lst '(h e l l o)])
        (check-equal? (foldl #:into null
                             cons
-                            (unfoldr (sequencer car cdr null? cons) lst))
+                            (unfoldr (sequencer car cdr null?) lst))
                      lst))
      (let ([lst '(h e l l o)])
-       (check-equal? (unfoldr (sequencer car cdr null? cons)
+       (check-equal? (unfoldr (sequencer car cdr null?)
                               (foldl #:into null
                                      cons
                                      lst))

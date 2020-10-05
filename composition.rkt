@@ -3,6 +3,7 @@
 (require (prefix-in b: racket/base)
          (except-in racket/contract/base
                     predicate/c)
+         racket/lazy-require
          racket/vector
          racket/set
          racket/dict
@@ -18,6 +19,10 @@
          relation/function
          version-case
          contract/social)
+
+;; so that : can be used as the default constructor
+;; in unfold operations
+(lazy-require [relation/type (:)])
 
 (version-case
  [(version< (version) "7.5.0.14")
@@ -116,14 +121,14 @@
                             [result any/c])]
           [sequencer (->* ((function/c) (function/c))
                           ((predicate/c)
-                           (binary-constructor/c any/c collection?)
-                           (function/c any/c collection?))
+                           (function/c any/c collection?)
+                           (binary-constructor/c any/c collection?))
                           sequencer?)]
           [sequencer-map (-> sequencer? (function/c))]
           [sequencer-gen (-> sequencer? (function/c))]
           [sequencer-stop? (-> sequencer? (predicate/c))]
-          [sequencer-cons (-> sequencer? (binary-constructor/c any/c collection?))]
           [sequencer-tail (-> sequencer? (function/c any/c collection?))]
+          [sequencer-cons (-> sequencer? (binary-constructor/c any/c collection?))]
           [sequencer? (-> any/c boolean?)]
           [unfold (-> sequencer? any/c stream?)]
           [unfoldl (-> sequencer? any/c collection?)]
@@ -432,18 +437,17 @@
 (define foldr/steps (curry fold/steps #:direction 'right))
 (define foldl/steps (curry fold/steps #:direction 'left))
 
-(struct sequencer (map gen stop? cons tail)
+(struct sequencer (map gen stop? tail cons)
   #:transparent
   #:constructor-name make-sequencer
   #:omit-define-syntaxes)
 
-;; we'd like to use : instead of cons as the default here
 (define (sequencer map
                    gen
                    [stop? false.]
-                   [cons cons]
-                   [tail (λ (x) null)])
-  (make-sequencer map gen stop? cons tail))
+                   [tail (thunk* ID)]
+                   [cons :])
+  (make-sequencer map gen stop? tail cons))
 
 (define (unfold seqr seed)
   (let ([f (sequencer-map seqr)]
@@ -461,8 +465,8 @@
   (let ([f (sequencer-map seqr)]
         [gen (sequencer-gen seqr)]
         [stop? (sequencer-stop? seqr)]
-        [cons (sequencer-cons seqr)]
-        [tail (sequencer-tail seqr)])
+        [tail (sequencer-tail seqr)]
+        [cons (sequencer-cons seqr)])
     (if (stop? seed)
         (tail seed)
         (cons (f seed)
@@ -472,8 +476,8 @@
   (let ([f (sequencer-map seqr)]
         [gen (sequencer-gen seqr)]
         [stop? (sequencer-stop? seqr)]
-        [cons (sequencer-cons seqr)]
-        [tail (sequencer-tail seqr)])
+        [tail (sequencer-tail seqr)]
+        [cons (sequencer-cons seqr)])
     (let loop ([seed seed]
                [seq (tail seed)])
       (if (stop? seed)
