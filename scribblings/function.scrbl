@@ -5,11 +5,12 @@
          racket/sandbox
          @for-label[relation/function
                     relation/type
-					(only-in relation/equivalence member?)
+					(only-in relation/equivalence member? =)
 					(only-in relation/composition ..)
                     data/maybe
 					(only-in data/collection sequence?)
                     (rename-in racket (compose b:compose)
+                                      (= b:=)
                                       (curry b:curry)
                                       (curryr b:curryr)
                                       (conjoin b:conjoin)
@@ -128,7 +129,8 @@ This module provides general-purpose utilities to support programming in the @hy
 
 @examples[
     #:eval eval-for-docs
-	(f add1 sqr)
+    #:label #f
+    (f add1 sqr)
   ]
 
  The first thing to note is that the printed representation is almost itself valid code to reproduce the function it represents. A prominent maxim of programming in the functional style is to write complex functions in terms of small, simple functions that can be composed together. The transparency of this representation is intended to support this habit, by enabling the makeup of such functions, whether simple or complex, to be easily scrutinized and manipulated. Specific clues encoded in the representation are as follows:
@@ -140,7 +142,10 @@ This module provides general-purpose utilities to support programming in the @hy
 
 @examples[
     #:eval eval-for-docs
+    #:label "More examples:"
 	(f add1 sqr)
+    ((f expt) 2)
+    ((f =) #:key string-upcase)
 	(&& positive? odd?)
 	(|| positive? odd?)
 	(f #:compose-with (monoid (λ (f g) g) values) add1 sub1)
