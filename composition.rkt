@@ -445,7 +445,7 @@
 (define (sequencer map
                    gen
                    [stop? false.]
-                   [tail (thunk* ID)]
+                   [tail (thunk* null)]
                    [cons :])
   (make-sequencer map gen stop? tail cons))
 
