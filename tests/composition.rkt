@@ -118,14 +118,14 @@
      (check-equal? (->list
                     (unfold (sequencer sqr
                                        add1
-                                       (λ (x) (> x 10)))
+                                       #:stop? (λ (x) (> x 10)))
                             1))
                    '(1 4 9 16 25 36 49 64 81 100))
      (let ([lst '(h e l l o)])
        (check-equal? (->list
                       (unfold (sequencer car
                                          cdr
-                                         null?)
+                                         #:stop? null?)
                               lst))
                      lst
                      "copy a proper list"))
@@ -134,8 +134,8 @@
        (check-equal? (->list
                       (unfold (sequencer car
                                          cdr
-                                         null?
-                                         (lambda (x) tail))
+                                         #:stop? null?
+                                         #:tail (lambda (x) tail))
                               head))
                      '(h e l l o _ t h e r e)
                      "append head onto tail"))
@@ -145,7 +145,7 @@
         (thunk (->list
                 (unfold (sequencer values
                                    (lambda (x) (read))
-                                   eof-object?)
+                                   #:stop? eof-object?)
                         (read)))))
       '(the quick brown fox 4 5 6)))
    (test-case
@@ -153,11 +153,16 @@
      (let ([lst '(h e l l o)])
        (check-equal? (foldr #:into null
                             cons
-                            (unfold (sequencer car cdr null?) lst))
+                            (unfold (sequencer car
+                                               cdr
+                                               #:stop? null?)
+                                    lst))
                      lst))
      (let ([lst '(h e l l o)])
        (check-equal? (->list
-                      (unfold (sequencer car cdr null?)
+                      (unfold (sequencer car
+                                         cdr
+                                         #:stop? null?)
                               (foldr #:into null
                                      cons
                                      lst)))
@@ -166,13 +171,13 @@
        "unfoldr"
      (check-equal? (unfoldr (sequencer sqr
                                        sub1
-                                       zero?)
+                                       #:stop? zero?)
                             10)
                    '(1 4 9 16 25 36 49 64 81 100))
      (let ([lst '(h e l l o)])
        (check-equal? (unfoldr (sequencer car
                                          cdr
-                                         null?)
+                                         #:stop? null?)
                               lst)
                      (reverse lst)
                      "reverse a proper list"))
@@ -180,8 +185,8 @@
            [tail '(_ t h e r e)])
        (check-equal? (unfoldr (sequencer car
                                          cdr
-                                         null?
-                                         (lambda (x) tail))
+                                         #:stop? null?
+                                         #:tail (lambda (x) tail))
                               head)
                      '(o l l e h _ t h e r e)
                      "append reversed head onto tail"))
@@ -190,7 +195,7 @@
         "the quick brown fox 4 5 6"
         (thunk (unfoldr (sequencer values
                                    (lambda (x) (read))
-                                   eof-object?)
+                                   #:stop? eof-object?)
                         (read))))
       (reverse '(the quick brown fox 4 5 6))))
    (test-case
@@ -198,10 +203,15 @@
      (let ([lst '(h e l l o)])
        (check-equal? (foldl #:into null
                             cons
-                            (unfoldr (sequencer car cdr null?) lst))
+                            (unfoldr (sequencer car
+                                                cdr
+                                                #:stop? null?)
+                                     lst))
                      lst))
      (let ([lst '(h e l l o)])
-       (check-equal? (unfoldr (sequencer car cdr null?)
+       (check-equal? (unfoldr (sequencer car
+                                         cdr
+                                         #:stop? null?)
                               (foldl #:into null
                                      cons
                                      lst))

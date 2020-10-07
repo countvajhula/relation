@@ -120,9 +120,9 @@
                             #:rest [seqs (listof (sequenceof any/c))]
                             [result any/c])]
           [sequencer (->* ((function/c) (function/c))
-                          ((predicate/c)
-                           (function/c any/c collection?)
-                           (binary-constructor/c any/c collection?))
+                          (#:stop? (predicate/c)
+                           #:tail (function/c any/c collection?)
+                           #:cons (binary-constructor/c any/c collection?))
                           sequencer?)]
           [sequencer-map (-> sequencer? (function/c))]
           [sequencer-gen (-> sequencer? (function/c))]
@@ -444,9 +444,9 @@
 
 (define (sequencer map
                    gen
-                   [stop? false.]
-                   [tail (thunk* null)]
-                   [cons :])
+                   #:stop? [stop? false.]
+                   #:tail [tail (thunk* null)]
+                   #:cons [cons :])
   (make-sequencer map gen stop? tail cons))
 
 (define (unfold seqr seed)

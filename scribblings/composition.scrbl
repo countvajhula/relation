@@ -300,9 +300,9 @@ In the event no operands are received in the course of a computation, the result
  @itemlist[
    @item{@racketid[map] - The function that will be applied to each seed value to produce the values of the resulting sequence.}
    @item{@racket[gen] - The function that will be applied to each seed value to generate the next seed value.}
-   @item{@racket[stop?] - The condition applied to the seed value that, when true, terminates the unfold operation. If left unspecified, this defaults to @racket[false.], i.e. the unfold operation does not terminate, and must be used together with a utility like @racket[take].}
-   @item{@racket[tail] - The function that will be applied to the seed value at the point when the unfold operation terminates (or when it begins, in the case of @racket[unfoldr]), to produce the tail of the resulting sequence. This attribute is typically used to indicate the @emph{type} of the resulting sequence. If left unspecified, it defaults to @racket[(thunk* null)], that is, a function that returns @racket[null], resulting in the output sequence being a @tech/reference{list}. If a @tech/reference{hash} is desired instead, for example, this could be specified as @racket[(thunk* (hash))]}
-   @item{@racket[cons] - The constructor to be used in creating the resulting sequence. If left unspecified, this defaults to the generic type constructor, @racket[:], so that the type of the resulting sequence is determined by the type of its @racket[tail]. This value is used in @racket[unfoldl] and @racket[unfoldr] but it is ignored in @racket[unfold], which produces values lazily using @racket[stream-cons] instead.}
+   @item{@racket[stop?] - The condition applied to the seed value that, when true, terminates the unfold operation. It is specified via the keyword argument @racket[#:stop?]. If left unspecified, this defaults to @racket[false.], i.e. the unfold operation does not terminate, and must be used together with a utility like @racket[take].}
+   @item{@racket[tail] - The function that will be applied to the seed value at the point when the unfold operation terminates (or when it begins, in the case of @racket[unfoldr]), to produce the tail of the resulting sequence. This attribute is typically used to indicate the @emph{type} of the resulting sequence, and must be provided via the keyword argument @racket[#:tail]. If left unspecified, it defaults to @racket[(thunk* null)], that is, a function that returns @racket[null], resulting in the output sequence being a @tech/reference{list}. If a @tech/reference{hash} is desired instead, for example, this could be specified as @racket[(thunk* (hash))].}
+   @item{@racket[cons] - The constructor to be used in creating the resulting sequence, which is provided via the keyword argument @racket[#:cons]. If left unspecified, this defaults to the generic type constructor, @racket[:], so that the type of the resulting sequence is determined by the type of its @racket[tail]. This value is used in @racket[unfoldl] and @racket[unfoldr] but it is ignored in @racket[unfold], which produces values lazily using @racket[stream-cons] instead.}
    ]
 
  @racket[map] and @racket[gen] are the only parameters that are always required, while @racket[stop?] is only required for @racket[unfoldl] and @racket[unfoldr], but not for @racket[unfold] (because the former are not lazy and thus require a finite stop condition). @racket[tail] is usually needed when the desired output sequence is not a @racket[list] or a @racket[stream], and @racket[cons] is rarely needed since it can usually be inferred from the tail.
@@ -522,10 +522,10 @@ In the event no operands are received in the course of a computation, the result
     #:eval eval-for-docs
     (define naturals (unfold (sequencer values add1) 0))
     (->list (take 10 naturals))
-    (unfoldl (sequencer sqr add1 (λ (x) (> x 10))) 1)
-    (unfoldr (sequencer sqr sub1 zero?) 10)
-    (unfoldl (sequencer car cdr null?) '(h e l l o))
-    (unfoldr (sequencer car cdr null?) '(h e l l o))
+    (unfoldl (sequencer sqr add1 #:stop? (λ (x) (> x 10))) 1)
+    (unfoldr (sequencer sqr sub1 #:stop? zero?) 10)
+    (unfoldl (sequencer car cdr #:stop? null?) '(h e l l o))
+    (unfoldr (sequencer car cdr #:stop? null?) '(h e l l o))
     (define fibs (unfold (sequencer sum
                                     (match-lambda
                                       [(list a b) (list b (+ a b))]))
@@ -537,8 +537,8 @@ In the event no operands are received in the course of a computation, the result
                  (λ (x)
                    (cons (symbol+1 (car x))
                          (add1 (cdr x))))
-                 (λ (x) (> (cdr x) 10))
-                 (thunk* (hash)))
+                 #:stop? (λ (x) (> (cdr x) 10))
+                 #:tail (thunk* (hash)))
       '(a . 1))
   ]
 }
