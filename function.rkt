@@ -7,6 +7,7 @@
          racket/generic
          racket/stream
          racket/hash
+         racket/set
          arguments
          syntax/parse/define
          (prefix-in b: racket/base)
@@ -180,9 +181,14 @@
                                  ;; args so we check for it again here
                                  (> (length pos-args)
                                     (~min-arity (last components)))
+                                 ;; any unexpected keywords?
                                  (any?
                                   (map (!! (in? (append req-kw opt-kw)))
-                                       (hash-keys kw-args))))
+                                       (hash-keys kw-args)))
+                                 ;; all required arguments received?
+                                 (and (subset? req-kw (hash-keys kw-args))
+                                      (>= (length pos-args)
+                                          (~min-arity (last components)))))
                              (raise exn)
                              f)))])
       (eval-function f))))

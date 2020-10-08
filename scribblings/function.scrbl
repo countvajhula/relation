@@ -145,7 +145,7 @@ This module provides general-purpose utilities to support programming in the @hy
     #:label "More examples:"
 	(f add1 sqr)
     ((f expt) 2)
-    ((f =) #:key string-upcase)
+    (curry = #:key string-upcase)
 	(&& positive? odd?)
 	(|| positive? odd?)
 	(f #:compose-with (monoid (λ (f g) g) values) add1 sub1)
