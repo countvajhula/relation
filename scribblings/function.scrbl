@@ -123,6 +123,25 @@ This module provides general-purpose utilities to support programming in the @hy
   Identical to the function form of @racket[define] except that it produces a @racket[function] rather than a primitive Racket function. @racket[define/f] is an alias for @racket[define/function].
 }
 
+@deftogether[(
+  @defform[(lambda. kw-formals ... -> body ...)]
+  @defform[(λ. kw-formals ... -> body ...)]
+)]{
+  A lightweight way to define anonymous functions (lambdas) inspired by @hyperlink["https://wiki.haskell.org/Anonymous_function"]{Haskell's syntax} for lambdas. Equivalent to @racket[lambda/f] except that it does not support a @seclink["rest-args" #:doc '(lib "scribblings/guide/guide.scrbl")]{rest argument}, so it is best suited for simple cases like inline lambdas, rather than more complex cases such as a @racket[prop:procedure] specification. In any case, if a rest argument is needed, use @racket[lambda/f] directly.
+
+ Either @racket[->] or @racket[→] may be used as the syntactic separator between the arguments and the body of the function.
+
+@examples[
+    #:eval eval-for-docs
+    ((λ. x -> (sqr x)) 5)
+    (map ((λ. x y -> (expt x y)) 2) (range 10))
+    ((λ. -> 10))
+    ((λ. x y -> (+ x y)) 5 10)
+    ((λ. x y #:key [key #f] -> (= #:key key x y)) 5 "5")
+    ((λ. x y #:key [key #f] -> (= #:key key x y)) #:key ->string 5 "5")
+  ]
+}
+
 @section[#:tag "function:representation"]{Representation}
 
  The printed representation of a @racket[function] has some features worthy of note. Let's look at an example.

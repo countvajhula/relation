@@ -27,6 +27,8 @@
          λ/f
          define/function
          define/f
+         lambda.
+         λ.
          (contract-out
           [unthunk (-> procedure? any/c ... procedure?)]
           [if-f (-> (unconstrained-domain-> boolean?)
@@ -307,6 +309,14 @@
                      body ...)))
 
 (define-alias define/f define/function)
+
+(define-simple-macro (lambda. v ...
+                              (~or* (~datum ->) (~datum →))
+                              body:expr ...)
+  (lambda/f (v ...)
+    body ...))
+
+(define-alias λ. lambda.)
 
 (define (function-null #:compose-with [composer usual-composition]
                        #:curry-on [side 'left])

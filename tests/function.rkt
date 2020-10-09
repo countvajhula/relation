@@ -4,6 +4,7 @@
          rackunit/text-ui
          racket/stream
          racket/bool
+         racket/math
          (except-in data/collection
                     foldl
                     foldl/steps
@@ -54,6 +55,14 @@
      (check-true (function? join-all))
      (check-equal? (join-all 1 3 5 7) 20)
      (check-equal? (join-all 1 3 #:key ->string 5 7) "1357"))
+   (test-case
+       "Lightweight lambda syntactic form"
+     (check-equal? ((λ. → 19)) 19)
+     (check-equal? ((λ. x → (sqr x)) 5) 25)
+     (check-equal? ((λ. x y → (+ x y)) 3 5) 8)
+     (check-equal? ((λ. x y #:key key → (= #:key key x y)) #:key values 5 "5") #f)
+     (check-equal? ((λ. x y #:key [key #f] → (= #:key key x y)) 5 "5") #f)
+     (check-equal? ((λ. x y #:key [key ->number] → (= #:key key x y)) 5 "5") #t))
    (check-equal? ((unthunk (λ () 5))) 5)
    (check-equal? ((unthunk (λ () 5)) 1) 5)
    (check-equal? ((unthunk (λ () 5)) 1 2 3) 5)
