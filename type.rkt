@@ -18,7 +18,7 @@
          (only-in racket/function
                   identity
                   negate
-                  thunk)
+                  thunk*)
          threading
          (only-in data/collection
                   for-each
@@ -65,7 +65,7 @@
           [->symex (-> any/c any/c)]
           [string->symex (decoder/c string?)]
           [->values (-> any/c any)]
-          [->dict (encoder/c dict?)]
+          [->hash (encoder/c hash?)]
           [->procedure (encoder/c procedure?)]))
 
 (define make
@@ -287,12 +287,12 @@
                   ->vector
                   ->values)]))
 
-(define (->dict v)
-  (cond [(dict? v) v]
+(define (->hash v)
+  (cond [(hash? v) v]
+        [(dict? v) (make-immutable-hash v)]
         [(eq? v ID) (reify v (hash))]
-        [else (error '->dict "Unsupported type ~a!" v)]))
+        [else (error '->hash "Unsupported type ~a!" v)]))
 
 (define (->procedure v)
   (cond [(procedure? v) v]
-        [((&& sequence? (negate number?)) v) (apply compose (->list v))]
-        [else (thunk v)]))
+        [else (thunk* v)]))

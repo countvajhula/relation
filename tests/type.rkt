@@ -168,17 +168,17 @@
               (lambda ()
                 (->values 'hi)))
 
-   (check-equal? (->dict ID) (hash))
-   (check-equal? (->dict (hash 'a 1)) (hash 'a 1))
-   (check-equal? (->dict (list (cons 'a 1) (cons 'b 2))) (list (cons 'a 1) (cons 'b 2)))
+   (check-equal? (->hash ID) (hash))
+   (check-equal? (->hash (hash 'a 1)) (hash 'a 1))
+   (check-equal? (->hash (list (cons 'a 1) (cons 'b 2))) (hash 'a 1 'b 2))
    (check-exn exn:fail?
               (lambda ()
-                (->dict (list 1 2))))
+                (->hash (list 1 2))))
 
    (check-equal? ((->procedure ID) 5) 5)
    (check-equal? (->procedure add1) add1)
    (check-equal? ((->procedure 5)) 5)
-   (check-equal? ((->procedure (list add1 add1)) 3) 5)))
+   (check-equal? ((->procedure (list 1 2 3)) "blah") (list 1 2 3))))
 
 (module+ test
   (just-do

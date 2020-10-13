@@ -2,21 +2,22 @@
 @require[scribble/manual
          scribble-abbrevs/manual
          scribble/example
-		 racket/sandbox
+         racket/sandbox
          @for-label[relation/type
                     (except-in racket < <= = >= >)
-					(only-in data/collection collection? conj conj* gen:collection)
-					racket/generator]]
+                    (only-in data/collection collection? conj conj* gen:collection)
+                    racket/generator]]
 
 @(define eval-for-docs
   (parameterize ([sandbox-output 'string]
                  [sandbox-error-output 'string]
                  [sandbox-memory-limit #f])
-                 (make-evaluator 'racket/base
-				                 '(require relation)
-								 '(require racket/set)
-								 '(require (only-in data/collection conj))
-								 '(require racket/stream))))
+    (make-evaluator 'racket/base
+                    '(require relation
+                              racket/set
+                              (only-in racket/function thunk*)
+                              (only-in data/collection conj)
+                              racket/stream))))
 
 @title{Types}
 
@@ -316,5 +317,30 @@ See also: @other-doc['(lib "sugar/scribblings/sugar.scrbl")].
     (->values #(1 2 3))
     (->values '(1 2 3))
     (->values "apple")
+  ]
+}
+
+@defproc[(->hash [v any/c])
+         hash?]{
+
+ Maps the input data to a @tech/reference{hash}.
+
+@examples[
+    #:eval eval-for-docs
+    (->hash (hash 'a 1 'b 2))
+    (->hash (list '(a . 1) '(b . 2)))
+  ]
+}
+
+@defproc[(->procedure [v any/c])
+         procedure?]{
+
+ Maps the input data to a @seclink["procedures" #:doc '(lib "scribblings/reference/reference.scrbl")]{procedure}. For inputs that aren't already procedures, this is equivalent to @racket[thunk*].
+
+@examples[
+    #:eval eval-for-docs
+    (->procedure add1)
+    (->procedure 5)
+    ((->procedure 5) 'a 'b)
   ]
 }
