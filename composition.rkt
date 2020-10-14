@@ -124,23 +124,21 @@
                            #:tail (function/c any/c collection?)
                            #:cons (binary-constructor/c any/c collection?))
                           sequencer?)]
-          [sequencer-map (-> sequencer? (function/c))]
-          [sequencer-gen (-> sequencer? (function/c))]
-          [sequencer-stop? (-> sequencer? (predicate/c))]
-          [sequencer-tail (-> sequencer? (function/c any/c collection?))]
-          [sequencer-cons (-> sequencer? (binary-constructor/c any/c collection?))]
-          [sequencer? (-> any/c boolean?)]
-          [unfold (-> sequencer? any/c stream?)]
-          [unfoldl (-> sequencer? any/c collection?)]
-          [unfoldr (-> sequencer? any/c collection?)]
-          [onto (-> (sequenceof procedure?)
-                    any/c
-                    ...
-                    any/c)]
-          [gather (-> (sequenceof procedure?)
-                      any/c
-                      ...
-                      any/c)]))
+          [sequencer-map (function/c sequencer? (function/c))]
+          [sequencer-gen (function/c sequencer? (function/c))]
+          [sequencer-stop? (function/c sequencer? (predicate/c))]
+          [sequencer-tail (function/c sequencer? (encoder/c collection?))]
+          [sequencer-cons (function/c sequencer? (binary-constructor/c any/c collection?))]
+          [sequencer? (predicate/c)]
+          [unfold (binary-function/c sequencer? any/c stream?)]
+          [unfoldl (binary-function/c sequencer? any/c collection?)]
+          [unfoldr (binary-function/c sequencer? any/c collection?)]
+          [onto (binary-variadic-function/c (sequenceof procedure?)
+                                            any/c
+                                            any/c)]
+          [gather (binary-variadic-function/c (sequenceof procedure?)
+                                              any/c
+                                              any/c)]))
 
 (define-generics appendable
   (append appendable other)

@@ -62,7 +62,7 @@
           [->syntax (->* (any/c)
                          (syntax?)
                          syntax?)]
-          [->symex (-> any/c any/c)]
+          [->symex (function/c)]
           [string->symex (decoder/c string?)]
           [->values (-> any/c any)]
           [->hash (encoder/c hash?)]

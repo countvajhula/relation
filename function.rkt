@@ -30,7 +30,7 @@
          lambda.
          λ.
          (contract-out
-          [unthunk (-> procedure? any/c ... procedure?)]
+          [unthunk (binary-variadic-function/c procedure? any/c procedure?)]
           [if-f (-> (unconstrained-domain-> boolean?)
                     procedure?
                     procedure?
@@ -42,7 +42,7 @@
           [flip$ functional/c]
           [flip* functional/c]
           [lift functional/c]
-          [pack (-> procedure? any/c ... sequence?)]
+          [pack (binary-variadic-function/c procedure? any/c sequence?)]
           [struct monoid ((f procedure?)
                           (id procedure?))]
           [struct function ((components list?)
@@ -76,7 +76,7 @@
                                #:curry-on symbol?)
                               function?)]
           [function-cons (binary-constructor/c procedure? function?)]
-          [function-arguments (-> function? arguments?)]
+          [function-arguments (function/c function? arguments?)]
           [apply/steps (unconstrained-domain-> sequence?)]
           [compose (variadic-constructor/c procedure? function?)]
           [curry (unconstrained-domain-> function?)]
@@ -85,8 +85,8 @@
           [&& (variadic-constructor/c procedure? function?)]
           [disjoin (variadic-constructor/c procedure? function?)]
           [|| (variadic-constructor/c procedure? function?)]
-          [negate (-> procedure? function?)]
-          [!! (-> procedure? function?)]))
+          [negate (function/c procedure? function?)]
+          [!! (function/c procedure? function?)]))
 
 (define (unthunk f . args)
   (f:thunk*
