@@ -17,9 +17,9 @@
          =!
          (contract-out
           [undefined? (predicate/c)]
-          [orf (variadic-function/c any/c any/c)]
+          [orf (variadic-function/c)]
           [any? (decoder/c sequence?)]
-          [andf (variadic-function/c any/c any/c)]
+          [andf (variadic-function/c)]
           [all? (decoder/c sequence?)]
           [none? (decoder/c sequence?)]))
 

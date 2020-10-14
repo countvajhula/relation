@@ -37,7 +37,7 @@
                     procedure?)]
           [true. (unconstrained-domain-> boolean?)]
           [false. (unconstrained-domain-> boolean?)]
-          [arg (-> exact-nonnegative-integer? procedure?)]
+          [arg (function/c natural-number/c procedure?)]
           [flip functional/c]
           [flip$ functional/c]
           [flip* functional/c]
