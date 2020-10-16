@@ -47,35 +47,30 @@
                           (id procedure?))]
           [struct function ((components list?)
                             (composer monoid?)
-                            (side symbol?)
                             (args grouped-arguments?))]
           [struct grouped-arguments
-            ((left list?)
+            ((side symbol?)
+             (left list?)
              (right list?)
              (kw hash?))]
           [make-function (->* ()
-                              (#:compose-with monoid?
-                               #:curry-on symbol?)
+                              (#:compose-with monoid?)
                               #:rest (listof procedure?)
                               function?)]
           [make-threading-function (->* ()
-                                        (#:compose-with monoid?
-                                         #:curry-on symbol?)
+                                        (#:compose-with monoid?)
                                         #:rest (listof procedure?)
                                         function?)]
           [f (->* ()
-                  (#:compose-with monoid?
-                   #:curry-on symbol?)
+                  (#:compose-with monoid?)
                   #:rest (listof procedure?)
                   function?)]
           [f> (->* ()
-                   (#:compose-with monoid?
-                    #:curry-on symbol?)
+                   (#:compose-with monoid?)
                    #:rest (listof procedure?)
                    function?)]
           [function-null (->* ()
-                              (#:compose-with monoid?
-                               #:curry-on symbol?)
+                              (#:compose-with monoid?)
                               function?)]
           [function-cons (binary-constructor/c procedure? function?)]
           [function-arguments (function/c function? arguments?)]
@@ -197,11 +192,11 @@
                              f)))])
       (eval-function f))))
 
-(struct grouped-arguments (left right kw)
+(struct grouped-arguments (side left right kw)
   #:transparent)
 
 (define empty-grouped-arguments
-  (grouped-arguments null null (hash)))
+  (grouped-arguments 'left null null (hash)))
 
 (define (grouped-arguments-positional args)
   (append (grouped-arguments-left args)
@@ -209,7 +204,6 @@
 
 (struct function (components
                   composer
-                  side
                   args)
   ; maybe incorporate a power into the function type
   #:transparent
@@ -218,7 +212,7 @@
   (lambda/arguments
    packed-args
    (let* ([self (first (arguments-positional packed-args))]
-          [side (function-side self)]
+          [side (grouped-arguments-side (function-args self))]
           [curry-proc (if (= side 'left)
                           curry
                           curryr)]
@@ -244,12 +238,10 @@
    (define (rest self)
      (function (-rest (function-components self))
                (function-composer self)
-               (function-side self)
                (function-args self)))
    (define (reverse self)
      (function (-reverse (function-components self))
                (function-composer self)
-               (function-side self)
                (function-args self)))]
 
   #:methods gen:countable
@@ -268,7 +260,7 @@
             [components (function-components self)]
             [representation
              (list 'λ
-                   (if (eq? (function-side self) 'left)
+                   (if (eq? (grouped-arguments-side (function-args self)) 'left)
                        (list args '_)
                        (list '_ args))
                    (list* (match (function-composer self)
@@ -280,21 +272,17 @@
        (recur representation port)))])
 
 (define (make-function #:compose-with [composer usual-composition]
-                       #:curry-on [side 'left]
                        . fs)
   (function fs
             composer
-            side
             empty-grouped-arguments))
 
 (define f make-function)
 
 (define (make-threading-function #:compose-with [composer usual-composition]
-                                 #:curry-on [side 'left]
                                  . fs)
   (apply f
          #:compose-with composer
-         #:curry-on side
          (reverse fs)))
 
 (define f> make-threading-function)
@@ -322,15 +310,12 @@
 
 (define-alias λ. lambda.)
 
-(define (function-null #:compose-with [composer usual-composition]
-                       #:curry-on [side 'left])
-  (make-function #:compose-with composer
-                 #:curry-on side))
+(define (function-null #:compose-with [composer usual-composition])
+  (make-function #:compose-with composer))
 
 (define (function-cons proc f)
   (function (cons proc (function-components f))
             (function-composer f)
-            (function-side f)
             (function-args f)))
 
 (define (function-arguments f)
@@ -364,7 +349,9 @@
 
 (define (merge-grouped-arguments a b)
   ;; merge arg sets, with arg set a prioritized over b
-  (grouped-arguments (append (grouped-arguments-left a)
+  ;; and using b's currying direction
+  (grouped-arguments (grouped-arguments-side b)
+                     (append (grouped-arguments-left a)
                              (grouped-arguments-left b))
                      ;; note order reversed for right args
                      (append (grouped-arguments-right b)
@@ -372,16 +359,14 @@
                      (hash-union (grouped-arguments-kw a)
                                  (grouped-arguments-kw b))))
 
-(define (~curry f side invocation-args)
+(define (~curry f invocation-args)
   (if (function? f)
       (function (function-components f)
                 (function-composer f)
-                side
                 (merge-grouped-arguments (function-args f)
                                          invocation-args))
       (function (list f)
                 usual-composition
-                side
                 (merge-grouped-arguments empty-grouped-arguments
                                          invocation-args))))
 
@@ -389,15 +374,15 @@
   (let* ([f (first (arguments-positional args))]
          [pos (rest (arguments-positional args))]
          [kw (arguments-keyword args)]
-         [invocation-args (grouped-arguments pos null kw)])
-    (~curry f 'left invocation-args)))
+         [invocation-args (grouped-arguments 'left pos null kw)])
+    (~curry f invocation-args)))
 
 (define/arguments (curryr args)
   (let* ([f (first (arguments-positional args))]
          [pos (rest (arguments-positional args))]
          [kw (arguments-keyword args)]
-         [invocation-args (grouped-arguments null pos kw)])
-    (~curry f 'right invocation-args)))
+         [invocation-args (grouped-arguments 'right null pos kw)])
+    (~curry f invocation-args)))
 
 (define (arguments-cons v args)
   (make-arguments (cons v (arguments-positional args))
