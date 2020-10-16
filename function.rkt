@@ -48,9 +48,11 @@
           [struct function ((components list?)
                             (composer monoid?)
                             (side symbol?)
-                            (left-args list?)
-                            (right-args list?)
-                            (kw-args hash?))]
+                            (args grouped-arguments?))]
+          [struct grouped-arguments
+            ((left list?)
+             (right list?)
+             (kw hash?))]
           [make-function (->* ()
                               (#:compose-with monoid?
                                #:curry-on symbol?)
@@ -159,10 +161,9 @@
 
 (define (eval-if-saturated f)
   (let* ([components (function-components f)]
-         [left-args (function-left-args f)]
-         [right-args (function-right-args f)]
-         [pos-args (append left-args right-args)]
-         [kw-args (function-kw-args f)])
+         [args (function-args f)]
+         [pos-args (grouped-arguments-positional args)]
+         [kw-args (grouped-arguments-kw args)])
     (with-handlers ([exn:fail:contract:arity?
                      (λ (exn)
                        (if (> (length pos-args)
@@ -195,12 +196,20 @@
                              f)))])
       (eval-function f))))
 
+(struct grouped-arguments (left right kw)
+  #:transparent)
+
+(define empty-grouped-arguments
+  (grouped-arguments null null (hash)))
+
+(define (grouped-arguments-positional args)
+  (append (grouped-arguments-left args)
+          (grouped-arguments-right args)))
+
 (struct function (components
                   composer
                   side
-                  left-args
-                  right-args
-                  kw-args)
+                  args)
   ; maybe incorporate a power into the function type
   #:transparent
 
@@ -235,16 +244,12 @@
      (function (-rest (function-components self))
                (function-composer self)
                (function-side self)
-               (function-left-args self)
-               (function-right-args self)
-               (function-kw-args self)))
+               (function-args self)))
    (define (reverse self)
      (function (-reverse (function-components self))
                (function-composer self)
                (function-side self)
-               (function-left-args self)
-               (function-right-args self)
-               (function-kw-args self)))]
+               (function-args self)))]
 
   #:methods gen:countable
   [(define/generic -length length)
@@ -279,9 +284,7 @@
   (function fs
             composer
             side
-            null
-            null
-            (hash)))
+            empty-grouped-arguments))
 
 (define f make-function)
 
@@ -327,14 +330,13 @@
   (function (cons proc (function-components f))
             (function-composer f)
             (function-side f)
-            (function-left-args f)
-            (function-right-args f)
-            (function-kw-args f)))
+            (function-args f)))
 
 (define (function-arguments f)
-  (make-arguments (append (function-left-args f)
-                          (function-right-args f))
-                  (function-kw-args f)))
+  (let ([args (function-args f)])
+    (make-arguments (append (grouped-arguments-left args)
+                            (grouped-arguments-right args))
+                    (grouped-arguments-kw args))))
 
 (define/arguments (apply/steps args)
   (let ([f (first (arguments-positional args))]
@@ -364,40 +366,48 @@
         [pos (rest (arguments-positional args))]
         [kw (arguments-keyword args)])
     (if (function? f)
-        (function (function-components f)
-                  (function-composer f)
-                  'left
-                  (append (function-left-args f)
-                          pos)
-                  (function-right-args f)
-                  (hash-union (function-kw-args f)
-                              kw))
+        (let* ([existing-args (function-args f)]
+               [new-left-args (append (grouped-arguments-left existing-args)
+                                      pos)]
+               [new-kw-args (hash-union (grouped-arguments-kw existing-args)
+                                        kw)])
+          (function (function-components f)
+                    (function-composer f)
+                    'left
+                    (struct-copy grouped-arguments
+                                 existing-args
+                                 [left new-left-args]
+                                 [kw new-kw-args])))
         (function (list f)
                   usual-composition
                   'left
-                  pos
-                  null
-                  kw))))
+                  (grouped-arguments pos
+                                     null
+                                     kw)))))
 
 (define/arguments (curryr args)
   (let ([f (first (arguments-positional args))]
         [pos (rest (arguments-positional args))]
         [kw (arguments-keyword args)])
     (if (function? f)
-        (function (function-components f)
-                  (function-composer f)
-                  'right
-                  (function-left-args f)
-                  (append pos
-                          (function-right-args f))
-                  (hash-union (function-kw-args f)
-                              kw))
+        (let* ([existing-args (function-args f)]
+               [new-right-args (append pos
+                                       (grouped-arguments-right existing-args))]
+               [new-kw-args (hash-union (grouped-arguments-kw existing-args)
+                                        kw)])
+          (function (function-components f)
+                    (function-composer f)
+                    'right
+                    (struct-copy grouped-arguments
+                                 existing-args
+                                 [right new-right-args]
+                                 [kw new-kw-args])))
         (function (list f)
                   usual-composition
                   'right
-                  null
-                  pos
-                  kw))))
+                  (grouped-arguments null
+                                     pos
+                                     kw)))))
 
 (define (arguments-cons v args)
   (make-arguments (cons v (arguments-positional args))
