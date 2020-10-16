@@ -155,9 +155,10 @@
 
 (define (eval-function f)
   (let ([components (function-components f)]
-        [composer (function-composer f)])
+        [composer (function-composer f)]
+        [args (function-arguments f)])
     (apply/arguments (apply composer components)
-                     (function-arguments f))))
+                     args)))
 
 (define (eval-if-saturated f)
   (let* ([components (function-components f)]
@@ -361,53 +362,42 @@
 
 (define compose f)
 
+(define (merge-grouped-arguments a b)
+  ;; merge arg sets, with arg set a prioritized over b
+  (grouped-arguments (append (grouped-arguments-left a)
+                             (grouped-arguments-left b))
+                     ;; note order reversed for right args
+                     (append (grouped-arguments-right b)
+                             (grouped-arguments-right a))
+                     (hash-union (grouped-arguments-kw a)
+                                 (grouped-arguments-kw b))))
+
+(define (~curry f side invocation-args)
+  (if (function? f)
+      (function (function-components f)
+                (function-composer f)
+                side
+                (merge-grouped-arguments (function-args f)
+                                         invocation-args))
+      (function (list f)
+                usual-composition
+                side
+                (merge-grouped-arguments empty-grouped-arguments
+                                         invocation-args))))
+
 (define/arguments (curry args)
-  (let ([f (first (arguments-positional args))]
-        [pos (rest (arguments-positional args))]
-        [kw (arguments-keyword args)])
-    (if (function? f)
-        (let* ([existing-args (function-args f)]
-               [new-left-args (append (grouped-arguments-left existing-args)
-                                      pos)]
-               [new-kw-args (hash-union (grouped-arguments-kw existing-args)
-                                        kw)])
-          (function (function-components f)
-                    (function-composer f)
-                    'left
-                    (struct-copy grouped-arguments
-                                 existing-args
-                                 [left new-left-args]
-                                 [kw new-kw-args])))
-        (function (list f)
-                  usual-composition
-                  'left
-                  (grouped-arguments pos
-                                     null
-                                     kw)))))
+  (let* ([f (first (arguments-positional args))]
+         [pos (rest (arguments-positional args))]
+         [kw (arguments-keyword args)]
+         [invocation-args (grouped-arguments pos null kw)])
+    (~curry f 'left invocation-args)))
 
 (define/arguments (curryr args)
-  (let ([f (first (arguments-positional args))]
-        [pos (rest (arguments-positional args))]
-        [kw (arguments-keyword args)])
-    (if (function? f)
-        (let* ([existing-args (function-args f)]
-               [new-right-args (append pos
-                                       (grouped-arguments-right existing-args))]
-               [new-kw-args (hash-union (grouped-arguments-kw existing-args)
-                                        kw)])
-          (function (function-components f)
-                    (function-composer f)
-                    'right
-                    (struct-copy grouped-arguments
-                                 existing-args
-                                 [right new-right-args]
-                                 [kw new-kw-args])))
-        (function (list f)
-                  usual-composition
-                  'right
-                  (grouped-arguments null
-                                     pos
-                                     kw)))))
+  (let* ([f (first (arguments-positional args))]
+         [pos (rest (arguments-positional args))]
+         [kw (arguments-keyword args)]
+         [invocation-args (grouped-arguments null pos kw)])
+    (~curry f 'right invocation-args)))
 
 (define (arguments-cons v args)
   (make-arguments (cons v (arguments-positional args))

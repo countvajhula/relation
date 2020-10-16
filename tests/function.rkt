@@ -124,6 +124,14 @@
    (check-equal? ((curry (curry .. "3") "4")) "34")
    (check-equal? ((curryr (curry .. "3") "4") "5") "354")
    (check-equal? ((curry (curryr .. "3") "4") "5") "453")
+   (check-equal? ((curry (curry (curry string-append "1") "2") "3") "4") "1234")
+   (check-equal? ((curry (curry (curryr string-append "1") "2") "3") "4") "2341")
+   (check-equal? ((curry (curryr (curry string-append "1") "2") "3") "4") "1342")
+   (check-equal? ((curry (curryr (curryr string-append "1") "2") "3") "4") "3421")
+   (check-equal? ((curryr (curry (curry string-append "1") "2") "3") "4") "1243")
+   (check-equal? ((curryr (curry (curryr string-append "1") "2") "3") "4") "2431")
+   (check-equal? ((curryr (curryr (curry string-append "1") "2") "3") "4") "1432")
+   (check-equal? ((curryr (curryr (curryr string-append "1") "2") "3") "4") "4321")
    (check-equal? ((curryr (curry power 2) *) 3) 8)
    (test-case
        "Currying in the presence of keyword arguments"
