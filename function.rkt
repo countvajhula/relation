@@ -47,8 +47,8 @@
                           (id procedure?))]
           [struct function ((components list?)
                             (composer monoid?)
-                            (args grouped-arguments?))]
-          [struct grouped-arguments
+                            (args partial-arguments?))]
+          [struct partial-arguments
             ((side symbol?)
              (left list?)
              (right list?)
@@ -158,8 +158,8 @@
 (define (eval-if-saturated f)
   (let* ([components (function-components f)]
          [args (function-args f)]
-         [pos-args (grouped-arguments-positional args)]
-         [kw-args (grouped-arguments-kw args)])
+         [pos-args (partial-arguments-positional args)]
+         [kw-args (partial-arguments-kw args)])
     (with-handlers ([exn:fail:contract:arity?
                      (λ (exn)
                        (if (> (length pos-args)
@@ -192,35 +192,41 @@
                              f)))])
       (eval-function f))))
 
-(struct grouped-arguments (side left right kw)
+(struct partial-arguments (side left right kw)
   #:transparent)
 
-(define empty-grouped-arguments
-  (grouped-arguments 'left null null (hash)))
+(define empty-partial-arguments
+  (partial-arguments 'left null null (hash)))
 
-(define (grouped-arguments-positional args)
-  (append (grouped-arguments-left args)
-          (grouped-arguments-right args)))
+(define (apply/partial-arguments f args)
+  (let* ([side (partial-arguments-side (function-args f))]
+         [curry-proc (if (= side 'left)
+                         curry
+                         curryr)]
+         [curried-f
+          (curry-proc
+           (apply/arguments curry-proc
+                            (arguments-cons f args)))])
+    (eval-if-saturated curried-f)))
+
+(define (partial-arguments-positional args)
+  (append (partial-arguments-left args)
+          (partial-arguments-right args)))
 
 (struct function (components
                   composer
                   args)
   ; maybe incorporate a power into the function type
+  ; probably better to define a higher-level `function-power` type
   #:transparent
 
   #:property prop:procedure
   (lambda/arguments
    packed-args
    (let* ([self (first (arguments-positional packed-args))]
-          [side (grouped-arguments-side (function-args self))]
-          [curry-proc (if (= side 'left)
-                          curry
-                          curryr)]
-          [curried-f
-           (curry-proc
-            (apply/arguments curry-proc
-                             packed-args))])
-     (eval-if-saturated curried-f)))
+          [args (make-arguments (rest (arguments-positional packed-args))
+                                (arguments-keyword packed-args))])
+     (apply/partial-arguments self args)))
 
   #:methods gen:collection
   [(define (conj self elem)
@@ -260,7 +266,7 @@
             [components (function-components self)]
             [representation
              (list 'λ
-                   (if (eq? (grouped-arguments-side (function-args self)) 'left)
+                   (if (eq? (partial-arguments-side (function-args self)) 'left)
                        (list args '_)
                        (list '_ args))
                    (list* (match (function-composer self)
@@ -275,7 +281,7 @@
                        . fs)
   (function fs
             composer
-            empty-grouped-arguments))
+            empty-partial-arguments))
 
 (define f make-function)
 
@@ -320,9 +326,9 @@
 
 (define (function-arguments f)
   (let ([args (function-args f)])
-    (make-arguments (append (grouped-arguments-left args)
-                            (grouped-arguments-right args))
-                    (grouped-arguments-kw args))))
+    (make-arguments (append (partial-arguments-left args)
+                            (partial-arguments-right args))
+                    (partial-arguments-kw args))))
 
 (define/arguments (apply/steps args)
   (let ([f (first (arguments-positional args))]
@@ -347,41 +353,41 @@
 
 (define compose f)
 
-(define (merge-grouped-arguments a b)
+(define (merge-partial-arguments a b)
   ;; merge arg sets, with arg set a prioritized over b
   ;; and using b's currying direction
-  (grouped-arguments (grouped-arguments-side b)
-                     (append (grouped-arguments-left a)
-                             (grouped-arguments-left b))
+  (partial-arguments (partial-arguments-side b)
+                     (append (partial-arguments-left a)
+                             (partial-arguments-left b))
                      ;; note order reversed for right args
-                     (append (grouped-arguments-right b)
-                             (grouped-arguments-right a))
-                     (hash-union (grouped-arguments-kw a)
-                                 (grouped-arguments-kw b))))
+                     (append (partial-arguments-right b)
+                             (partial-arguments-right a))
+                     (hash-union (partial-arguments-kw a)
+                                 (partial-arguments-kw b))))
 
 (define (~curry f invocation-args)
   (if (function? f)
       (function (function-components f)
                 (function-composer f)
-                (merge-grouped-arguments (function-args f)
+                (merge-partial-arguments (function-args f)
                                          invocation-args))
       (function (list f)
                 usual-composition
-                (merge-grouped-arguments empty-grouped-arguments
+                (merge-partial-arguments empty-partial-arguments
                                          invocation-args))))
 
 (define/arguments (curry args)
   (let* ([f (first (arguments-positional args))]
          [pos (rest (arguments-positional args))]
          [kw (arguments-keyword args)]
-         [invocation-args (grouped-arguments 'left pos null kw)])
+         [invocation-args (partial-arguments 'left pos null kw)])
     (~curry f invocation-args)))
 
 (define/arguments (curryr args)
   (let* ([f (first (arguments-positional args))]
          [pos (rest (arguments-positional args))]
          [kw (arguments-keyword args)]
-         [invocation-args (grouped-arguments 'right null pos kw)])
+         [invocation-args (partial-arguments 'right null pos kw)])
     (~curry f invocation-args)))
 
 (define (arguments-cons v args)
