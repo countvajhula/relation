@@ -85,6 +85,9 @@
           [negate (function/c procedure? function?)]
           [!! (function/c procedure? function?)]))
 
+(module+ test
+  (require rackunit))
+
 (define (unthunk f . args)
   (f:thunk*
    (apply f args)))
@@ -200,6 +203,13 @@
                (λ (a b)
                  (keyword<? (car a) (car b))))))
 
+(module+ test
+  (test-case
+      "kwhash->altlist"
+    (check-equal? (kwhash->altlist (hash '#:c 2 '#:a 1 '#:b 3)) '(#:a 1 #:b 3 #:c 2))
+    (check-equal? (kwhash->altlist (hash '#:a 1)) '(#:a 1))
+    (check-equal? (kwhash->altlist (hash)) '())))
+
 (struct partial-arguments (side left right kw)
   #:transparent
 
@@ -228,7 +238,7 @@
 
 (define (apply-function f args)
   (let* ([side (partial-arguments-side (function-args f))]
-         [curry-proc (if (= side 'left)
+         [curry-proc (if (eq? side 'left)
                          curry
                          curryr)]
          [curried-f
