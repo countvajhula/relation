@@ -73,7 +73,7 @@
                               (#:compose-with monoid?)
                               function?)]
           [function-cons (binary-constructor/c procedure? function?)]
-          [function-arguments (function/c function? arguments?)]
+          [function-combined-arguments (function/c function? arguments?)]
           [apply/steps (unconstrained-domain-> sequence?)]
           [compose (variadic-constructor/c procedure? function?)]
           [curry (unconstrained-domain-> function?)]
@@ -151,7 +151,7 @@
 (define (eval-function f)
   (let ([components (function-components f)]
         [composer (function-composer f)]
-        [args (function-arguments f)])
+        [args (function-combined-arguments f)])
     (apply/arguments (apply composer components)
                      args)))
 
@@ -192,13 +192,41 @@
                              f)))])
       (eval-function f))))
 
+(define (kwhash->altlist v)
+  (foldr (λ (a b)
+           (list* (car a) (cdr a) b))
+         null
+         (sort (hash->list v)
+               (λ (a b)
+                 (keyword<? (car a) (car b))))))
+
 (struct partial-arguments (side left right kw)
-  #:transparent)
+  #:transparent
+
+  #:methods gen:custom-write
+  [(define (write-proc self port mode)
+     (define recur
+       (case mode
+         [(#t) write]
+         [(#f) display]
+         [else (λ (p port) (print p port mode))]))
+     (let ([side (partial-arguments-side self)]
+           [left (partial-arguments-left self)]
+           [right (partial-arguments-right self)]
+           [kw (partial-arguments-kw self)])
+       (if (or (null? left)
+               (null? right))
+           (recur (partial-arguments->arguments self) port)
+           (recur (append left
+                          (list '_)
+                          right
+                          (kwhash->altlist kw))
+                  port))))])
 
 (define empty-partial-arguments
   (partial-arguments 'left null null (hash)))
 
-(define (apply/partial-arguments f args)
+(define (apply-function f args)
   (let* ([side (partial-arguments-side (function-args f))]
          [curry-proc (if (= side 'left)
                          curry
@@ -213,6 +241,10 @@
   (append (partial-arguments-left args)
           (partial-arguments-right args)))
 
+(define (partial-arguments->arguments args)
+  (make-arguments (partial-arguments-positional args)
+                  (partial-arguments-kw args)))
+
 (struct function (components
                   composer
                   args)
@@ -226,7 +258,7 @@
    (let* ([self (first (arguments-positional packed-args))]
           [args (make-arguments (rest (arguments-positional packed-args))
                                 (arguments-keyword packed-args))])
-     (apply/partial-arguments self args)))
+     (apply-function self args)))
 
   #:methods gen:collection
   [(define (conj self elem)
@@ -262,14 +294,13 @@
          [(#t) write]
          [(#f) display]
          [else (λ (p port) (print p port mode))]))
-     (let* ([args (function-arguments self)]
+     (let* ([args (function-args self)]
             [components (function-components self)]
+            [composer (function-composer self)]
             [representation
              (list 'λ
-                   (if (eq? (partial-arguments-side (function-args self)) 'left)
-                       (list args '_)
-                       (list '_ args))
-                   (list* (match (function-composer self)
+                   args
+                   (list* (match composer
                             [(== usual-composition) '..]
                             [(== conjoin-composition) '&&]
                             [(== disjoin-composition) '||]
@@ -324,11 +355,8 @@
             (function-composer f)
             (function-args f)))
 
-(define (function-arguments f)
-  (let ([args (function-args f)])
-    (make-arguments (append (partial-arguments-left args)
-                            (partial-arguments-right args))
-                    (partial-arguments-kw args))))
+(define (function-combined-arguments f)
+  (partial-arguments->arguments (function-args f)))
 
 (define/arguments (apply/steps args)
   (let ([f (first (arguments-positional args))]
