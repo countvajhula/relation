@@ -5,13 +5,13 @@
          (except-in racket/contract/base
                     predicate/c)
          racket/generic
-         (only-in racket/function
-                  curryr)
+         racket/function
          data/collection
          contract/social
          relation/equivalence
-         (except-in relation/function
-                    curryr))
+         (only-in relation/function
+                  ||
+                  flip))
 
 (require "private/util.rkt"
          "private/contract.rkt")

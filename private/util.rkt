@@ -1,13 +1,9 @@
 #lang racket/base
 
-(require racket/match
-         racket/function
-         racket/stream
-         data/collection
+(require racket/list
          relation/logic)
 
 (provide check-pairwise
-         zip-with
          exists
          for-all)
 
@@ -20,13 +16,6 @@
             #t
             (and (check? v (first vs))
                  (check-pairwise check? vs))))))
-
-(define (zip-with op . seqs)
-  (if (any? (map empty? seqs))
-      (stream)
-      (let ([vs (map first seqs)])
-        (stream-cons (apply op vs)
-                     (apply zip-with op (map rest seqs))))))
 
 (define (exists pred . seqs)
   (if (andmap empty? seqs)

@@ -8,19 +8,30 @@
          racket/stream
          racket/hash
          racket/set
+         (except-in racket/list
+                    empty?
+                    first
+                    rest)
          arguments
          syntax/parse/define
          (prefix-in b: racket/base)
-         (except-in data/collection
-                    foldl
-                    foldl/steps
-                    append)
+         (only-in data/collection
+                  gen:collection
+                  gen:sequence
+                  gen:countable
+                  empty?
+                  first
+                  rest
+                  nth
+                  sequence->list
+                  reverse)
          (only-in data/functor
                   (map f:map))
          mischief/shorthand
          contract/social
          relation/logic
-         relation/equivalence)
+         (only-in relation/equivalence
+                  in?))
 
 (provide lambda/function
          lambda/f
@@ -383,7 +394,7 @@
                        (let loop ([remf (rest remf)]
                                   [v v])
                          (if (empty? remf)
-                             (stream)
+                             empty-stream
                              (let ([v ((first remf) v)])
                                (stream-cons v
                                             (loop (rest remf)

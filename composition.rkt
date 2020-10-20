@@ -15,8 +15,14 @@
                     (append d:append))
          point-free
          relation/logic
-         relation/equivalence
-         relation/function
+         (only-in relation/equivalence
+                  =)
+         (only-in relation/function
+                  function?
+                  function-null
+                  function-cons
+                  flip$
+                  false.)
          version-case
          contract/social)
 
@@ -226,7 +232,7 @@
                           appendable
                           (d:append appendable other)))
                     (define (appendable-identity appendable)
-                      (stream))]))
+                      empty-stream)]))
 
 (define-generics multipliable
   (multiply multipliable other)

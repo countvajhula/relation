@@ -26,9 +26,9 @@
                   conj
                   conj*)
          contract/social
-         (except-in relation/function
-                    negate)
-         relation/composition)
+         (only-in relation/composition
+                  ID
+                  reify))
 
 (provide :
          make!
