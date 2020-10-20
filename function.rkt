@@ -89,6 +89,7 @@
           [compose (variadic-constructor/c procedure? function?)]
           [curry (unconstrained-domain-> function?)]
           [curryr (unconstrained-domain-> function?)]
+          [uncurry (functional/c)]
           [conjoin (variadic-constructor/c procedure? function?)]
           [&& (variadic-constructor/c procedure? function?)]
           [disjoin (variadic-constructor/c procedure? function?)]
@@ -439,6 +440,14 @@
          [kw (arguments-keyword args)]
          [invocation-args (partial-arguments 'right null pos kw)])
     (~curry f invocation-args)))
+
+(define (uncurry f)
+  (λ/f args
+    (let loop ([rem-args (reverse args)])
+      (match rem-args
+        ['() (f)]
+        [(list v) (f v)]
+        [(list v vs ...) ((loop vs) v)]))))
 
 (define (arguments-cons v args)
   (make-arguments (cons v (arguments-positional args))

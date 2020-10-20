@@ -205,6 +205,7 @@ This module provides general-purpose utilities to support programming in the @hy
     #:eval eval-for-docs
     (function-combined-arguments (curry + 1 2 3))
     (function-combined-arguments (curry = #:key string-upcase "apple"))
+    (function-combined-arguments (curry (curryr (curry string-append "hello") "friend") "there"))
   ]
 }
 
@@ -252,6 +253,23 @@ This module provides general-purpose utilities to support programming in the @hy
     (curry + 2)
     (curry + 2 3)
     ((curryr < 5) 3)
+  ]
+}
+
+@defproc[(uncurry [g procedure?]
+                  ...)
+         function?]{
+
+ Convert a curried function @racket[g] accepting single arguments in succession to an equivalent one accepting an arbitrary number of arguments. This is typically not needed since both @racket[curry] as well as Racket's built-in currying interfaces support partial application with an arbitrary number of arguments, but it can be useful with naively curried functions not created using one of these interfaces.
+
+@examples[
+    #:eval eval-for-docs
+    (define (curried-add-3 x)
+      (λ (y)
+        (λ (z)
+          (+ x y z))))
+    (eval:error (curried-add-3 1 4 7))
+    ((uncurry curried-add-3) 1 4 7)
   ]
 }
 
