@@ -235,14 +235,15 @@
            [left (partial-arguments-left self)]
            [right (partial-arguments-right self)]
            [kw (partial-arguments-kw self)])
-       (if (or (null? left)
-               (null? right))
-           (recur (partial-arguments->arguments self) port)
-           (recur (append left
-                          (list '_)
-                          right
-                          (kwhash->altlist kw))
-                  port))))])
+       (cond [(null? right)
+              (recur (append left (list '_)) port)]
+             [(null? left)
+              (recur (append (list '_) right) port)]
+             [else (recur (append left
+                                  (list '_)
+                                  right
+                                  (kwhash->altlist kw))
+                          port)])))])
 
 (define empty-partial-arguments
   (partial-arguments 'left null null (hash)))

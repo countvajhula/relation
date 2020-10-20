@@ -45,19 +45,13 @@ This module provides general-purpose utilities to support programming in the @hy
 
 @defstruct[function ([components list?]
                      [composer monoid?]
-                     [side symbol?]
-                     [left-args list?]
-                     [right-args list?]
-                     [kw-args hash?])
+                     [args partial-arguments?])
                     #:omit-constructor]{
   A type that represents any procedure, whether elementary or composed. It is inherently @hyperlink["https://en.wikipedia.org/wiki/Currying"]{curried}, meaning that partially supplying arguments results in a new function parametrized by these already-provided arguments.
 @itemlist[
 @item{@racket[components] - A list of functions that comprise this one.}
 @item{@racket[composer] - The definition of composition for this function. By default (when constructed using @racket[make-function]), this is the usual function composition, i.e. @racketlink[b:compose]{@racket[compose]} together with @racket[values] as the identity.}
-@item{@racket[side] - The side on which the function is curried.}
-@item{@racket[left-args] - The arguments that parametrize this function on the left (e.g. passed in by left-currying).}
-@item{@racket[right-args] - The arguments that parametrize this function on the right (e.g. passed in by right-currying).}
-@item{@racket[kw-args] - The keyword arguments that parametrize (i.e. have already been passed to) this function.}]
+@item{@racket[args] - Arguments that have already been supplied to the function.}]
 }
 
 @defstruct[monoid ([f (-> procedure? procedure? procedure?)]
@@ -70,24 +64,35 @@ This module provides general-purpose utilities to support programming in the @hy
    @item{@racket[id] - An @hyperlink["https://en.wikipedia.org/wiki/Identity_element"]{identity} function appropriate for the composition.}]
 }
 
+@defstruct[partial-arguments ([side symbol?]
+                              [left list?]
+                              [right list?]
+                              [kw hash?])
+                             #:omit-constructor]{
+ A structure representing the arguments that parametrize (i.e. have already been supplied to) a function. This includes all arguments that have been supplied by either left- or right-currying.
+
+ @itemlist[
+    @item{@racket[side] - The side on which the function is curried.}
+    @item{@racket[left-args] - The positional arguments that parametrize this function on the left (e.g. passed in by left-currying).}
+    @item{@racket[right-args] - The positional arguments that parametrize this function on the right (e.g. passed in by right-currying).}
+    @item{@racket[kw-args] - The keyword arguments that parametrize this function.}
+   ]
+}
+
 @deftogether[(
   @defproc[(make-function [#:compose-with composer monoid? (monoid #, @racketlink[b:compose]{@racket[compose]} values)]
-                          [#:curry-on side symbol? 'left]
                           [g procedure?]
                           ...)
            function?]
   @defproc[(f [#:compose-with composer monoid? (monoid #, @racketlink[b:compose]{@racket[compose]} values)]
-              [#:curry-on side symbol? 'left]
               [g procedure?]
               ...)
            function?]
   @defproc[(make-threading-function [#:compose-with composer monoid? (monoid #, @racketlink[b:compose]{@racket[compose]} values)]
-                                    [#:curry-on side symbol? 'left]
                                     [g procedure?]
                                     ...)
            function?]
   @defproc[(f> [#:compose-with composer monoid? (monoid #, @racketlink[b:compose]{@racket[compose]} values)]
-               [#:curry-on side symbol? 'left]
                [g procedure?]
                ...)
            function?]
@@ -153,7 +158,7 @@ This module provides general-purpose utilities to support programming in the @hy
   ]
 
  The first thing to note is that the printed representation is almost itself valid code to reproduce the function it represents. A prominent maxim of programming in the functional style is to write complex functions in terms of small, simple functions that can be composed together. The transparency of this representation is intended to support this habit, by enabling the makeup of such functions, whether simple or complex, to be easily scrutinized and manipulated. Specific clues encoded in the representation are as follows:
- @codeblock{((arguments ...) _)} means that the function is @emph{left-curried} (the default), while @codeblock{(_ (arguments ...))} means that it is @emph{right-curried} (the @racket[_] indicates where fresh arguments will be placed in relation to the existing arguments).
+ @codeblock{(λ (args _) ...)} means that the function is @emph{left-curried} (the default), while @codeblock{(λ (_ args) ...)} that it is @emph{right-curried} (the @racket[_] indicates where fresh arguments will be placed in relation to the existing arguments). If arguments have been supplied on both sides, the @racket[_] will indicate the argument position between the already-supplied arguments.
  @codeblock{(.. fn ...)} indicates that the method of composition is the usual one, i.e. @racket[compose],
  @codeblock{(&& fn ...)} means the method of composition is @racket[conjoin],
  @codeblock{(|| fn ...)} means @racket[disjoin], and
@@ -164,7 +169,7 @@ This module provides general-purpose utilities to support programming in the @hy
     #:label "More examples:"
 	(f add1 sqr)
     ((f expt) 2)
-    (curry = #:key string-upcase)
+    (curry = #:key string-upcase "apple")
 	(&& positive? odd?)
 	(|| positive? odd?)
 	(f #:compose-with (monoid (λ (f g) g) values) add1 sub1)
@@ -190,16 +195,16 @@ This module provides general-purpose utilities to support programming in the @hy
   ]
 }
 
-@defproc[(function-arguments [g function?]
-                             ...)
+@defproc[(function-combined-arguments [g function?]
+                                      ...)
          arguments?]{
 
  Returns an @racketlink[arguments]{arguments} structure representing the arguments that parameterize (i.e. have already been passed to) the function @racket[g].
 
 @examples[
     #:eval eval-for-docs
-    (function-arguments (curry + 1 2 3))
-    (function-arguments (curry = #:key string-upcase "apple"))
+    (function-combined-arguments (curry + 1 2 3))
+    (function-combined-arguments (curry = #:key string-upcase "apple"))
   ]
 }
 

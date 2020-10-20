@@ -9,7 +9,8 @@
                "threading-lib"
                "mischief"
                "social-contract"
-               "version-case"))
+               "version-case"
+               "rackunit-lib"))
 (define build-deps '("scribble-lib"
                      "scribble-abbrevs"
                      "racket-doc"
