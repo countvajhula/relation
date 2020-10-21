@@ -33,6 +33,8 @@
          (only-in relation/equivalence
                   in?))
 
+(require "private/util.rkt")
+
 (provide lambda/function
          lambda/f
          λ/f
@@ -58,7 +60,7 @@
                           (id procedure?))]
           [struct function ((components list?)
                             (composer monoid?)
-                            (args invocation?)
+                            (applier application-scheme?)
                             (chirality symbol?))]
           [struct partial-arguments
             ((left list?)
@@ -84,7 +86,7 @@
                               (#:compose-with monoid?)
                               function?)]
           [function-cons (binary-constructor/c procedure? function?)]
-          [function-combined-arguments (function/c function? arguments?)]
+          [function-flat-arguments (function/c function? arguments?)]
           [apply/steps (unconstrained-domain-> sequence?)]
           [compose (variadic-constructor/c procedure? function?)]
           [curry (unconstrained-domain-> function?)]
@@ -96,18 +98,6 @@
           [|| (variadic-constructor/c procedure? function?)]
           [negate (function/c procedure? function?)]
           [!! (function/c procedure? function?)]))
-
-(module+ test
-  (require rackunit))
-
-(define-generics invocation
-  (invoke invocation args chirality)
-  (flat-arguments invocation)
-  #:defaults
-  ([arguments? (define (invoke this args chirality)
-                 (arguments-merge this args))
-    (define (flat-arguments this)
-                 this)]))
 
 (define (unthunk f . args)
   (f:thunk*
@@ -172,87 +162,39 @@
 (define conjoin-composition (monoid f:conjoin true.))
 (define disjoin-composition (monoid f:disjoin false.))
 
-;; incorporate the "curry" stuff inside the invocation-scheme composition
-;; in particular all the argument composition/"merge" stuff
-;; so that it encapsulates everything related to invocation, and we don't
-;; need the function to go down to that level - it's hidden behind the
-;; abstraction
-;; curry currently deals with both fucntion as well as procedure -- that's
-;; correct, since it is an external-facing API. It is orthogonal to
-;; invocation scheme composition
-;; upon invocation, if it fails, it should return a new function object
-;; that contains the updated invocation -- preserved prior to final flat invocaton
-;; remember, the contract for the invocation-scheme is to accept arguments
-;; as input, and return flat arguments when needed. it is otherwise a black box
-(define (eval-function f args)
-  ;; the happy path
-  (let ([components (function-components f)]
-        [composer (function-composer f)])
-    (apply/arguments (apply composer components)
-                     args)))
-
-(define (eval-if-saturated f invocation)
-  (let* ([leading-function (last (function-components f))]
-         [args (flat-arguments invocation)]
-         [pos-args (arguments-positional args)]
-         [kw-args (arguments-keyword args)])
-    (with-handlers ([exn:fail:contract:arity?
-                     (λ (exn)
-                       (if (> (length pos-args)
-                              (~min-arity leading-function))
-                           (raise exn)
-                           (struct-copy function f [args invocation])))]
-                    [exn:fail:contract?
-                     ;; presence of a keyword argument results in a premature
-                     ;; contract failure that's not the arity error, even though
-                     ;; that's probably what it should be since providing additional
-                     ;; positional arguments results in expected behavior
-                     ;; additionally, also handle invalid keyword arg here
-                     (λ (exn)
-                       (let-values ([(req-kw opt-kw)
-                                     (procedure-keywords leading-function)])
-                         (if (or (empty? kw-args)
-                                 ;; the arity error is masked in the presence of keyword
-                                 ;; args so we check for it again here
-                                 (> (length pos-args)
-                                    (~min-arity leading-function))
-                                 ;; any unexpected keywords?
-                                 (any?
-                                  (map (!! (in? (append req-kw opt-kw)))
-                                       (hash-keys kw-args)))
-                                 ;; all required arguments received?
-                                 (and (subset? req-kw (hash-keys kw-args))
-                                      (>= (length pos-args)
-                                          (~min-arity leading-function))))
-                             (raise exn)
-                             (struct-copy function f [args invocation]))))])
-      (eval-function f args))))
-
-(define (kwhash->altlist v)
-  (foldr (λ (a b)
-           (list* (car a) (cdr a) b))
-         null
-         (sort (hash->list v)
-               (λ (a b)
-                 (keyword<? (car a) (car b))))))
-
-(module+ test
-  (test-case
-      "kwhash->altlist"
-    (check-equal? (kwhash->altlist (hash '#:c 2 '#:a 1 '#:b 3)) '(#:a 1 #:b 3 #:c 2))
-    (check-equal? (kwhash->altlist (hash '#:a 1)) '(#:a 1))
-    (check-equal? (kwhash->altlist (hash)) '())))
+(define-generics application-scheme
+  (apply-arguments application-scheme args chirality)
+  (flat-arguments application-scheme)
+  #:defaults
+  ([arguments? (define (apply-arguments this args chirality)
+                 (arguments-merge this args))
+               (define (flat-arguments this)
+                 this)]))
 
 (struct partial-arguments (left right kw)
   #:transparent
 
-  #:methods gen:invocation
-  [(define (invoke this args chirality)
-     (merge-partial-arguments this
-                              args
-                              chirality))
+  #:methods gen:application-scheme
+  [(define (apply-arguments this args chirality)
+     ;; incorporate fresh arguments into the partial application
+     ;; retaining existing arg positions and appending the fresh ones
+     ;; at the positions implied by the chirality
+     (let ([left-args (if (eq? chirality 'left)
+                          (append (partial-arguments-left this)
+                                  (arguments-positional args))
+                          (partial-arguments-left this))]
+           [right-args (if (eq? chirality 'right)
+                           ;; note order reversed for right args
+                           (append (arguments-positional args)
+                                   (partial-arguments-right this))
+                           (partial-arguments-right this))])
+       (partial-arguments left-args
+                          right-args
+                          (hash-union (partial-arguments-kw this)
+                                      (arguments-keyword args)))))
    (define (flat-arguments this)
-     (partial-arguments->arguments this))]
+     (make-arguments (partial-arguments-positional this)
+                     (partial-arguments-kw this)))]
 
   #:methods gen:custom-write
   [(define (write-proc self port mode)
@@ -277,6 +219,14 @@
 (define empty-partial-arguments
   (partial-arguments null null (hash)))
 
+(define (partial-arguments-positional args)
+  (append (partial-arguments-left args)
+          (partial-arguments-right args)))
+
+(define (arguments-cons v args)
+  (make-arguments (cons v (arguments-positional args))
+                  (arguments-keyword args)))
+
 (struct template-arguments (pos kw)
   #:transparent
 
@@ -289,30 +239,75 @@
   ;; then implement it for template-arguments
   ;; maybe apply/template instead of curry?
   ;; should curry be renamed to partial?
-  #:methods gen:invocation
-  [(define (invoke this args chirality)
+  #:methods gen:application-scheme
+  [(define (apply-arguments this args chirality)
      ; TODO
      (void))])
 
+;; remember, the contract for the invocation-scheme is to accept arguments
+;; as input, and return flat arguments when needed. it is otherwise a black box
+;; reorganize code and eliminate intefaces / duplication / indirection - thin or fat?
+;; check provides and ensure they're good
+;; ensure testing altlist works -- and try removing the runtime rackunit dependency
+;; profile before and after
+;; configure applier in function construction
+;; then get regular arguments to work
+;; then get template arguments to work
+(define (eval-function f args)
+  ;; the happy path
+  (let ([components (function-components f)]
+        [composer (function-composer f)])
+    (apply/arguments (apply composer components)
+                     args)))
+
+(define (eval-if-saturated f applier)
+  (let* ([leading-function (last (function-components f))]
+         [args (flat-arguments applier)]
+         [pos-args (arguments-positional args)]
+         [kw-args (arguments-keyword args)])
+    (with-handlers ([exn:fail:contract:arity?
+                     (λ (exn)
+                       (if (> (length pos-args)
+                              (~min-arity leading-function))
+                           (raise exn)
+                           (struct-copy function f [applier applier])))]
+                    [exn:fail:contract?
+                     ;; presence of a keyword argument results in a premature
+                     ;; contract failure that's not the arity error, even though
+                     ;; that's probably what it should be since providing additional
+                     ;; positional arguments results in expected behavior
+                     ;; additionally, also handle invalid keyword arg here
+                     (λ (exn)
+                       (let-values ([(req-kw opt-kw)
+                                     (procedure-keywords leading-function)])
+                         (if (or (empty? kw-args)
+                                 ;; the arity error is masked in the presence of keyword
+                                 ;; args so we check for it again here
+                                 (> (length pos-args)
+                                    (~min-arity leading-function))
+                                 ;; any unexpected keywords?
+                                 (any?
+                                  (map (!! (in? (append req-kw opt-kw)))
+                                       (hash-keys kw-args)))
+                                 ;; all required arguments received?
+                                 (and (subset? req-kw (hash-keys kw-args))
+                                      (>= (length pos-args)
+                                          (~min-arity leading-function))))
+                             (raise exn)
+                             (struct-copy function f [applier applier]))))])
+      (eval-function f args))))
+
 (define (apply-function f args)
-  (let* ([invocation-scheme (function-args f)]
-         [invocation (invoke invocation-scheme args (function-chirality f))])
-    (eval-if-saturated f invocation)))
-
-(define (partial-arguments-positional args)
-  (append (partial-arguments-left args)
-          (partial-arguments-right args)))
-
-(define (partial-arguments->arguments args)
-  (make-arguments (partial-arguments-positional args)
-                  (partial-arguments-kw args)))
+  (let* ([applier (function-applier f)]
+         [updated-applier (apply-arguments applier
+                                           args
+                                           (function-chirality f))])
+    (eval-if-saturated f updated-applier)))
 
 (struct function (components
                   composer
-                  args
+                  applier
                   chirality)
-  ; maybe incorporate a power into the function type
-  ; probably better to define a higher-level `function-power` type
   #:transparent
 
   #:property prop:procedure
@@ -339,12 +334,12 @@
    (define (rest self)
      (function (-rest (function-components self))
                (function-composer self)
-               (function-args self)
+               (function-applier self)
                (function-chirality self)))
    (define (reverse self)
      (function (-reverse (function-components self))
                (function-composer self)
-               (function-args self)
+               (function-applier self)
                (function-chirality self)))]
 
   #:methods gen:countable
@@ -359,12 +354,12 @@
          [(#t) write]
          [(#f) display]
          [else (λ (p port) (print p port mode))]))
-     (let* ([args (function-args self)]
+     (let* ([applier (function-applier self)]
             [components (function-components self)]
             [composer (function-composer self)]
             [representation
              (list 'λ
-                   args
+                   applier
                    (list* (match composer
                             [(== usual-composition) '..]
                             [(== conjoin-composition) '&&]
@@ -422,11 +417,11 @@
 (define (function-cons proc f)
   (function (cons proc (function-components f))
             (function-composer f)
-            (function-args f)
+            (function-applier f)
             (function-chirality f)))
 
-(define (function-combined-arguments f)
-  (flat-arguments (function-args f)))
+(define (function-flat-arguments f)
+  (flat-arguments (function-applier f)))
 
 (define/arguments (apply/steps args)
   (let ([f (first (arguments-positional args))]
@@ -451,36 +446,20 @@
 
 (define compose f)
 
-(define (merge-partial-arguments a b chirality)
-  ;; merge arg sets, with arg set a prioritized over b
-  ;; and using b's currying direction
-  (let ([left-args (if (eq? chirality 'left)
-                       (append (partial-arguments-left a)
-                               (arguments-positional b))
-                       (partial-arguments-left a))]
-        [right-args (if (eq? chirality 'right)
-                        ;; note order reversed for right args
-                        (append (arguments-positional b)
-                                (partial-arguments-right a))
-                        (partial-arguments-right a))])
-    (partial-arguments left-args
-                       right-args
-                       (hash-union (partial-arguments-kw a)
-                                   (arguments-keyword b)))))
 
 (define (~curry chirality f invocation-args)
   (if (function? f)
       (function (function-components f)
                 (function-composer f)
-                (invoke (function-args f)
-                        invocation-args
-                        chirality)
+                (apply-arguments (function-applier f)
+                                 invocation-args
+                                 chirality)
                 chirality)
       (function (list f)
                 usual-composition
-                (invoke empty-partial-arguments
-                        invocation-args
-                        chirality)
+                (apply-arguments empty-partial-arguments
+                                 invocation-args
+                                 chirality)
                 chirality)))
 
 (define/arguments (curry args)
@@ -504,10 +483,6 @@
         ['() (f)]
         [(list v) (f v)]
         [(list v vs ...) ((loop vs) v)]))))
-
-(define (arguments-cons v args)
-  (make-arguments (cons v (arguments-positional args))
-                  (arguments-keyword args)))
 
 (define (conjoin . fs)
   (apply f
