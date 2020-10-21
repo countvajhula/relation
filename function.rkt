@@ -58,9 +58,9 @@
                           (id procedure?))]
           [struct function ((components list?)
                             (composer monoid?)
-                            (args partial-arguments?))]
+                            (args invocation?))]
           [struct partial-arguments
-            ((side symbol?)
+            ((direction symbol?)
              (left list?)
              (right list?)
              (kw hash?))]
@@ -99,6 +99,12 @@
 
 (module+ test
   (require rackunit))
+
+(define-generics invocation
+  (chirality invocation)
+  #:defaults
+  ([arguments? (define (chirality this)
+                 'left)]))
 
 (define (unthunk f . args)
   (f:thunk*
@@ -222,8 +228,12 @@
     (check-equal? (kwhash->altlist (hash '#:a 1)) '(#:a 1))
     (check-equal? (kwhash->altlist (hash)) '())))
 
-(struct partial-arguments (side left right kw)
+(struct partial-arguments (direction left right kw)
   #:transparent
+
+  #:methods gen:invocation
+  [(define (chirality this)
+     (partial-arguments-direction this))]
 
   #:methods gen:custom-write
   [(define (write-proc self port mode)
@@ -232,8 +242,7 @@
          [(#t) write]
          [(#f) display]
          [else (λ (p port) (print p port mode))]))
-     (let ([side (partial-arguments-side self)]
-           [left (partial-arguments-left self)]
+     (let ([left (partial-arguments-left self)]
            [right (partial-arguments-right self)]
            [kw (partial-arguments-kw self)])
        (cond [(null? right)
@@ -250,8 +259,8 @@
   (partial-arguments 'left null null (hash)))
 
 (define (apply-function f args)
-  (let* ([side (partial-arguments-side (function-args f))]
-         [curry-proc (if (eq? side 'left)
+  (let* ([direction (chirality (function-args f))]
+         [curry-proc (if (eq? direction 'left)
                          curry
                          curryr)]
          [curried-f
@@ -404,42 +413,50 @@
 
 (define compose f)
 
-(define (merge-partial-arguments a b)
+(define (merge-partial-arguments a b direction)
   ;; merge arg sets, with arg set a prioritized over b
   ;; and using b's currying direction
-  (partial-arguments (partial-arguments-side b)
-                     (append (partial-arguments-left a)
-                             (partial-arguments-left b))
-                     ;; note order reversed for right args
-                     (append (partial-arguments-right b)
-                             (partial-arguments-right a))
-                     (hash-union (partial-arguments-kw a)
-                                 (partial-arguments-kw b))))
+  (let ([left-args (if (eq? direction 'left)
+                       (append (partial-arguments-left a)
+                               (arguments-positional b))
+                       (partial-arguments-left a))]
+        [right-args (if (eq? direction 'right)
+                        ;; note order reversed for right args
+                        (append (arguments-positional b)
+                                (partial-arguments-right a))
+                        (partial-arguments-right a))])
+    (partial-arguments direction
+                       left-args
+                       right-args
+                       (hash-union (partial-arguments-kw a)
+                                   (arguments-keyword b)))))
 
-(define (~curry f invocation-args)
+(define (~curry direction f invocation-args)
   (if (function? f)
       (function (function-components f)
                 (function-composer f)
                 (merge-partial-arguments (function-args f)
-                                         invocation-args))
+                                         invocation-args
+                                         direction))
       (function (list f)
                 usual-composition
                 (merge-partial-arguments empty-partial-arguments
-                                         invocation-args))))
+                                         invocation-args
+                                         direction))))
 
 (define/arguments (curry args)
   (let* ([f (first (arguments-positional args))]
          [pos (rest (arguments-positional args))]
          [kw (arguments-keyword args)]
-         [invocation-args (partial-arguments 'left pos null kw)])
-    (~curry f invocation-args)))
+         [invocation-args (make-arguments pos kw)])
+    (~curry 'left f invocation-args)))
 
 (define/arguments (curryr args)
   (let* ([f (first (arguments-positional args))]
          [pos (rest (arguments-positional args))]
          [kw (arguments-keyword args)]
-         [invocation-args (partial-arguments 'right null pos kw)])
-    (~curry f invocation-args)))
+         [invocation-args (make-arguments pos kw)])
+    (~curry 'right f invocation-args)))
 
 (define (uncurry f)
   (λ/f args
