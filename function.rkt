@@ -60,10 +60,10 @@
                             (composer monoid?)
                             (args invocation?))]
           [struct partial-arguments
-            ((direction symbol?)
-             (left list?)
+            ((left list?)
              (right list?)
-             (kw hash?))]
+             (kw hash?)
+             (direction symbol?))]
           [make-function (->* ()
                               (#:compose-with monoid?)
                               #:rest (listof procedure?)
@@ -101,10 +101,14 @@
   (require rackunit))
 
 (define-generics invocation
+  (invoke invocation args)
   (chirality invocation)
+  (flat-arguments invocation)
   #:defaults
   ([arguments? (define (chirality this)
-                 'left)]))
+                 'left)
+               (define (flat-arguments this)
+                 this)]))
 
 (define (unthunk f . args)
   (f:thunk*
@@ -169,24 +173,36 @@
 (define conjoin-composition (monoid f:conjoin true.))
 (define disjoin-composition (monoid f:disjoin false.))
 
-(define (eval-function f)
+;; incorporate the "curry" stuff inside the invocation-scheme composition
+;; in particular all the argument composition/"merge" stuff
+;; so that it encapsulates everything related to invocation, and we don't
+;; need the function to go down to that level - it's hidden behind the
+;; abstraction
+;; curry currently deals with both fucntion as well as procedure -- that's
+;; correct, since it is an external-facing API. It is orthogonal to
+;; invocation scheme composition
+;; upon invocation, if it fails, it should return a new function object
+;; that contains the updated invocation -- preserved prior to final flat invocaton
+;; remember, the contract for the invocation-scheme is to accept arguments
+;; as input, and return flat arguments when needed. it is otherwise a black box
+(define (eval-function f args)
+  ;; the happy path
   (let ([components (function-components f)]
-        [composer (function-composer f)]
-        [args (function-combined-arguments f)])
+        [composer (function-composer f)])
     (apply/arguments (apply composer components)
                      args)))
 
-(define (eval-if-saturated f)
-  (let* ([components (function-components f)]
-         [args (function-args f)]
+(define (eval-if-saturated f invocation)
+  (let* ([leading-function (last (function-components f))]
+         [args (function-combined-arguments f)]
          [pos-args (partial-arguments-positional args)]
          [kw-args (partial-arguments-kw args)])
     (with-handlers ([exn:fail:contract:arity?
                      (λ (exn)
                        (if (> (length pos-args)
-                              (~min-arity (last components)))
+                              (~min-arity leading-function))
                            (raise exn)
-                           f))]
+                           (struct-copy function f [args invocation])))]
                     [exn:fail:contract?
                      ;; presence of a keyword argument results in a premature
                      ;; contract failure that's not the arity error, even though
@@ -195,12 +211,12 @@
                      ;; additionally, also handle invalid keyword arg here
                      (λ (exn)
                        (let-values ([(req-kw opt-kw)
-                                     (procedure-keywords (last components))])
+                                     (procedure-keywords leading-function)])
                          (if (or (empty? kw-args)
                                  ;; the arity error is masked in the presence of keyword
                                  ;; args so we check for it again here
                                  (> (length pos-args)
-                                    (~min-arity (last components)))
+                                    (~min-arity leading-function))
                                  ;; any unexpected keywords?
                                  (any?
                                   (map (!! (in? (append req-kw opt-kw)))
@@ -208,10 +224,10 @@
                                  ;; all required arguments received?
                                  (and (subset? req-kw (hash-keys kw-args))
                                       (>= (length pos-args)
-                                          (~min-arity (last components)))))
+                                          (~min-arity leading-function))))
                              (raise exn)
-                             f)))])
-      (eval-function f))))
+                             (struct-copy function f [args invocation]))))])
+      (eval-function f args))))
 
 (define (kwhash->altlist v)
   (foldr (λ (a b)
@@ -228,12 +244,18 @@
     (check-equal? (kwhash->altlist (hash '#:a 1)) '(#:a 1))
     (check-equal? (kwhash->altlist (hash)) '())))
 
-(struct partial-arguments (direction left right kw)
+(struct partial-arguments (left right kw direction)
   #:transparent
 
   #:methods gen:invocation
-  [(define (chirality this)
-     (partial-arguments-direction this))]
+  [(define (invoke this args)
+     (merge-partial-arguments this
+                              args
+                              (chirality this)))
+   (define (chirality this)
+     (partial-arguments-direction this))
+   (define (flat-arguments this)
+     (partial-arguments->arguments this))]
 
   #:methods gen:custom-write
   [(define (write-proc self port mode)
@@ -256,18 +278,28 @@
                           port)])))])
 
 (define empty-partial-arguments
-  (partial-arguments 'left null null (hash)))
+  (partial-arguments null null (hash) 'left))
+
+(struct template-arguments (pos kw direction)
+  #:transparent
+
+  ;; instead of calling curry right off the bat,
+  ;; call "invoke" which should be added as a method
+  ;; in the gen:invocation interface
+  ;; the default invocation should be partial-arguments
+  ;; which should define invoke to be curry -- in fact,
+  ;; get this to work behind the invoke abstraction first
+  ;; then implement it for template-arguments
+  ;; maybe apply/template instead of curry?
+  ;; should curry be renamed to partial?
+  #:methods gen:invocation
+  [(define (chirality this)
+     (template-arguments-direction this))])
 
 (define (apply-function f args)
-  (let* ([direction (chirality (function-args f))]
-         [curry-proc (if (eq? direction 'left)
-                         curry
-                         curryr)]
-         [curried-f
-          (curry-proc
-           (apply/arguments curry-proc
-                            (arguments-cons f args)))])
-    (eval-if-saturated curried-f)))
+  (let* ([invocation-scheme (function-args f)]
+         [invocation (invoke invocation-scheme args)])
+    (eval-if-saturated f invocation)))
 
 (define (partial-arguments-positional args)
   (append (partial-arguments-left args)
@@ -388,7 +420,7 @@
             (function-args f)))
 
 (define (function-combined-arguments f)
-  (partial-arguments->arguments (function-args f)))
+  (flat-arguments (function-args f)))
 
 (define/arguments (apply/steps args)
   (let ([f (first (arguments-positional args))]
@@ -425,19 +457,19 @@
                         (append (arguments-positional b)
                                 (partial-arguments-right a))
                         (partial-arguments-right a))])
-    (partial-arguments direction
-                       left-args
+    (partial-arguments left-args
                        right-args
                        (hash-union (partial-arguments-kw a)
-                                   (arguments-keyword b)))))
+                                   (arguments-keyword b))
+                       direction)))
 
 (define (~curry direction f invocation-args)
   (if (function? f)
       (function (function-components f)
                 (function-composer f)
-                (merge-partial-arguments (function-args f)
-                                         invocation-args
-                                         direction))
+                (invoke (function-args f)
+                        invocation-args
+                        direction))
       (function (list f)
                 usual-composition
                 (merge-partial-arguments empty-partial-arguments
