@@ -58,12 +58,12 @@
                           (id procedure?))]
           [struct function ((components list?)
                             (composer monoid?)
-                            (args invocation?))]
+                            (args invocation?)
+                            (chirality symbol?))]
           [struct partial-arguments
             ((left list?)
              (right list?)
-             (kw hash?)
-             (direction symbol?))]
+             (kw hash?))]
           [make-function (->* ()
                               (#:compose-with monoid?)
                               #:rest (listof procedure?)
@@ -101,13 +101,12 @@
   (require rackunit))
 
 (define-generics invocation
-  (invoke invocation args)
-  (chirality invocation)
+  (invoke invocation args chirality)
   (flat-arguments invocation)
   #:defaults
-  ([arguments? (define (chirality this)
-                 'left)
-               (define (flat-arguments this)
+  ([arguments? (define (invoke this args chirality)
+                 (arguments-merge this args))
+    (define (flat-arguments this)
                  this)]))
 
 (define (unthunk f . args)
@@ -194,9 +193,9 @@
 
 (define (eval-if-saturated f invocation)
   (let* ([leading-function (last (function-components f))]
-         [args (function-combined-arguments f)]
-         [pos-args (partial-arguments-positional args)]
-         [kw-args (partial-arguments-kw args)])
+         [args (flat-arguments invocation)]
+         [pos-args (arguments-positional args)]
+         [kw-args (arguments-keyword args)])
     (with-handlers ([exn:fail:contract:arity?
                      (λ (exn)
                        (if (> (length pos-args)
@@ -244,16 +243,14 @@
     (check-equal? (kwhash->altlist (hash '#:a 1)) '(#:a 1))
     (check-equal? (kwhash->altlist (hash)) '())))
 
-(struct partial-arguments (left right kw direction)
+(struct partial-arguments (left right kw)
   #:transparent
 
   #:methods gen:invocation
-  [(define (invoke this args)
+  [(define (invoke this args chirality)
      (merge-partial-arguments this
                               args
-                              (chirality this)))
-   (define (chirality this)
-     (partial-arguments-direction this))
+                              chirality))
    (define (flat-arguments this)
      (partial-arguments->arguments this))]
 
@@ -278,9 +275,9 @@
                           port)])))])
 
 (define empty-partial-arguments
-  (partial-arguments null null (hash) 'left))
+  (partial-arguments null null (hash)))
 
-(struct template-arguments (pos kw direction)
+(struct template-arguments (pos kw)
   #:transparent
 
   ;; instead of calling curry right off the bat,
@@ -293,12 +290,13 @@
   ;; maybe apply/template instead of curry?
   ;; should curry be renamed to partial?
   #:methods gen:invocation
-  [(define (chirality this)
-     (template-arguments-direction this))])
+  [(define (invoke this args chirality)
+     ; TODO
+     (void))])
 
 (define (apply-function f args)
   (let* ([invocation-scheme (function-args f)]
-         [invocation (invoke invocation-scheme args)])
+         [invocation (invoke invocation-scheme args (function-chirality f))])
     (eval-if-saturated f invocation)))
 
 (define (partial-arguments-positional args)
@@ -311,7 +309,8 @@
 
 (struct function (components
                   composer
-                  args)
+                  args
+                  chirality)
   ; maybe incorporate a power into the function type
   ; probably better to define a higher-level `function-power` type
   #:transparent
@@ -340,11 +339,13 @@
    (define (rest self)
      (function (-rest (function-components self))
                (function-composer self)
-               (function-args self)))
+               (function-args self)
+               (function-chirality self)))
    (define (reverse self)
      (function (-reverse (function-components self))
                (function-composer self)
-               (function-args self)))]
+               (function-args self)
+               (function-chirality self)))]
 
   #:methods gen:countable
   [(define/generic -length length)
@@ -373,17 +374,21 @@
        (recur representation port)))])
 
 (define (make-function #:compose-with [composer usual-composition]
+                       #:curry-on [chirality 'left]
                        . fs)
   (function fs
             composer
-            empty-partial-arguments))
+            empty-partial-arguments
+            chirality))
 
 (define f make-function)
 
 (define (make-threading-function #:compose-with [composer usual-composition]
+                                 #:curry-on [chirality 'left]
                                  . fs)
   (apply f
          #:compose-with composer
+         #:curry-on chirality
          (reverse fs)))
 
 (define f> make-threading-function)
@@ -417,7 +422,8 @@
 (define (function-cons proc f)
   (function (cons proc (function-components f))
             (function-composer f)
-            (function-args f)))
+            (function-args f)
+            (function-chirality f)))
 
 (define (function-combined-arguments f)
   (flat-arguments (function-args f)))
@@ -445,14 +451,14 @@
 
 (define compose f)
 
-(define (merge-partial-arguments a b direction)
+(define (merge-partial-arguments a b chirality)
   ;; merge arg sets, with arg set a prioritized over b
   ;; and using b's currying direction
-  (let ([left-args (if (eq? direction 'left)
+  (let ([left-args (if (eq? chirality 'left)
                        (append (partial-arguments-left a)
                                (arguments-positional b))
                        (partial-arguments-left a))]
-        [right-args (if (eq? direction 'right)
+        [right-args (if (eq? chirality 'right)
                         ;; note order reversed for right args
                         (append (arguments-positional b)
                                 (partial-arguments-right a))
@@ -460,21 +466,22 @@
     (partial-arguments left-args
                        right-args
                        (hash-union (partial-arguments-kw a)
-                                   (arguments-keyword b))
-                       direction)))
+                                   (arguments-keyword b)))))
 
-(define (~curry direction f invocation-args)
+(define (~curry chirality f invocation-args)
   (if (function? f)
       (function (function-components f)
                 (function-composer f)
                 (invoke (function-args f)
                         invocation-args
-                        direction))
+                        chirality)
+                chirality)
       (function (list f)
                 usual-composition
-                (merge-partial-arguments empty-partial-arguments
-                                         invocation-args
-                                         direction))))
+                (invoke empty-partial-arguments
+                        invocation-args
+                        chirality)
+                chirality)))
 
 (define/arguments (curry args)
   (let* ([f (first (arguments-positional args))]
