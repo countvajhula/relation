@@ -195,17 +195,16 @@ This module provides general-purpose utilities to support programming in the @hy
   ]
 }
 
-@defproc[(function-combined-arguments [g function?]
-                                      ...)
+@defproc[(function-flat-arguments [g function?])
          arguments?]{
 
  Returns an @racketlink[arguments]{arguments} structure representing the arguments that parameterize (i.e. have already been passed to) the function @racket[g].
 
 @examples[
     #:eval eval-for-docs
-    (function-combined-arguments (curry + 1 2 3))
-    (function-combined-arguments (curry = #:key string-upcase "apple"))
-    (function-combined-arguments (curry (curryr (curry string-append "hello") "friend") "there"))
+    (function-flat-arguments (curry + 1 2 3))
+    (function-flat-arguments (curry = #:key string-upcase "apple"))
+    (function-flat-arguments (curry (curryr (curry string-append "hello") "friend") "there"))
   ]
 }
 
@@ -256,8 +255,7 @@ This module provides general-purpose utilities to support programming in the @hy
   ]
 }
 
-@defproc[(uncurry [g procedure?]
-                  ...)
+@defproc[(uncurry [g procedure?])
          function?]{
 
  Convert a curried function @racket[g] accepting single arguments in succession to an equivalent one accepting an arbitrary number of arguments. This is typically not needed since both @racket[curry] as well as Racket's built-in currying interfaces support partial application with an arbitrary number of arguments, but it can be useful with naively curried functions not created using one of these interfaces.

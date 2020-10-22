@@ -88,14 +88,14 @@
           [function-cons (binary-constructor/c procedure? function?)]
           [function-flat-arguments (function/c function? arguments?)]
           [apply/steps (unconstrained-domain-> sequence?)]
-          [compose (variadic-constructor/c procedure? function?)]
+          [compose (variadic-function/c procedure? function?)]
           [curry (unconstrained-domain-> function?)]
           [curryr (unconstrained-domain-> function?)]
           [uncurry (functional/c)]
-          [conjoin (variadic-constructor/c procedure? function?)]
-          [&& (variadic-constructor/c procedure? function?)]
-          [disjoin (variadic-constructor/c procedure? function?)]
-          [|| (variadic-constructor/c procedure? function?)]
+          [conjoin (variadic-function/c procedure? function?)]
+          [&& (variadic-function/c procedure? function?)]
+          [disjoin (variadic-function/c procedure? function?)]
+          [|| (variadic-function/c procedure? function?)]
           [negate (function/c procedure? function?)]
           [!! (function/c procedure? function?)]))
 
@@ -261,7 +261,10 @@
                      args)))
 
 (define (eval-if-saturated f applier)
-  (let* ([leading-function (last (function-components f))]
+  (let* ([components (function-components f)]
+         [leading-function (if (null? components)
+                               (monoid-id (function-composer f))
+                               (last components))]
          [args (flat-arguments applier)]
          [pos-args (arguments-positional args)]
          [kw-args (arguments-keyword args)])

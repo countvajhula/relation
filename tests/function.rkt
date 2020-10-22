@@ -63,36 +63,58 @@
      (check-equal? ((λ. x y #:key key → (= #:key key x y)) #:key values 5 "5") #f)
      (check-equal? ((λ. x y #:key [key #f] → (= #:key key x y)) 5 "5") #f)
      (check-equal? ((λ. x y #:key [key ->number] → (= #:key key x y)) 5 "5") #t))
-   (check-equal? ((unthunk (λ () 5))) 5)
-   (check-equal? ((unthunk (λ () 5)) 1) 5)
-   (check-equal? ((unthunk (λ () 5)) 1 2 3) 5)
-   (check-equal? ((unthunk (λ (v) v) 5) 1 2 3) 5)
-   (check-equal? ((unthunk (λ (a b) (+ a b)) 5 4) 1 2 3) 9)
-   (check-equal? ((if-f positive? add1 sub1) 3) 4)
-   (check-equal? ((if-f positive? add1 sub1) -3) -4)
-   (check-equal? ((if-f < + -) 1 2) 3)
-   (check-equal? ((if-f < + -) 2 1) 1)
-   (check-true (true.))
-   (check-true (true. 1 2 3 4))
-   (check-false (false.))
-   (check-false (false. 1 2 3 4))
-   (check-equal? ((arg 0) 1 2 3 4) 1)
-   (check-equal? ((arg 2) 1 2 3 4) 3)
-   (check-equal? ((arg 3) 1 2 3 "hi") "hi")
-   (check-equal? ((flip string-append) " " "hello" "my" " " "friend") "hello my friend")
-   (check-equal? ((flip$ string-append) "friend" "hello" " " "my" " ") "hello my friend")
-   (check-equal? ((flip* string-append) "friend" " " "my" " " "hello") "hello my friend")
-   (check-equal? (->list ((lift add1) (list 1 2 3))) (list 2 3 4))
-   (check-equal? (->list ((lift ->string) (list 1 2 3))) (list "1" "2" "3"))
-   (check-equal? ((lift add1) (just 3)) (just 4))
-   (check-equal? (pack add1 1 2 3) (list 2 3 4))
-   (check-equal? (pack ->string 1) (list "1"))
-   (check-equal? (pack ->string) (list))
-   (check-equal? ((make-function add1 add1 +) 3 2) 7)
-   (check-equal? ((make-function +) 3 2) 5)
-   (check-equal? (first (make-function add1 sub1)) add1)
-   (check-equal? (second (make-function add1 sub1)) sub1)
-   (check-true (empty? (make-function)))
+   (test-case
+       "unthunk"
+     (check-equal? ((unthunk (λ () 5))) 5)
+     (check-equal? ((unthunk (λ () 5)) 1) 5)
+     (check-equal? ((unthunk (λ () 5)) 1 2 3) 5)
+     (check-equal? ((unthunk (λ (v) v) 5) 1 2 3) 5)
+     (check-equal? ((unthunk (λ (a b) (+ a b)) 5 4) 1 2 3) 9))
+   (test-case
+       "if-f"
+     (check-equal? ((if-f positive? add1 sub1) 3) 4)
+     (check-equal? ((if-f positive? add1 sub1) -3) -4)
+     (check-equal? ((if-f < + -) 1 2) 3)
+     (check-equal? ((if-f < + -) 2 1) 1))
+   (test-case
+       "true."
+     (check-true (true.))
+     (check-true (true. 1 2 3 4)))
+   (test-case
+       "false."
+     (check-false (false.))
+     (check-false (false. 1 2 3 4)))
+   (test-case
+       "arg"
+     (check-equal? ((arg 0) 1 2 3 4) 1)
+     (check-equal? ((arg 2) 1 2 3 4) 3)
+     (check-equal? ((arg 3) 1 2 3 "hi") "hi"))
+   (test-case
+       "flips"
+     (check-equal? ((flip string-append) " " "hello" "my" " " "friend") "hello my friend")
+     (check-equal? ((flip$ string-append) "friend" "hello" " " "my" " ") "hello my friend")
+     (check-equal? ((flip* string-append) "friend" " " "my" " " "hello") "hello my friend"))
+   (test-case
+       "lift"
+     (check-equal? (->list ((lift add1) (list 1 2 3))) (list 2 3 4))
+     (check-equal? (->list ((lift ->string) (list 1 2 3))) (list "1" "2" "3"))
+     (check-equal? ((lift add1) (just 3)) (just 4)))
+   (test-case
+       "pack"
+     (check-equal? (pack add1 1 2 3) (list 2 3 4))
+     (check-equal? (pack ->string 1) (list "1"))
+     (check-equal? (pack ->string) (list)))
+   (test-case
+       "make-function"
+     (check-equal? ((make-function add1 add1 +) 3 2) 7)
+     (check-equal? ((make-function +) 3 2) 5)
+     (check-equal? (first (make-function add1 sub1)) add1)
+     (check-equal? (second (make-function add1 sub1)) sub1)
+     (check-true (empty? (make-function)))
+     (check-not-exn (thunk ((f))))
+     (check-equal? ((f) 1) 1)
+     (check-equal? ((conjoin)) #t)
+     (check-equal? ((disjoin)) #f))
    (let ([str-append-3 (procedure-reduce-arity string-append 3)])
      (check-equal? ((curry str-append-3 "hello") " " "there") "hello there")
      (check-equal? (((curry str-append-3 "hello") " ") "there") "hello there")
