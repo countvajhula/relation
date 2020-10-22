@@ -179,6 +179,17 @@
      (check-equal? (((uncurry (curry string-append-3)) "a" "b") "c") "abc")
      (check-equal? ((uncurry (curry string-append-3)) "a" "b" "c") "abc")
      (check-equal? (((uncurry (curry string-append-3)) "a") "b" "c") "abc"))
+   (test-case
+       "Function with arguments application scheme"
+     (check-equal? ((f #:apply-with empty-arguments +) 1 2 3) 6)
+     (define string-append-3 (procedure-reduce-arity string-append 3))
+     (check-equal? ((f #:apply-with empty-arguments string-append-3) "a" "b" "c") "abc")
+     (check-exn exn:fail:contract:arity? (thunk ((f #:apply-with empty-arguments string-append-3) "a" "b"))))
+   (test-case
+       "partial"
+     (check-true (function? (partial + 1 2 3)))
+     (check-equal? ((partial + 1 2 3)) 6)
+     (check-equal? ((partial + 1 2 3) 4) 10))
    (check-equal? ((function-cons add1 (f sub1)) 3) 3)
    (check-equal? ((function-cons add1 (function-null)) 3) 4)
    (check-equal? ((function-cons positive? (function-cons integer? (function-null #:compose-with (monoid f:conjoin (const #t))))) 5) #t)

@@ -30,6 +30,8 @@
          mischief/shorthand
          contract/social
          relation/logic
+         (except-in data/maybe maybe/c)
+         typed-stack
          (only-in relation/equivalence
                   in?))
 
@@ -92,6 +94,7 @@
           [compose (variadic-function/c procedure? function?)]
           [curry (unconstrained-domain-> function?)]
           [curryr (unconstrained-domain-> function?)]
+          [partial (unconstrained-domain-> function?)]
           [uncurry (functional/c)]
           [conjoin (variadic-function/c procedure? function?)]
           [&& (variadic-function/c procedure? function?)]
@@ -172,7 +175,9 @@
   (handle-failure application-scheme f exception)
   #:defaults
   ([arguments? (define (apply-arguments this args chirality)
-                 (arguments-merge this args))
+                 (if (eq? chirality 'left)
+                     (arguments-merge this args)
+                     (arguments-merge args this)))
                (define (flat-arguments this)
                  this)
                (define (handle-failure this f exception)
@@ -236,32 +241,29 @@
   (make-arguments (cons v (arguments-positional args))
                   (arguments-keyword args)))
 
-(struct template-arguments (pos kw)
+(struct template-arguments (template)
   #:transparent
 
-  ;; instead of calling curry right off the bat,
-  ;; call "invoke" which should be added as a method
-  ;; in the gen:invocation interface
-  ;; the default invocation should be partial-arguments
-  ;; which should define invoke to be curry -- in fact,
-  ;; get this to work behind the invoke abstraction first
-  ;; then implement it for template-arguments
-  ;; maybe apply/template instead of curry?
-  ;; should curry be renamed to partial?
   #:methods gen:application-scheme
   [(define (apply-arguments this args chirality)
-     ; TODO
-     (void))])
+     (define arg-stack (apply make-stack (arguments-positional args)))
+     (define filled-in-template
+       (for/list ([arg (template-arguments-template this)])
+         (if (just? arg)
+             arg
+             (just (pop! arg-stack)))))
+     (template-arguments filled-in-template))
+   (define (flat-arguments this)
+     (make-arguments (filter-just (template-arguments-template this))
+                     (hash)))
+   (define (handle-failure this f exception)
+     (raise exception))])
 
-;; remember, the contract for the invocation-scheme is to accept arguments
-;; as input, and return flat arguments when needed. it is otherwise a black box
-;; reorganize code and eliminate intefaces / duplication / indirection - thin or fat?
-;; check provides and ensure they're good
-;; ensure testing altlist works -- and try removing the runtime rackunit dependency
-;; profile before and after
-;; configure applier in function construction
-;; then get regular arguments to work
 ;; then get template arguments to work
+;; profile before and after
+;; tests needed:
+;;  - partial/template
+;; formalize composition of application schemes
 (define (eval-function f args)
   ;; the happy path
   (let ([components (function-components f)]
@@ -494,6 +496,20 @@
          [kw (arguments-keyword args)]
          [invocation-args (make-arguments pos kw)])
     (~curry 'right f invocation-args)))
+
+(define/arguments (partial/template args)
+  (let ([func (first (arguments-positional args))]
+        [template (rest (arguments-positional args))])
+    (f #:apply-with (template-arguments template)
+       func)))
+
+(define/arguments (partial args)
+  (let* ([func (first (arguments-positional args))]
+         [pos (rest (arguments-positional args))]
+         [kw (arguments-keyword args)]
+         [invocation-args (make-arguments pos kw)])
+    (f #:apply-with invocation-args
+       func)))
 
 (define (uncurry f)
   (λ/f args
