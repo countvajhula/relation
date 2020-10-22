@@ -78,23 +78,28 @@
              (kw hash?))]
           [empty-partial-arguments partial-arguments?]
           [make-function (->* ()
-                              (#:compose-with monoid?)
+                              (#:compose-with monoid?
+                               #:apply-with application-scheme?)
                               #:rest (listof procedure?)
                               function?)]
           [make-threading-function (->* ()
-                                        (#:compose-with monoid?)
+                                        (#:compose-with monoid?
+                                         #:apply-with application-scheme?)
                                         #:rest (listof procedure?)
                                         function?)]
           [f (->* ()
-                  (#:compose-with monoid?)
+                  (#:compose-with monoid?
+                   #:apply-with application-scheme?)
                   #:rest (listof procedure?)
                   function?)]
           [f> (->* ()
-                   (#:compose-with monoid?)
+                   (#:compose-with monoid?
+                    #:apply-with application-scheme?)
                    #:rest (listof procedure?)
                    function?)]
           [function-null (->* ()
-                              (#:compose-with monoid?)
+                              (#:compose-with monoid?
+                               #:apply-with application-scheme?)
                               function?)]
           [function-cons (binary-constructor/c procedure? function?)]
           [function-flat-arguments (function/c function? arguments?)]
@@ -175,12 +180,18 @@
 (define disjoin-composition (monoid f:disjoin false.))
 
 (define-generics application-scheme
+  ;; apply-arguments accepts an arguments structure representing
+  ;; args provided in a single invocation, and returns an updated
+  ;; application-scheme instance
   (apply-arguments application-scheme args chirality)
+  ;; flat-arguments compiles all previously supplied arguments
+  ;; into a "flat" arguments structure that represents the
+  ;; arguments for the invocation of the underlying function
   (flat-arguments application-scheme)
   ;; handle-failure is expected to either
-  ;; 1. return a modified function, OR
+  ;; 1. return a modified application scheme instance, OR
   ;; 2. raise an exception
-  (handle-failure application-scheme f exception)
+  (handle-failure application-scheme exception)
   #:defaults
   ([arguments? (define (apply-arguments this args chirality)
                  (if (eq? chirality 'left)
@@ -188,7 +199,7 @@
                      (arguments-merge args this)))
                (define (flat-arguments this)
                  this)
-               (define (handle-failure this f exception)
+               (define (handle-failure this exception)
                  (raise exception))]))
 
 (struct partial-arguments (left right kw)
@@ -215,8 +226,8 @@
    (define (flat-arguments this)
      (make-arguments (partial-arguments-positional this)
                      (partial-arguments-kw this)))
-   (define (handle-failure this f exception)
-     (struct-copy function f [applier this]))]
+   (define (handle-failure this exception)
+     this)]
 
   #:methods gen:custom-write
   [(define (write-proc self port mode)
@@ -294,7 +305,7 @@
    (define (flat-arguments this)
      (make-arguments (filter-just (template-arguments-pos this))
                      (template-arguments-kw this)))
-   (define (handle-failure this f exception)
+   (define (handle-failure this exception)
      (raise exception))])
 
 ;; then get template arguments to work
@@ -323,7 +334,8 @@
                        (if (> (length pos-args)
                               (~min-arity leading-function))
                            (raise exn)
-                           (handle-failure applier f exn)))]
+                           (struct-copy function f
+                                        [applier (handle-failure applier exn)])))]
                     [exn:fail:contract?
                      ;; presence of a keyword argument results in a premature
                      ;; contract failure that's not the arity error, even though
@@ -347,7 +359,8 @@
                                       (>= (length pos-args)
                                           (~min-arity leading-function))))
                              (raise exn)
-                             (handle-failure applier f exn))))])
+                             (struct-copy function f
+                                          [applier (handle-failure applier exn)]))))])
       (eval-function f args))))
 
 (define (apply-function f args)
@@ -467,8 +480,10 @@
 
 (define-alias λ. lambda.)
 
-(define (function-null #:compose-with [composer usual-composition])
-  (make-function #:compose-with composer))
+(define (function-null #:compose-with [composer usual-composition]
+                       #:apply-with [applier empty-partial-arguments])
+  (make-function #:compose-with composer
+                 #:apply-with applier))
 
 (define (function-cons proc f)
   (function (cons proc (function-components f))

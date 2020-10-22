@@ -100,6 +100,8 @@ test-type:
 test-composition:
 	raco test -x tests/composition.rkt
 
+build+test: build test
+
 errortrace-logic:
 	racket -l errortrace -l racket -e '(require (submod "tests/logic.rkt" test))'
 
