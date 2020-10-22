@@ -66,6 +66,7 @@
             ((left list?)
              (right list?)
              (kw hash?))]
+          [empty-partial-arguments partial-arguments?]
           [make-function (->* ()
                               (#:compose-with monoid?)
                               #:rest (listof procedure?)
@@ -165,11 +166,17 @@
 (define-generics application-scheme
   (apply-arguments application-scheme args chirality)
   (flat-arguments application-scheme)
+  ;; handle-failure is expected to either
+  ;; 1. return a modified function, OR
+  ;; 2. raise an exception
+  (handle-failure application-scheme f exception)
   #:defaults
   ([arguments? (define (apply-arguments this args chirality)
                  (arguments-merge this args))
                (define (flat-arguments this)
-                 this)]))
+                 this)
+               (define (handle-failure this f exception)
+                 (raise exception))]))
 
 (struct partial-arguments (left right kw)
   #:transparent
@@ -194,7 +201,9 @@
                                       (arguments-keyword args)))))
    (define (flat-arguments this)
      (make-arguments (partial-arguments-positional this)
-                     (partial-arguments-kw this)))]
+                     (partial-arguments-kw this)))
+   (define (handle-failure this f exception)
+     (struct-copy function f [applier this]))]
 
   #:methods gen:custom-write
   [(define (write-proc self port mode)
@@ -273,7 +282,7 @@
                        (if (> (length pos-args)
                               (~min-arity leading-function))
                            (raise exn)
-                           (struct-copy function f [applier applier])))]
+                           (handle-failure applier f exn)))]
                     [exn:fail:contract?
                      ;; presence of a keyword argument results in a premature
                      ;; contract failure that's not the arity error, even though
@@ -297,7 +306,7 @@
                                       (>= (length pos-args)
                                           (~min-arity leading-function))))
                              (raise exn)
-                             (struct-copy function f [applier applier]))))])
+                             (handle-failure applier f exn))))])
       (eval-function f args))))
 
 (define (apply-function f args)
@@ -372,20 +381,23 @@
        (recur representation port)))])
 
 (define (make-function #:compose-with [composer usual-composition]
+                       #:apply-with [applier empty-partial-arguments]
                        #:curry-on [chirality 'left]
                        . fs)
   (function fs
             composer
-            empty-partial-arguments
+            applier
             chirality))
 
 (define f make-function)
 
 (define (make-threading-function #:compose-with [composer usual-composition]
+                                 #:apply-with [applier empty-partial-arguments]
                                  #:curry-on [chirality 'left]
                                  . fs)
   (apply f
          #:compose-with composer
+         #:apply-with applier
          #:curry-on chirality
          (reverse fs)))
 
@@ -451,13 +463,17 @@
 
 
 (define (~curry chirality f invocation-args)
-  (if (function? f)
+  (if (and (function? f)
+           (partial-arguments? (function-applier f)))
+      ;; application scheme is compatible so just apply the
+      ;; new args to the existing scheme
       (function (function-components f)
                 (function-composer f)
                 (apply-arguments (function-applier f)
                                  invocation-args
                                  chirality)
                 chirality)
+      ;; wrap the existing function with one that will be curried
       (function (list f)
                 usual-composition
                 (apply-arguments empty-partial-arguments
