@@ -1,16 +1,12 @@
 #lang racket/base
 
 (require racket/list
-         racket/stream
-         racket/match
-         (prefix-in d: data/collection)
          relation/logic)
 
 (provide check-pairwise
          exists
          for-all
-         kwhash->altlist
-         interleave)
+         kwhash->altlist)
 
 (module+ test
   (require rackunit))
@@ -51,9 +47,3 @@
     (check-equal? (kwhash->altlist (hash '#:c 2 '#:a 1 '#:b 3)) '(#:a 1 #:b 3 #:c 2))
     (check-equal? (kwhash->altlist (hash '#:a 1)) '(#:a 1))
     (check-equal? (kwhash->altlist (hash)) '())))
-
-(define (interleave a b)
-  (match (list a b)
-    [(or (list (d:sequence) _) (list _ (d:sequence))) null]
-    [(list (d:sequence v vs ...) (d:sequence w ws ...))
-     (list* v w (interleave vs ws))]))

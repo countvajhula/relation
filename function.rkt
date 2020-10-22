@@ -34,7 +34,11 @@
          (except-in data/maybe maybe/c)
          typed-stack
          (only-in relation/equivalence
-                  in?))
+                  in?)
+         (for-syntax racket/base
+                     syntax/parse/define)
+         (only-in kw-utils/kw-hash
+                  apply/kw-hash))
 
 (require "private/util.rkt")
 
@@ -250,10 +254,7 @@
 
   #:methods gen:application-scheme
   [(define (apply-arguments this args chirality)
-     ;; define arguments-keyword in let form
-     ;; ideally make the error message more specific so the indicate the offending args
      ;; need tests for these
-     ;; evaluate the template application scheme (don't worry about syntax)
      ;; clean up comments
      ;; merge into master
      (define arg-stack (apply make-stack (arguments-positional args)))
@@ -262,24 +263,34 @@
          (if (just? arg)
              arg
              (if (stack-empty? arg-stack)
-                 (raise-arguments-error 'apply-arguments
-                                        "Not enough arguments provided for template!")
+                 (raise-arguments-error
+                  'apply-arguments
+                  "Not enough positional arguments provided to template!")
                  (just (pop! arg-stack))))))
      (unless (stack-empty? arg-stack)
        (raise-arguments-error 'apply-arguments
-                              "Too many arguments provided for template!"
+                              "Too many arguments provided to template!"
                               "extra args" (stack->list arg-stack)))
      (define filled-in-kw-template
        (for/hash ([k (hash-keys (template-arguments-kw this))])
          (values k (hash-ref (arguments-keyword args) k nothing))))
-     (unless (for/and ([k (hash-keys (arguments-keyword args))])
-               (hash-has-key? (template-arguments-kw this) k))
-       (raise-arguments-error 'apply-arguments
-                              "Unexpected keyword arguments provided for template!"))
-     (unless (empty? (filter nothing? (hash-values filled-in-kw-template)))
-       (raise-arguments-error 'apply-arguments
-                              "Missing keyword arguments in template!"))
-     (template-arguments filled-in-pos-template filled-in-kw-template))
+     (for-each
+      (λ (k)
+        (unless (hash-has-key? (template-arguments-kw this) k)
+          (raise-arguments-error
+           'apply-arguments
+           "Unexpected keyword argument provided to template!"
+           "keyword" k)))
+      (hash-keys (arguments-keyword args)))
+     (hash-for-each
+      filled-in-kw-template
+      (λ (k v)
+        (when (nothing? v)
+          (raise-arguments-error 'apply-arguments
+                                 "Missing keyword argument in template!"
+                                 "keyword" k))))
+     (template-arguments filled-in-pos-template
+                         filled-in-kw-template))
    (define (flat-arguments this)
      (make-arguments (filter-just (template-arguments-pos this))
                      (template-arguments-kw this)))
@@ -525,18 +536,41 @@
          [invocation-args (make-arguments pos kw)])
     (~curry 'right f invocation-args)))
 
-(define (~nullify-hash v)
-  (apply hash-set* v (interleave (hash-keys v) (repeat nothing))))
-
 (define/arguments (partial/template args)
   (let* ([func (first (arguments-positional args))]
          [pos (rest (arguments-positional args))]
-         [kw (arguments-keyword args)]
-         [kw-template (~nullify-hash kw)])
-    ;; passed in kwarg values are ignored since this is just
-    ;; for the template
-    (f #:apply-with (template-arguments pos kw-template)
+         [kw (arguments-keyword args)])
+    (f #:apply-with (template-arguments pos kw)
        func)))
+
+(define-syntax-parser app-positional-parser
+  [(_) #'null]
+  [(_ k:keyword _ vs ...)
+   #'(app-positional-parser vs ...)]
+  [(_ (~datum _) vs ...)
+   #'(append (list nothing)
+             (app-positional-parser vs ...))]
+  [(_ v vs ...)
+   #'(append (list (just v))
+             (app-positional-parser vs ...))])
+
+(define-syntax-parser app-keyword-parser
+  [(_) #'(hash)]
+  [(_ k:keyword (~datum _) vs ...)
+   #'(hash-union (hash 'k nothing)
+                 (app-keyword-parser vs ...))]
+  [(_ k:keyword v:expr vs ...)
+   #'(hash-union (hash 'k (just v))
+                 (app-keyword-parser vs ...))]
+  [(_ v vs ...)
+   #'(app-keyword-parser vs ...)])
+
+(define-syntax-parser app
+  [(_ func:expr vs ...)
+   #'(apply/kw-hash partial/template
+                    (app-keyword-parser vs ...)
+                    func
+                    (app-positional-parser vs ...))])
 
 (define/arguments (partial args)
   (let* ([func (first (arguments-positional args))]
