@@ -69,14 +69,14 @@
                             (composer monoid?)
                             (applier application-scheme?)
                             (chirality symbol?))]
-          [struct partial-arguments
+          [struct curried-arguments
             ((left list?)
              (right list?)
              (kw hash?))]
           [struct template-arguments
             ((pos list?)
              (kw hash?))]
-          [empty-partial-arguments partial-arguments?]
+          [empty-curried-arguments curried-arguments?]
           [make-function (->* ()
                               (#:compose-with monoid?
                                #:apply-with application-scheme?)
@@ -202,7 +202,7 @@
                (define (handle-failure this exception)
                  (raise exception))]))
 
-(struct partial-arguments (left right kw)
+(struct curried-arguments (left right kw)
   #:transparent
 
   #:methods gen:application-scheme
@@ -211,21 +211,21 @@
      ;; retaining existing arg positions and appending the fresh ones
      ;; at the positions implied by the chirality
      (let ([left-args (if (eq? chirality 'left)
-                          (append (partial-arguments-left this)
+                          (append (curried-arguments-left this)
                                   (arguments-positional args))
-                          (partial-arguments-left this))]
+                          (curried-arguments-left this))]
            [right-args (if (eq? chirality 'right)
                            ;; note order reversed for right args
                            (append (arguments-positional args)
-                                   (partial-arguments-right this))
-                           (partial-arguments-right this))])
-       (partial-arguments left-args
+                                   (curried-arguments-right this))
+                           (curried-arguments-right this))])
+       (curried-arguments left-args
                           right-args
-                          (hash-union (partial-arguments-kw this)
+                          (hash-union (curried-arguments-kw this)
                                       (arguments-keyword args)))))
    (define (flat-arguments this)
-     (make-arguments (partial-arguments-positional this)
-                     (partial-arguments-kw this)))
+     (make-arguments (curried-arguments-positional this)
+                     (curried-arguments-kw this)))
    (define (handle-failure this exception)
      this)]
 
@@ -236,9 +236,9 @@
          [(#t) write]
          [(#f) display]
          [else (λ (p port) (print p port mode))]))
-     (let ([left (partial-arguments-left self)]
-           [right (partial-arguments-right self)]
-           [kw (partial-arguments-kw self)])
+     (let ([left (curried-arguments-left self)]
+           [right (curried-arguments-right self)]
+           [kw (curried-arguments-kw self)])
        (cond [(null? right)
               (recur (append left (list '_)) port)]
              [(null? left)
@@ -249,12 +249,12 @@
                                   (kwhash->altlist kw))
                           port)])))])
 
-(define empty-partial-arguments
-  (partial-arguments null null (hash)))
+(define empty-curried-arguments
+  (curried-arguments null null (hash)))
 
-(define (partial-arguments-positional args)
-  (append (partial-arguments-left args)
-          (partial-arguments-right args)))
+(define (curried-arguments-positional args)
+  (append (curried-arguments-left args)
+          (curried-arguments-right args)))
 
 (define (arguments-cons v args)
   (make-arguments (cons v (arguments-positional args))
@@ -265,9 +265,6 @@
 
   #:methods gen:application-scheme
   [(define (apply-arguments this args chirality)
-     ;; need tests for these
-     ;; clean up comments
-     ;; merge into master
      (define arg-stack (apply make-stack (arguments-positional args)))
      (define filled-in-pos-template
        (for/list ([arg (template-arguments-pos this)])
@@ -308,11 +305,15 @@
    (define (handle-failure this exception)
      (raise exception))])
 
-;; then get template arguments to work
+;; clean up comments
+;; merge into master
 ;; profile before and after
 ;; tests needed:
 ;;  - partial/template
-;; rename partial-arguments -> curried-arguments to differentiate from uncurried partial application
+;;  - app macro
+;;  - methods of each application-scheme, esp template
+;;  - application scheme composition
+;; printed representation of template-arguments
 ;; formalize composition of application schemes
 (define (eval-function f args)
   ;; the happy path
@@ -435,7 +436,7 @@
        (recur representation port)))])
 
 (define (make-function #:compose-with [composer usual-composition]
-                       #:apply-with [applier empty-partial-arguments]
+                       #:apply-with [applier empty-curried-arguments]
                        #:curry-on [chirality 'left]
                        . fs)
   (function fs
@@ -446,7 +447,7 @@
 (define f make-function)
 
 (define (make-threading-function #:compose-with [composer usual-composition]
-                                 #:apply-with [applier empty-partial-arguments]
+                                 #:apply-with [applier empty-curried-arguments]
                                  #:curry-on [chirality 'left]
                                  . fs)
   (apply f
@@ -481,7 +482,7 @@
 (define-alias λ. lambda.)
 
 (define (function-null #:compose-with [composer usual-composition]
-                       #:apply-with [applier empty-partial-arguments])
+                       #:apply-with [applier empty-curried-arguments])
   (make-function #:compose-with composer
                  #:apply-with applier))
 
@@ -517,10 +518,9 @@
 
 (define compose f)
 
-
 (define (~curry chirality f invocation-args)
   (if (and (function? f)
-           (partial-arguments? (function-applier f)))
+           (curried-arguments? (function-applier f)))
       ;; application scheme is compatible so just apply the
       ;; new args to the existing scheme
       (function (function-components f)
@@ -532,7 +532,7 @@
       ;; wrap the existing function with one that will be curried
       (function (list f)
                 usual-composition
-                (apply-arguments empty-partial-arguments
+                (apply-arguments empty-curried-arguments
                                  invocation-args
                                  chirality)
                 chirality)))
