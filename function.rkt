@@ -24,7 +24,8 @@
                   rest
                   nth
                   sequence->list
-                  reverse)
+                  reverse
+                  repeat)
          (only-in data/functor
                   (map f:map))
          mischief/shorthand
@@ -67,6 +68,9 @@
           [struct partial-arguments
             ((left list?)
              (right list?)
+             (kw hash?))]
+          [struct template-arguments
+            ((pos list?)
              (kw hash?))]
           [empty-partial-arguments partial-arguments?]
           [make-function (->* ()
@@ -241,21 +245,44 @@
   (make-arguments (cons v (arguments-positional args))
                   (arguments-keyword args)))
 
-(struct template-arguments (template)
+(struct template-arguments (pos kw)
   #:transparent
 
   #:methods gen:application-scheme
   [(define (apply-arguments this args chirality)
+     ;; define arguments-keyword in let form
+     ;; ideally make the error message more specific so the indicate the offending args
+     ;; need tests for these
+     ;; evaluate the template application scheme (don't worry about syntax)
+     ;; clean up comments
+     ;; merge into master
      (define arg-stack (apply make-stack (arguments-positional args)))
-     (define filled-in-template
-       (for/list ([arg (template-arguments-template this)])
+     (define filled-in-pos-template
+       (for/list ([arg (template-arguments-pos this)])
          (if (just? arg)
              arg
-             (just (pop! arg-stack)))))
-     (template-arguments filled-in-template))
+             (if (stack-empty? arg-stack)
+                 (raise-arguments-error 'apply-arguments
+                                        "Not enough arguments provided for template!")
+                 (just (pop! arg-stack))))))
+     (unless (stack-empty? arg-stack)
+       (raise-arguments-error 'apply-arguments
+                              "Too many arguments provided for template!"
+                              "extra args" (stack->list arg-stack)))
+     (define filled-in-kw-template
+       (for/hash ([k (hash-keys (template-arguments-kw this))])
+         (values k (hash-ref (arguments-keyword args) k nothing))))
+     (unless (for/and ([k (hash-keys (arguments-keyword args))])
+               (hash-has-key? (template-arguments-kw this) k))
+       (raise-arguments-error 'apply-arguments
+                              "Unexpected keyword arguments provided for template!"))
+     (unless (empty? (filter nothing? (hash-values filled-in-kw-template)))
+       (raise-arguments-error 'apply-arguments
+                              "Missing keyword arguments in template!"))
+     (template-arguments filled-in-pos-template filled-in-kw-template))
    (define (flat-arguments this)
-     (make-arguments (filter-just (template-arguments-template this))
-                     (hash)))
+     (make-arguments (filter-just (template-arguments-pos this))
+                     (template-arguments-kw this)))
    (define (handle-failure this f exception)
      (raise exception))])
 
@@ -263,6 +290,7 @@
 ;; profile before and after
 ;; tests needed:
 ;;  - partial/template
+;; rename partial-arguments -> curried-arguments to differentiate from uncurried partial application
 ;; formalize composition of application schemes
 (define (eval-function f args)
   ;; the happy path
@@ -497,10 +525,17 @@
          [invocation-args (make-arguments pos kw)])
     (~curry 'right f invocation-args)))
 
+(define (~nullify-hash v)
+  (apply hash-set* v (interleave (hash-keys v) (repeat nothing))))
+
 (define/arguments (partial/template args)
-  (let ([func (first (arguments-positional args))]
-        [template (rest (arguments-positional args))])
-    (f #:apply-with (template-arguments template)
+  (let* ([func (first (arguments-positional args))]
+         [pos (rest (arguments-positional args))]
+         [kw (arguments-keyword args)]
+         [kw-template (~nullify-hash kw)])
+    ;; passed in kwarg values are ignored since this is just
+    ;; for the template
+    (f #:apply-with (template-arguments pos kw-template)
        func)))
 
 (define/arguments (partial args)
