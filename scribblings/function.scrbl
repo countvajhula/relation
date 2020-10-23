@@ -39,18 +39,20 @@
 
 Elementary types and utilities to simplify the use and manipulation of functions.
 
-This module provides general-purpose utilities to support programming in the @hyperlink["https://en.wikipedia.org/wiki/Functional_programming"]{functional style}. As part of its operation, this module defines and provides a "rich" @racket[function] type intended as a drop-in alternative to built-in Racket functions. This function type is usually no different from using normal functions, but as a higher-level entity, it provides greater visibility of the make-up of the function, allowing more flexibility in customizing the nature of composition, supporting natural semantics when used with standard sequence utilities, and more seamless use of currying.
+This module provides general-purpose utilities to support programming in the @hyperlink["https://en.wikipedia.org/wiki/Functional_programming"]{functional style}. As part of its operation, this module defines and provides a "rich" @racket[function] type intended as a drop-in alternative to built-in Racket functions. This function type is usually no different from using normal functions, but as a higher-level entity, it provides greater visibility of the make-up of the function, allowing more flexibility in customizing the nature of composition, supporting natural semantics when used with standard sequence utilities, and more seamless use of currying and partial application.
 
 @section[#:tag "function:types"]{Types}
 
 @defstruct[function ([components list?]
                      [composer monoid?]
-                     [args partial-arguments?])
+                     [applier application-scheme?]
+                     [chirality symbol?])
                     #:omit-constructor]{
-  A type that represents any procedure, whether elementary or composed. It is inherently @hyperlink["https://en.wikipedia.org/wiki/Currying"]{curried}, meaning that partially supplying arguments results in a new function parametrized by these already-provided arguments.
+  A type that represents any procedure, whether elementary or composed. It is @hyperlink["https://en.wikipedia.org/wiki/Currying"]{curried} by default, meaning that partially supplying arguments results in a new function parametrized by these already-provided arguments.
 @itemlist[
 @item{@racket[components] - A list of functions that comprise this one.}
 @item{@racket[composer] - The definition of composition for this function. By default (when constructed using @racket[make-function]), this is the usual function composition, i.e. @racketlink[b:compose]{@racket[compose]} together with @racket[values] as the identity.}
+@item{@racket[applier] - The definition of application for this function. By default, this is curried partial application, meaning the function takes an arbitrary number of positional and keyword arguments at a time and evaluates to a result when sufficient arguments have been provided, or to a new function accepting more arguments otherwise. Other possible application schemes include uncurried with optional partial application (close to the default behavior for normal Racket functions) and template-based partial application (resembling the application behavior in @other-doc['(lib "fancy-app/main.scrbl")]).}
 @item{@racket[args] - Arguments that have already been supplied to the function.}]
 }
 
@@ -64,18 +66,79 @@ This module provides general-purpose utilities to support programming in the @hy
    @item{@racket[id] - An @hyperlink["https://en.wikipedia.org/wiki/Identity_element"]{identity} function appropriate for the composition.}]
 }
 
-@defstruct[partial-arguments ([side symbol?]
-                              [left list?]
+@defthing[gen:application-scheme any/c]{
+
+ An @deftech{application scheme} represents a definition of function application, entailing how arguments are to be ordered and compiled, what arguments are expected and whether they may be passed in incrementally, and what happens when the function is actually invoked.
+
+ The default application scheme is partial application with currying. Other schemes provided include partial application without currying, and template-based partial application (resembling the scheme in @other-doc['(lib "fancy-app/main.scrbl")]).
+
+@defproc[(application-scheme? [v any/c])
+         boolean?]{
+
+ Predicate to check if a value is an application scheme.
+
+@examples[
+    #:eval eval-for-docs
+    (application-scheme? empty-arguments)
+    (application-scheme? (arguments 1 2 3 #:key number->string))
+    (application-scheme? empty-curried-arguments)
+    (application-scheme? (curried-arguments (list 1 2 3) (list 4 5) (hash '#:key number->string)))
+    (application-scheme? (template-arguments (list) (hash)))
+    (application-scheme? (template-arguments (list nothing (just 3)) (hash '#:key (just number->string) '#:kw nothing)))
+  ]
+}
+
+ To implement this interface for custom types, the following methods need to be implemented.
+
+ @defproc[(apply-arguments [application-scheme application-scheme?]
+                           [args arguments?]
+                           [chirality (one-of/c 'left 'right)])
+          application-scheme?]{
+
+ Incorporate fresh @racket[args] into the @racket[application-scheme], honoring the "chirality" or order in which the arguments are to be parsed - either left-to-right, or right-to-left, if applicable. This defines what happens when a function with the given application scheme is applied to fresh arguments. The result of this function is expected to be an updated application scheme.
+ }
+
+ @defproc[(flat-arguments [application-scheme application-scheme?])
+          arguments?]{
+
+ Produce a flat @tech[#:doc '(lib "arguments/main.scrbl") #:key "arguments-struct"]{arguments structure} representing the arguments that will be passed in a single invocation of the underlying function. The application scheme may compile the arguments in whatever manner it sees fit; the produced arguments structure represents the result of its operation.
+ }
+
+ @defproc[(handle-failure [application-scheme application-scheme?]
+                          [exception exn:fail?])
+          application-scheme?]{
+
+ If the function using the application scheme fails when applied, this method is called to give the application scheme an opportunity to define what happens. One of two things must happen: either a fresh application scheme object should be produced (often this is simply the object itself, signaling partial application which may succeed on a future invocation), or an exception (possibly @racket[exception] itself) should be raised. Note that if any exceptions occur in the process of application that are clear errors reported by the underlying function (e.g. more arguments than it accepts), those would simply be raised directly and would not be forwarded to this method to solicit a contingency plan.
+ }
+
+}
+
+@deftogether[(
+@defstruct[curried-arguments ([left list?]
                               [right list?]
                               [kw hash?])
-                             #:omit-constructor]{
- A structure representing the arguments that parametrize (i.e. have already been supplied to) a function. This includes all arguments that have been supplied by either left- or right-currying.
+                             #:omit-constructor]
+@defthing[empty-curried-arguments curried-arguments?]
+           )]{
+ An @tech{application scheme} representing the arguments that parametrize (i.e. have already been supplied to) a function. This includes all arguments that have been supplied by either left- or right-currying.
+
+ @racket[empty-curried-arguments] represents an empty set of curried arguments, often used as the initial application scheme in a curried function that may accumulate arguments over time.
 
  @itemlist[
-    @item{@racket[side] - The side on which the function is curried.}
     @item{@racket[left-args] - The positional arguments that parametrize this function on the left (e.g. passed in by left-currying).}
     @item{@racket[right-args] - The positional arguments that parametrize this function on the right (e.g. passed in by right-currying).}
     @item{@racket[kw-args] - The keyword arguments that parametrize this function.}
+   ]
+}
+
+@defstruct[template-arguments ([pos list?]
+                               [kw hash?])
+                               #:omit-constructor]{
+ An @tech{application scheme} encoding a template expressing the expected arguments -- whether positional or keyword -- to a function. The values of positional or keyword arguments are expected to be @tech[#:doc '(lib "scribblings/data/functional.scrbl")]{optional values}. Typically, template-based partial application would be used via the @racket[app] macro, so that there is no need to muck about with optional values in normal usage.
+
+ @itemlist[
+    @item{@racket[pos] - The positional arguments that parametrize this function, which may be actual values or blanks expected to be filled at invocation time.}
+    @item{@racket[kw] - The keyword arguments that parametrize this function, which may be actual values or blanks expected to be filled at invocation time.}
    ]
 }
 
@@ -147,6 +210,22 @@ This module provides general-purpose utilities to support programming in the @hy
   ]
 }
 
+@defform[(app fn template-args ...)]{
+  Syntactic sugar on the @racket[partial/template] interface, inspired by and greatly resembling @other-doc['(lib "fancy-app/main.scrbl")], this enables applying a function to arguments with reference to a template specified in advance that indicates the expected arguments and their positions.
+
+@examples[
+    #:eval eval-for-docs
+    (app + 2 _)
+    ((app + 2 _) 3)
+    (map (app * 2 _) (list 1 2 3))
+    ((app string-append _ "-" _) "seam" "less")
+    (app = #:key string-upcase "apple" _)
+    ((app = #:key string-upcase _ "apple") "APPLE")
+    (eval:error ((app = #:key _ "apple" _) "APPLE"))
+    ((app = #:key _ "apple" _) #:key string-upcase "APPLE")
+  ]
+}
+
 @section[#:tag "function:representation"]{Representation}
 
  The printed representation of a @racket[function] has some features worthy of note. Let's look at an example.
@@ -158,7 +237,8 @@ This module provides general-purpose utilities to support programming in the @hy
   ]
 
  The first thing to note is that the printed representation is almost itself valid code to reproduce the function it represents. A prominent maxim of programming in the functional style is to write complex functions in terms of small, simple functions that can be composed together. The transparency of this representation is intended to support this habit, by enabling the makeup of such functions, whether simple or complex, to be easily scrutinized and manipulated. Specific clues encoded in the representation are as follows:
- @codeblock{(λ (args _) ...)} means that the function is @emph{left-curried} (the default), while @codeblock{(λ (_ args) ...)} that it is @emph{right-curried} (the @racket[_] indicates where fresh arguments will be placed in relation to the existing arguments). If arguments have been supplied on both sides, the @racket[_] will indicate the argument position between the already-supplied arguments.
+ @codeblock{(λ (args _) ...)}
+ In general, the arguments portion of the representation indicates the @tech{application scheme}. Here, it indicates that the function is @emph{left-curried} (the default), while @codeblock{(λ (_ args) ...)} indicates that it is @emph{right-curried} (the @racket[_] indicates where fresh arguments will be placed in relation to the existing arguments). If arguments have been supplied on both sides, either via currying or a @racketlink[template-arguments]{template}, the @racket[_] will indicate the argument position(s) between the already-supplied arguments.
  @codeblock{(.. fn ...)} indicates that the method of composition is the usual one, i.e. @racket[compose],
  @codeblock{(&& fn ...)} means the method of composition is @racket[conjoin],
  @codeblock{(|| fn ...)} means @racket[disjoin], and
@@ -169,11 +249,14 @@ This module provides general-purpose utilities to support programming in the @hy
     #:label "More examples:"
 	(f add1 sqr)
     ((f expt) 2)
+    (partial expt 2)
     (curry = #:key string-upcase "apple")
+	(curryr member? (list 1 2 3))
+	(curryr (curry string-append "ichi") "san")
+	(app string-append "ichi" _ "san" _ "go")
 	(&& positive? odd?)
 	(|| positive? odd?)
 	(f #:compose-with (monoid (λ (f g) g) values) add1 sub1)
-	(curryr member? (list 1 2 3))
   ]
 
 
@@ -252,6 +335,8 @@ This module provides general-purpose utilities to support programming in the @hy
     (curry + 2)
     (curry + 2 3)
     ((curryr < 5) 3)
+    (curry (curryr (curry string-append "ichi") "san") "ni")
+    ((curryr (curry string-append "ichi" "-") "-" "san") "ni")
   ]
 }
 
@@ -268,6 +353,31 @@ This module provides general-purpose utilities to support programming in the @hy
           (+ x y z))))
     (eval:error (curried-add-3 1 4 7))
     ((uncurry curried-add-3) 1 4 7)
+  ]
+}
+
+@defproc[(partial [g procedure?] [v any/c] ...)
+         function?]{
+
+ Partially apply the function @racket[g] using the provided arguments. The result is a function with a flat set of these pre-supplied arguments which must be invoked with all of the remaining expected arguments when the time comes, i.e. it is @emph{not} curried.
+
+@examples[
+    #:eval eval-for-docs
+    (partial + 2)
+    ((partial + 2) 3 4)
+  ]
+}
+
+@defproc[(partial/template [g procedure?] [v maybe/c] ...)
+         function?]{
+
+ Partially apply the function @racket[g] using the specified argument template. This template takes the form of a series of @tech[#:doc '(lib "scribblings/data/functional.scrbl")]{optional values}, provided directly, either as positional or keyword arguments. The result is a function that expects precisely those arguments that are indicated as "missing" in the template. Note that this function is @emph{not} curried. Typically this would be used via the convenient @racket[app] syntax, rather than directly.
+
+@examples[
+    #:eval eval-for-docs
+    (partial/template = #:key (just string-upcase) (just "apple") nothing)
+    ((partial/template = #:key (just string-upcase) nothing (just "apple")) "APPLE")
+    ((partial/template = #:key nothing (just "apple") nothing) #:key string-upcase "APPLE")
   ]
 }
 

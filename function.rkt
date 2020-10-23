@@ -50,7 +50,10 @@
          lambda.
          λ.
          app
+         gen:application-scheme
+         application-scheme/c
          (contract-out
+          [application-scheme? (predicate/c)]
           [unthunk (binary-variadic-function/c procedure? any/c procedure?)]
           [if-f (-> (unconstrained-domain-> boolean?)
                     procedure?
