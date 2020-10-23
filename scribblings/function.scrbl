@@ -41,7 +41,11 @@ Elementary types and utilities to simplify the use and manipulation of functions
 
 This module provides general-purpose utilities to support programming in the @hyperlink["https://en.wikipedia.org/wiki/Functional_programming"]{functional style}. As part of its operation, this module defines and provides a "rich" @racket[function] type intended as a drop-in alternative to built-in Racket functions. This function type is usually no different from using normal functions, but as a higher-level entity, it provides greater visibility of the make-up of the function, allowing more flexibility in customizing the nature of composition, supporting natural semantics when used with standard sequence utilities, and more seamless use of currying and partial application.
 
+@table-of-contents[]
+
 @section[#:tag "function:types"]{Types}
+
+@subsection{Functions and Composition}
 
 @defstruct[function ([components list?]
                      [composer monoid?]
@@ -65,6 +69,44 @@ This module provides general-purpose utilities to support programming in the @hy
    @item{@racketid[f] - A @hyperlink["https://en.wikipedia.org/wiki/Higher-order_function"]{higher-order} @hyperlink["https://en.wikipedia.org/wiki/Closure_(mathematics)"]{closed} @hyperlink["https://en.wikipedia.org/wiki/Binary_function"]{binary function}, i.e. a function taking in two functions and producing a single one}
    @item{@racket[id] - An @hyperlink["https://en.wikipedia.org/wiki/Identity_element"]{identity} function appropriate for the composition.}]
 }
+
+@deftogether[(
+  @defproc[(make-function [#:compose-with composer monoid? (monoid #, @racketlink[b:compose]{@racket[compose]} values)]
+                          [#:apply-with applier application-scheme? empty-curried-arguments]
+                          [g procedure?]
+                          ...)
+           function?]
+  @defproc[(f [#:compose-with composer monoid? (monoid #, @racketlink[b:compose]{@racket[compose]} values)]
+              [#:apply-with applier application-scheme? empty-curried-arguments]
+              [g procedure?]
+              ...)
+           function?]
+  @defproc[(make-threading-function [#:compose-with composer monoid? (monoid #, @racketlink[b:compose]{@racket[compose]} values)]
+                                    [#:apply-with applier application-scheme? empty-curried-arguments]
+                                    [g procedure?]
+                                    ...)
+           function?]
+  @defproc[(f> [#:compose-with composer monoid? (monoid #, @racketlink[b:compose]{@racket[compose]} values)]
+               [#:apply-with applier application-scheme? empty-curried-arguments]
+               [g procedure?]
+               ...)
+           function?]
+  )]{
+  A constructor for creating functions from other functions. @racket[f] functions compose right-to-left (the default), while @racket[f>] functions compose left-to-right (like @other-doc['(lib "scribblings/threading.scrbl")]), which some consider more intuitive. @racket[f] is an alias for the more verbose @racket[make-function], and likewise, @racket[f>] is an alias for @racket[make-threading-function].
+
+  @examples[
+      #:eval eval-for-docs
+      (f add1)
+      (f add1 ->number)
+      ((f ->string add1 ->number) "12")
+      ((f> ->number add1 ->string) "12")
+      (define (str-append x y z) (string-append x y z))
+      ((f str-append) "hello")
+      ((((f str-append) "hello") "there") "friend")
+    ]
+}
+
+@subsection{Function Application}
 
 @defthing[gen:application-scheme any/c]{
 
@@ -140,38 +182,6 @@ This module provides general-purpose utilities to support programming in the @hy
     @item{@racket[pos] - The positional arguments that parametrize this function, which may be actual values or blanks expected to be filled at invocation time.}
     @item{@racket[kw] - The keyword arguments that parametrize this function, which may be actual values or blanks expected to be filled at invocation time.}
    ]
-}
-
-@deftogether[(
-  @defproc[(make-function [#:compose-with composer monoid? (monoid #, @racketlink[b:compose]{@racket[compose]} values)]
-                          [g procedure?]
-                          ...)
-           function?]
-  @defproc[(f [#:compose-with composer monoid? (monoid #, @racketlink[b:compose]{@racket[compose]} values)]
-              [g procedure?]
-              ...)
-           function?]
-  @defproc[(make-threading-function [#:compose-with composer monoid? (monoid #, @racketlink[b:compose]{@racket[compose]} values)]
-                                    [g procedure?]
-                                    ...)
-           function?]
-  @defproc[(f> [#:compose-with composer monoid? (monoid #, @racketlink[b:compose]{@racket[compose]} values)]
-               [g procedure?]
-               ...)
-           function?]
-  )]{
-  A constructor for creating functions from other functions. @racket[f] functions compose right-to-left (the default), while @racket[f>] functions compose left-to-right (like @other-doc['(lib "scribblings/threading.scrbl")]), which some consider more intuitive. @racket[f] is an alias for the more verbose @racket[make-function], and likewise, @racket[f>] is an alias for @racket[make-threading-function].
-
-  @examples[
-      #:eval eval-for-docs
-      (f add1)
-      (f add1 ->number)
-      ((f ->string add1 ->number) "12")
-      ((f> ->number add1 ->string) "12")
-      (define (str-append x y z) (string-append x y z))
-      ((f str-append) "hello")
-      ((((f str-append) "hello") "there") "friend")
-    ]
 }
 
 @section[#:tag "function:syntax"]{Syntax}

@@ -187,24 +187,24 @@
 ;; TODO: ideally add tests for method implementations in each
 ;; application-scheme in a test submodule
 (define-generics application-scheme
-  ;; apply-arguments accepts an arguments structure representing
+  ;; pass accepts an arguments structure representing
   ;; args provided in a single invocation, and returns an updated
   ;; application-scheme instance
-  (apply-arguments application-scheme args chirality)
-  ;; flat-arguments compiles all previously supplied arguments
+  (pass application-scheme args chirality)
+  ;; apply-scheme compiles all previously supplied arguments
   ;; into a "flat" arguments structure that represents the
   ;; arguments for the invocation of the underlying function
-  (flat-arguments application-scheme)
+  (apply-scheme application-scheme)
   ;; handle-failure is expected to either
   ;; 1. return a modified application scheme instance, OR
   ;; 2. raise an exception
   (handle-failure application-scheme exception)
   #:defaults
-  ([arguments? (define (apply-arguments this args chirality)
+  ([arguments? (define (pass this args chirality)
                  (if (eq? chirality 'left)
                      (arguments-merge this args)
                      (arguments-merge args this)))
-               (define (flat-arguments this)
+               (define (apply-scheme this)
                  this)
                (define (handle-failure this exception)
                  (raise exception))]))
@@ -213,7 +213,7 @@
   #:transparent
 
   #:methods gen:application-scheme
-  [(define (apply-arguments this args chirality)
+  [(define (pass this args chirality)
      ;; incorporate fresh arguments into the partial application
      ;; retaining existing arg positions and appending the fresh ones
      ;; at the positions implied by the chirality
@@ -230,7 +230,7 @@
                           right-args
                           (hash-union (curried-arguments-kw this)
                                       (arguments-keyword args)))))
-   (define (flat-arguments this)
+   (define (apply-scheme this)
      (make-arguments (curried-arguments-positional this)
                      (curried-arguments-kw this)))
    (define (handle-failure this exception)
@@ -271,21 +271,26 @@
   #:transparent
 
   #:methods gen:application-scheme
-  [(define (apply-arguments this args chirality)
+  [(define (pass this args chirality)
+     (define n-expected-args
+       (length (filter nothing? (template-arguments-pos this))))
      (define arg-stack (apply make-stack (arguments-positional args)))
      (define filled-in-pos-template
        (for/list ([arg (template-arguments-pos this)])
          (if (just? arg)
              arg
              (if (stack-empty? arg-stack)
-                 (raise-arguments-error
-                  'apply-arguments
-                  "Not enough positional arguments provided to template!")
+                 ;; not enough args provided
+                 (raise-arity-error
+                  'pass
+                  n-expected-args)
                  (just (pop! arg-stack))))))
      (unless (stack-empty? arg-stack)
-       (raise-arguments-error 'apply-arguments
-                              "Too many arguments provided to template!"
-                              "extra args" (stack->list arg-stack)))
+       ;; too many args provided
+       ;; TODO: better error reporting
+       (raise-arity-error 'pass
+                          n-expected-args
+                          (stack->list arg-stack)))
      (define filled-in-kw-template
        (for/hash ([k (hash-keys (template-arguments-kw this))])
          (let ([v (hash-ref (template-arguments-kw this) k)])
@@ -293,15 +298,15 @@
                                 v)))))
      ;; invocation kwargs should be present in blank template keys
      (define expected-keys
-      (for/list ([k (hash-keys (template-arguments-kw this))]
-                 #:when (nothing? (hash-ref (template-arguments-kw this) k)))
-        k))
+       (for/list ([k (hash-keys (template-arguments-kw this))]
+                  #:when (nothing? (hash-ref (template-arguments-kw this) k)))
+         k))
      (hash-for-each
       (arguments-keyword args)
       (λ (k v)
         (unless (member k expected-keys)
           (raise-arguments-error
-           'apply-arguments
+           'pass
            "Unexpected keyword argument provided to template!"
            "keyword" k))))
      ;; all blank template keys should be present in invocation kwargs
@@ -309,14 +314,16 @@
       filled-in-kw-template
       (λ (k v)
         (when (nothing? v)
-          (raise-arguments-error 'apply-arguments
+          (raise-arguments-error 'pass
                                  "Missing keyword argument in template!"
                                  "keyword" k))))
      (template-arguments filled-in-pos-template
                          filled-in-kw-template))
-   (define (flat-arguments this)
+
+   (define (apply-scheme this)
      (make-arguments (filter-just (template-arguments-pos this))
                      (template-arguments-kw this)))
+
    (define (handle-failure this exception)
      (raise exception))]
 
@@ -347,7 +354,7 @@
          [leading-function (if (null? components)
                                (monoid-id (function-composer f))
                                (last components))]
-         [args (flat-arguments applier)]
+         [args (apply-scheme applier)]
          [pos-args (arguments-positional args)]
          [kw-args (arguments-keyword args)])
     (with-handlers ([exn:fail:contract:arity?
@@ -386,9 +393,9 @@
 
 (define (apply-function f args)
   (let* ([applier (function-applier f)]
-         [updated-applier (apply-arguments applier
-                                           args
-                                           (function-chirality f))])
+         [updated-applier (pass applier
+                                args
+                                (function-chirality f))])
     (eval-if-saturated f updated-applier)))
 
 (struct function (components
@@ -513,7 +520,7 @@
             (function-chirality f)))
 
 (define (function-flat-arguments f)
-  (flat-arguments (function-applier f)))
+  (apply-scheme (function-applier f)))
 
 (define/arguments (apply/steps args)
   (let ([f (first (arguments-positional args))]
@@ -538,24 +545,23 @@
 
 (define compose f)
 
-(define (~curry chirality f invocation-args)
-  (if (and (function? f)
-           (curried-arguments? (function-applier f)))
+(define (~curry chirality func invocation-args)
+  (if (and (function? func)
+           (curried-arguments? (function-applier func)))
       ;; application scheme is compatible so just apply the
       ;; new args to the existing scheme
-      (function (function-components f)
-                (function-composer f)
-                (apply-arguments (function-applier f)
-                                 invocation-args
-                                 chirality)
+      (function (function-components func)
+                (function-composer func)
+                (pass (function-applier func)
+                      invocation-args
+                      chirality)
                 chirality)
       ;; wrap the existing function with one that will be curried
-      (function (list f)
-                usual-composition
-                (apply-arguments empty-curried-arguments
-                                 invocation-args
-                                 chirality)
-                chirality)))
+      (f func
+         #:curry-on chirality
+         #:apply-with (pass empty-curried-arguments
+                            invocation-args
+                            chirality))))
 
 (define/arguments (curry args)
   (let* ([f (first (arguments-positional args))]
@@ -571,12 +577,18 @@
          [invocation-args (make-arguments pos kw)])
     (~curry 'right f invocation-args)))
 
+(define/arguments (partial args)
+  (let* ([func (first (arguments-positional args))]
+         [pos (rest (arguments-positional args))]
+         [kw (arguments-keyword args)]
+         [invocation-args (make-arguments pos kw)])
+    (f func #:apply-with invocation-args)))
+
 (define/arguments (partial/template args)
   (let* ([func (first (arguments-positional args))]
          [pos (rest (arguments-positional args))]
          [kw (arguments-keyword args)])
-    (f #:apply-with (template-arguments pos kw)
-       func)))
+    (f func #:apply-with (template-arguments pos kw))))
 
 (define-syntax-parser app-positional-parser
   [(_) #'null]
@@ -606,14 +618,6 @@
                     (app-keyword-parser vs ...)
                     func
                     (app-positional-parser vs ...))])
-
-(define/arguments (partial args)
-  (let* ([func (first (arguments-positional args))]
-         [pos (rest (arguments-positional args))]
-         [kw (arguments-keyword args)]
-         [invocation-args (make-arguments pos kw)])
-    (f #:apply-with invocation-args
-       func)))
 
 (define (uncurry f)
   (λ/f args
