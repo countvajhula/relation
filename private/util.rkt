@@ -6,7 +6,8 @@
 (provide check-pairwise
          exists
          for-all
-         kwhash->altlist)
+         kwhash->altlist
+         join-list)
 
 (module+ test
   (require rackunit))
@@ -40,6 +41,9 @@
          (sort (hash->list v)
                (λ (a b)
                  (keyword<? (car a) (car b))))))
+
+(define (join-list lst)
+  (apply append lst))
 
 (module+ test
   (test-case

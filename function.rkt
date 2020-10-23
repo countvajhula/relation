@@ -49,6 +49,7 @@
          define/f
          lambda.
          λ.
+         app
          (contract-out
           [unthunk (binary-variadic-function/c procedure? any/c procedure?)]
           [if-f (-> (unconstrained-domain-> boolean?)
@@ -108,6 +109,7 @@
           [curry (unconstrained-domain-> function?)]
           [curryr (unconstrained-domain-> function?)]
           [partial (unconstrained-domain-> function?)]
+          [partial/template (unconstrained-domain-> function?)]
           [uncurry (functional/c)]
           [conjoin (variadic-function/c procedure? function?)]
           [&& (variadic-function/c procedure? function?)]
@@ -281,15 +283,23 @@
                               "extra args" (stack->list arg-stack)))
      (define filled-in-kw-template
        (for/hash ([k (hash-keys (template-arguments-kw this))])
-         (values k (hash-ref (arguments-keyword args) k nothing))))
-     (for-each
-      (λ (k)
-        (unless (hash-has-key? (template-arguments-kw this) k)
+         (let ([v (hash-ref (template-arguments-kw this) k)])
+           (values k (from-just (hash-ref (arguments-keyword args) k nothing)
+                                v)))))
+     ;; invocation kwargs should be present in blank template keys
+     (define expected-keys
+      (for/list ([k (hash-keys (template-arguments-kw this))]
+                 #:when (nothing? (hash-ref (template-arguments-kw this) k)))
+        k))
+     (hash-for-each
+      (arguments-keyword args)
+      (λ (k v)
+        (unless (member k expected-keys)
           (raise-arguments-error
            'apply-arguments
            "Unexpected keyword argument provided to template!"
-           "keyword" k)))
-      (hash-keys (arguments-keyword args)))
+           "keyword" k))))
+     ;; all blank template keys should be present in invocation kwargs
      (hash-for-each
       filled-in-kw-template
       (λ (k v)
@@ -303,8 +313,24 @@
      (make-arguments (filter-just (template-arguments-pos this))
                      (template-arguments-kw this)))
    (define (handle-failure this exception)
-     (raise exception))])
+     (raise exception))]
 
+  #:methods gen:custom-write
+  [(define (write-proc self port mode)
+     (define recur
+       (case mode
+         [(#t) write]
+         [(#f) display]
+         [else (λ (p port) (print p port mode))]))
+     (let ([pos (template-arguments-pos self)]
+           [kw (template-arguments-kw self)])
+       (recur (append (map (f:curry from-just '_) pos)
+                      (join-list (hash-map kw
+                                           (λ (k v)
+                                             (list k (from-just '_ v))))))
+              port)))])
+
+;; formalize composition of application schemes
 ;; clean up comments
 ;; merge into master
 ;; profile before and after
@@ -313,8 +339,6 @@
 ;;  - app macro
 ;;  - methods of each application-scheme, esp template
 ;;  - application scheme composition
-;; printed representation of template-arguments
-;; formalize composition of application schemes
 (define (eval-function f args)
   ;; the happy path
   (let ([components (function-components f)]
