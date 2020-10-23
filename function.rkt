@@ -181,6 +181,8 @@
 (define conjoin-composition (monoid f:conjoin true.))
 (define disjoin-composition (monoid f:disjoin false.))
 
+;; TODO: ideally add tests for method implementations in each
+;; application-scheme in a test submodule
 (define-generics application-scheme
   ;; apply-arguments accepts an arguments structure representing
   ;; args provided in a single invocation, and returns an updated
@@ -330,15 +332,6 @@
                                              (list k (from-just '_ v))))))
               port)))])
 
-;; formalize composition of application schemes
-;; clean up comments
-;; merge into master
-;; profile before and after
-;; tests needed:
-;;  - partial/template
-;;  - app macro
-;;  - methods of each application-scheme, esp template
-;;  - application scheme composition
 (define (eval-function f args)
   ;; the happy path
   (let ([components (function-components f)]

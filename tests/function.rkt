@@ -208,6 +208,9 @@
      (check-exn exn:fail:contract? (thunk ((app = #:key string-upcase "hi" _) #:key string-downcase "HI")) "overriding template not allowed")
      (check-equal? ((app = #:key _ _ "hi") #:key string-upcase "HI") (= #:key string-upcase "hi" "HI"))
      (check-exn exn:fail:contract? (thunk ((app = #:key _ _ "hi") "HI")) "missing keyword arg in template"))
+   (test-case
+       ;; TODO: ideally formalize this, and add tests
+       "application scheme composition")
    (check-equal? ((function-cons add1 (f sub1)) 3) 3)
    (check-equal? ((function-cons add1 (function-null)) 3) 4)
    (check-equal? ((function-cons positive? (function-cons integer? (function-null #:compose-with (monoid f:conjoin (const #t))))) 5) #t)
