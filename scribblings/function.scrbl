@@ -433,7 +433,7 @@ This module provides general-purpose utilities to support programming in the @hy
 @item{@racket[components] - A list of functions that comprise this one.}
 @item{@racket[composer] - The definition of composition for this function. By default (when constructed using @racket[make-function]), this is the usual function composition, i.e. @racketlink[b:compose]{@racket[compose]} together with @racket[values] as the identity.}
 @item{@racket[applier] - The definition of application for this function. By default, this is curried partial application, meaning the function takes an arbitrary number of positional and keyword arguments at a time and evaluates to a result when sufficient arguments have been provided, or to a new function accepting more arguments otherwise. Other possible application schemes include uncurried with optional partial application (close to the default behavior for normal Racket functions) and template-based partial application (resembling the application behavior in @other-doc['(lib "fancy-app/main.scrbl")]).}
-@item{@racket[args] - Arguments that have already been supplied to the function.}]
+@item{@racket[chirality] - The direction (@racket[left]-to-right or @racket[right]-to-left) in which provided arguments will be incorporated.}]
 }
 
 @defstruct[monoid ([f (-> procedure? procedure? procedure?)]
@@ -484,11 +484,28 @@ This module provides general-purpose utilities to support programming in the @hy
 
 @subsection{Function Application}
 
-@defthing[gen:application-scheme any/c]{
-
  An @deftech{application scheme} represents a definition of function application, entailing how arguments are to be ordered and compiled, what arguments are expected and whether they may be passed in incrementally, and what happens when the function is actually invoked.
 
  The default application scheme is partial application with currying. Other schemes provided include partial application without currying, and template-based partial application (resembling the scheme in @other-doc['(lib "fancy-app/main.scrbl")]).
+
+ Application schemes compose naturally, so that, for example, a function could expect arguments to match a @racketlink[template-arguments]{template}, and could receive those arguments incrementally via @racketlink[curried-arguments]{curried partial application}. The examples below illustrate this.
+
+@defthing[gen:application-scheme any/c]{
+
+ A @tech/reference{generic interface} representing an @tech{application scheme}.
+
+@examples[
+    #:eval eval-for-docs
+    ((partial + 1) 2)
+    ((curry expt 2) 5)
+    ((curryr expt 2) 5)
+    (app string-append _ ", " _ ", " _ " " "and " _ ".")
+    (eval:error ((app string-append _ ", " _ ", " _ " " "and " _ ".") "parsley" "sage"))
+    (curryr (app string-append _ ", " _ ", " _ " " "and " _ ".") "thyme")
+    (curry (curryr (app string-append _ ", " _ ", " _ " " "and " _ ".") "thyme") "parsley" "sage")
+    ((curry (curryr (app string-append _ ", " _ ", " _ " " "and " _ ".") "thyme") "parsley" "sage") "rosemary")
+  ]
+}
 
 @defproc[(application-scheme? [v any/c])
          boolean?]{
@@ -504,13 +521,12 @@ This module provides general-purpose utilities to support programming in the @hy
     (application-scheme? (template-arguments (list) (hash)))
     (application-scheme? (template-arguments (list nothing (just 3)) (hash '#:key (just number->string) '#:kw nothing)))
   ]
-}
 
- To implement this interface for custom types, the following methods need to be implemented.
+ To define custom application schemes, the following methods need to be implemented.
 
- @defproc[(apply-arguments [application-scheme application-scheme?]
-                           [args arguments?]
-                           [chirality (one-of/c 'left 'right)])
+ @defproc[(pass [application-scheme application-scheme?]
+                [args arguments?]
+                [chirality (one-of/c 'left 'right)])
           application-scheme?]{
 
  Incorporate fresh @racket[args] into the @racket[application-scheme], honoring the "chirality" or order in which the arguments are to be parsed - either left-to-right, or right-to-left, if applicable. This defines what happens when a function with the given application scheme is applied to fresh arguments. The result of this function is expected to be an updated application scheme.

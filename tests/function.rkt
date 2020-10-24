@@ -209,8 +209,15 @@
      (check-equal? ((app = #:key _ _ "hi") #:key string-upcase "HI") (= #:key string-upcase "hi" "HI"))
      (check-exn exn:fail:contract? (thunk ((app = #:key _ _ "hi") "HI")) "missing keyword arg in template"))
    (test-case
-       ;; TODO: ideally formalize this, and add tests
-       "application scheme composition")
+       "application scheme composition"
+     (check-equal? ((curry (app string-append _ "-" _) "a") "b") "a-b")
+     (check-equal? ((curryr (app string-append _ "-" _) "a") "b") "b-a")
+     (check-equal? ((app (app string-append _ "b" _ _) _ "c" "d") "a") "abcd" "nested templates")
+     (check-equal? (((curry (app (app string-append _ "b" _ _) _ "c" _)) "a") "d") "abcd" "nested templates and currying")
+     (check-equal? (((curryr (app (app string-append _ "b" _ _) _ "c" _)) "d") "a") "abcd" "nested templates and currying")
+     (check-exn exn:fail:contract? (thunk ((curry (app string-append _ "-" _) "a") "b" "c")))
+     (check-equal? ((partial (app string-append _ "-" _) "a") "b") "a-b")
+     (check-exn exn:fail:contract? (thunk (((partial (app string-append _ "-" _)) "a") "b")) "partial application does not curry"))
    (check-equal? ((function-cons add1 (f sub1)) 3) 3)
    (check-equal? ((function-cons add1 (function-null)) 3) 4)
    (check-equal? ((function-cons positive? (function-cons integer? (function-null #:compose-with (monoid f:conjoin (const #t))))) 5) #t)

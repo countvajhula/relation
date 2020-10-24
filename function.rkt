@@ -8,6 +8,7 @@
          racket/stream
          racket/hash
          racket/set
+         racket/format
          (except-in racket/list
                     empty?
                     first
@@ -187,24 +188,32 @@
 ;; TODO: ideally add tests for method implementations in each
 ;; application-scheme in a test submodule
 (define-generics application-scheme
-  ;; pass accepts an arguments structure representing
-  ;; args provided in a single invocation, and returns an updated
-  ;; application-scheme instance
+  ;; pass accepts an arguments structure representing args provided in a
+  ;; single invocation, and returns an updated application-scheme instance
+  ;; if the arguments are acceptable, otherwise, it raises an error that
+  ;; may be either recoverable or non-recoverable. Recoverable errors
+  ;; (for instance, insufficient arguments; on the other hand, excess
+  ;; or invalid arguments are non-recoverable) could be handled in an
+  ;; outer application scheme while non-recoverable (any other) errors
+  ;; would simply be raised to the caller
   (pass application-scheme args chirality)
-  ;; apply-scheme compiles all previously supplied arguments
+
+  ;; flat-arguments compiles all previously supplied arguments
   ;; into a "flat" arguments structure that represents the
   ;; arguments for the invocation of the underlying function
-  (apply-scheme application-scheme)
+  (flat-arguments application-scheme)
+
   ;; handle-failure is expected to either
   ;; 1. return a modified application scheme instance, OR
   ;; 2. raise an exception
   (handle-failure application-scheme exception)
+
   #:defaults
   ([arguments? (define (pass this args chirality)
                  (if (eq? chirality 'left)
                      (arguments-merge this args)
                      (arguments-merge args this)))
-               (define (apply-scheme this)
+               (define (flat-arguments this)
                  this)
                (define (handle-failure this exception)
                  (raise exception))]))
@@ -214,7 +223,7 @@
 
   #:methods gen:application-scheme
   [(define (pass this args chirality)
-     ;; incorporate fresh arguments into the partial application
+     ;; incorporate fresh arguments into the partial application,
      ;; retaining existing arg positions and appending the fresh ones
      ;; at the positions implied by the chirality
      (let ([left-args (if (eq? chirality 'left)
@@ -230,7 +239,7 @@
                           right-args
                           (hash-union (curried-arguments-kw this)
                                       (arguments-keyword args)))))
-   (define (apply-scheme this)
+   (define (flat-arguments this)
      (make-arguments (curried-arguments-positional this)
                      (curried-arguments-kw this)))
    (define (handle-failure this exception)
@@ -267,6 +276,8 @@
   (make-arguments (cons v (arguments-positional args))
                   (arguments-keyword args)))
 
+(struct recoverable-apply-error exn:fail:contract ())
+
 (struct template-arguments (pos kw)
   #:transparent
 
@@ -280,10 +291,9 @@
          (if (just? arg)
              arg
              (if (stack-empty? arg-stack)
-                 ;; not enough args provided
-                 (raise-arity-error
-                  'pass
-                  n-expected-args)
+                 (raise (recoverable-apply-error (~a "Not enough arguments, expected: "
+                                                     n-expected-args)
+                                                 (current-continuation-marks)))
                  (just (pop! arg-stack))))))
      (unless (stack-empty? arg-stack)
        ;; too many args provided
@@ -314,13 +324,13 @@
       filled-in-kw-template
       (λ (k v)
         (when (nothing? v)
-          (raise-arguments-error 'pass
-                                 "Missing keyword argument in template!"
-                                 "keyword" k))))
+          (raise (recoverable-apply-error (~a "Missing keyword argument in template!\n"
+                                              "keyword: " k)
+                                          (current-continuation-marks))))))
      (template-arguments filled-in-pos-template
                          filled-in-kw-template))
 
-   (define (apply-scheme this)
+   (define (flat-arguments this)
      (make-arguments (filter-just (template-arguments-pos this))
                      (template-arguments-kw this)))
 
@@ -354,10 +364,18 @@
          [leading-function (if (null? components)
                                (monoid-id (function-composer f))
                                (last components))]
-         [args (apply-scheme applier)]
+         [args (flat-arguments applier)]
          [pos-args (arguments-positional args)]
          [kw-args (arguments-keyword args)])
-    (with-handlers ([exn:fail:contract:arity?
+    (with-handlers ([recoverable-apply-error?
+                     ;; if it gets to the eval stage, the application scheme
+                     ;; at this level has already signed off on it, but a nested
+                     ;; application scheme is not yet fulfilled. We consult
+                     ;; the application scheme on what to do here
+                     (λ (exn)
+                       (struct-copy function f
+                                    [applier (handle-failure applier exn)]))]
+                    [exn:fail:contract:arity?
                      (λ (exn)
                        (if (> (length pos-args)
                               (~min-arity leading-function))
@@ -520,7 +538,7 @@
             (function-chirality f)))
 
 (define (function-flat-arguments f)
-  (apply-scheme (function-applier f)))
+  (flat-arguments (function-applier f)))
 
 (define/arguments (apply/steps args)
   (let ([f (first (arguments-positional args))]
