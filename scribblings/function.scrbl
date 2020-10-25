@@ -178,7 +178,7 @@ This module provides general-purpose utilities to support programming in the @hy
                   ...)
          function?]{
 
- Analogous to @racketlink[b:compose]{@racket[compose]}, but yields a @racket[function] rather than a primitive Racket @seclink["procedures" "procedure" #:doc '(lib "scribblings/reference/reference.scrbl")]. This is simply an alias for @racket[f].
+ Analogous to @racketlink[b:compose]{@racket[compose]}, but yields a @racket[function] rather than a primitive Racket @seclink["procedures" "procedure" #:doc '(lib "scribblings/reference/reference.scrbl")]. This is simply an alias for @racket[f] with a more tailored contract.
 
 @examples[
     #:eval eval-for-docs
@@ -212,7 +212,7 @@ This module provides general-purpose utilities to support programming in the @hy
 @defproc[(uncurry [g procedure?])
          function?]{
 
- Convert a curried function @racket[g] accepting single arguments in succession to an equivalent one accepting an arbitrary number of arguments. This is typically not needed since both @racket[curry] as well as Racket's built-in currying interfaces support partial application with an arbitrary number of arguments, but it can be useful with naively curried functions not created using one of these interfaces.
+ Convert a curried function @racket[g] accepting single arguments in succession to an equivalent one accepting an arbitrary number of arguments at once. This is typically not needed since both @racket[curry] as well as Racket's built-in currying interfaces support partial application with an arbitrary number of arguments, but it can be useful with naively curried functions not created using one of these interfaces.
 
 @examples[
     #:eval eval-for-docs
@@ -432,7 +432,7 @@ This module provides general-purpose utilities to support programming in the @hy
 @itemlist[
 @item{@racket[components] - A list of functions that comprise this one.}
 @item{@racket[composer] - The definition of composition for this function. By default (when constructed using @racket[make-function]), this is the usual function composition, i.e. @racketlink[b:compose]{@racket[compose]} together with @racket[values] as the identity.}
-@item{@racket[applier] - The definition of application for this function. By default, this is curried partial application, meaning the function takes an arbitrary number of positional and keyword arguments at a time and evaluates to a result when sufficient arguments have been provided, or to a new function accepting more arguments otherwise. Other possible application schemes include uncurried with optional partial application (close to the default behavior for normal Racket functions) and template-based partial application (resembling the application behavior in @other-doc['(lib "fancy-app/main.scrbl")]).}
+@item{@racket[applier] - The definition of application for this function. By default, this is curried partial application, meaning the function takes an arbitrary number of positional and keyword arguments at a time and evaluates to a result when sufficient arguments have been provided, or to a new function accepting more arguments otherwise. Other possible application schemes include uncurried with optional partial application (a minimal generalization of the default behavior for normal Racket functions) and template-based partial application (resembling the application behavior in @other-doc['(lib "fancy-app/main.scrbl")]).}
 @item{@racket[chirality] - The direction (@racket[left]-to-right or @racket[right]-to-left) in which provided arguments will be incorporated.}]
 }
 
