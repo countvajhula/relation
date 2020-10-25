@@ -9,6 +9,8 @@
                "threading-lib"
                "mischief"
                "social-contract"
+               "kw-utils"
+               "typed-stack"
                "version-case"
                "rackunit-lib"))
 (define build-deps '("scribble-lib"
@@ -16,6 +18,7 @@
                      "racket-doc"
                      "algebraic"
                      "sugar"
+                     "fancy-app"
                      "collections-doc"
                      "functional-doc"
                      "rackjure"
