@@ -22,7 +22,8 @@
                   function-null
                   function-cons
                   flip$
-                  false.)
+                  false.
+                  (compose r:compose))
          version-case
          contract/social)
 
@@ -155,7 +156,7 @@
                         "~a is not invertible under the append operation!"
                         appendable))]
   #:defaults ([function?
-               (define append compose)
+               (define append r:compose)
                (define (appendable-identity self)
                  (function-null))]
               [procedure?

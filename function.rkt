@@ -561,7 +561,29 @@
                                             (loop (rest remf)
                                                   v))))))))))
 
-(define compose f)
+(define (function-compose g h)
+  ;; this composes functions "naively," wrapping the components with a
+  ;; new function in all cases but those where the applier and composer
+  ;; of the component functions are eq?
+  ;; It could be improved to define the nature of composition for homogeneous
+  ;; and heterogeneous composition and application schemes formally
+  (if (and
+       (eq? (function-applier g)
+            (function-applier h))
+       (eq? (function-composer g)
+            (function-composer h)))
+      (struct-copy function h
+                   [components (append (function-components g)
+                                       (function-components h))])
+      (f g h)))
+
+(define (compose . gs)
+  (let ([lifted-gs (reverse (map (if-f function? values f) gs))])
+    (if (empty? lifted-gs)
+        (function-null)
+        (if (empty? (rest lifted-gs))
+            (first lifted-gs)
+            (foldl function-compose (first lifted-gs) (rest lifted-gs))))))
 
 (define (~curry chirality func invocation-args)
   (if (and (function? func)
