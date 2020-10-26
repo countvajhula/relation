@@ -337,17 +337,28 @@
 (define (.. . vs)
   (if (empty? vs)
       ID
-      (foldl append vs #:order 'bab)))
+      (if (empty? (rest vs))
+          ;; this unpacking is for the case of functions, to avoid obscuring
+          ;; a leading (for function) or singleton (for procedure) function
+          ;; by composition with the identity
+          (first vs)
+          (let ([rev-vs (reverse vs)])
+            (b:foldl append (first rev-vs) (rest rev-vs))))))
 
 (define (..> . vs)
   (if (empty? vs)
       ID
-      (foldl append vs)))
+      (if (empty? (rest vs))
+          (first vs)
+          (b:foldl append (first vs) (rest vs)))))
 
 (define (* . vs)
   (if (empty? vs)
       ID
-      (foldl multiply vs #:order 'bab)))
+      (if (empty? (rest vs))
+          (first vs)
+          (let ([rev-vs (reverse vs)])
+            (b:foldl multiply (first rev-vs) (rest rev-vs))))))
 
 (define (/ v . remaining)
   (if (empty? remaining)
@@ -357,7 +368,10 @@
 (define (+ . vs)
   (if (empty? vs)
       ID
-      (foldl add vs #:order 'bab)))
+      (if (empty? (rest vs))
+          (first vs)
+          (let ([rev-vs (reverse vs)])
+            (b:foldl add (first rev-vs) (rest rev-vs))))))
 
 (define join (curry apply ..))
 
