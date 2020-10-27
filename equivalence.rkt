@@ -9,12 +9,20 @@
          racket/dict
          racket/vector
          racket/stream
-         racket/class
          racket/match
          (only-in racket/list
                   (group-by b:group-by)
                   splitf-at)
-         data/collection
+         (only-in data/collection
+                  gen:collection
+                  gen:countable
+                  gen:sequence
+                  empty?
+                  first
+                  rest
+                  in
+                  sequenceof
+                  (map d:map))
          describe
          contract/social
          relation/logic)
@@ -93,23 +101,23 @@
                  ;; be unequal.
                  (cond [(number? seq) (exact->inexact seq)]
                        [(string? seq) seq]
-                       [(list? seq) (b:map seq-flonum seq)]
+                       [(list? seq) (map seq-flonum seq)]
                        [(vector? seq) (vector-map seq-flonum seq)]
                        [(set? seq) (list->set (set-map seq seq-flonum))]
-                       [(stream? seq) (map seq-flonum seq)]
+                       [(stream? seq) (d:map seq-flonum seq)]
                        [else seq]))
                (define (hash-code comparable)
-                 (let ([new-seq (cond [(list? comparable) (b:map seq-flonum comparable)]
+                 (let ([new-seq (cond [(list? comparable) (map seq-flonum comparable)]
                                       [(vector? comparable) (vector-map seq-flonum comparable)]
                                       [(set? comparable) (list->set (set-map comparable seq-flonum))]
-                                      [(stream? comparable) (map seq-flonum comparable)]
+                                      [(stream? comparable) (d:map seq-flonum comparable)]
                                       [else comparable])])
                    (equal-hash-code new-seq)))
                (define (secondary-hash-code comparable)
-                 (let ([new-seq (cond [(list? comparable) (b:map seq-flonum comparable)]
+                 (let ([new-seq (cond [(list? comparable) (map seq-flonum comparable)]
                                       [(vector? comparable) (vector-map seq-flonum comparable)]
                                       [(set? comparable) (list->set (set-map comparable seq-flonum))]
-                                      [(stream? comparable) (map seq-flonum comparable)]
+                                      [(stream? comparable) (d:map seq-flonum comparable)]
                                       [else comparable])])
                    (equal-secondary-hash-code new-seq)))]
               [any/c
@@ -137,7 +145,7 @@
            [classes (group-by key contents)])
       (if (empty? classes)
           (values (list) key)
-          (values (stream->list (map first classes))
+          (values (map first classes)
                   key))))
   #:methods gen:set
   [(define (set-member? st v)

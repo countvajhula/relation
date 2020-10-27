@@ -6,15 +6,18 @@
                     predicate/c)
          racket/generic
          racket/function
-         data/collection
+         racket/list
+         (only-in data/collection
+                  sequence->list)
          contract/social
-         relation/equivalence
+         (only-in relation/equivalence (= r:=))
          (only-in relation/function
-                  ||
                   flip))
 
 (require "private/util.rkt"
          "private/contract.rkt")
+
+(define || disjoin)
 
 (provide gen:orderable
          orderable/c
@@ -40,7 +43,7 @@
   #:fallbacks [(define/generic generic-lt less-than?)
                (define/generic generic-lte less-than-or-equal?)
                (define less-than-or-equal? (|| generic-lt
-                                               =))
+                                               r:=))
                (define greater-than-or-equal? (flip generic-lte))
                (define greater-than? (flip generic-lt))]
   #:fast-defaults ([number?
@@ -94,7 +97,7 @@
       (check-pairwise greater-than? args)))
 
 (define (sort less-than? #:key [key #f] seq)
-  (if (member? less-than? (set < >))
+  (if (set-member? (set < >) less-than?)
       (b:sort (sequence->list seq)
               (curryr less-than? #:key key))
       (raise-argument-error 'sort
