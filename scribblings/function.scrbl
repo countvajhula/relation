@@ -20,6 +20,7 @@
                     (only-in racket/generator sequence->generator)
                     (prefix-in b: racket/function)
                     arguments
+					(only-in mischief/function (call m:call))
                     (prefix-in f: data/functor)]]
 
 @(define eval-for-docs
@@ -424,6 +425,24 @@ This module provides general-purpose utilities to support programming in the @hy
     #:eval eval-for-docs
     (pack sqr 1 2 3 4)
     (pack ->string 1 2 3)
+  ]
+}
+
+@deftogether[(
+@defproc[(call [g procedure?]
+               [v any/c]
+               ...)
+         procedure?]
+  )]{
+
+ Reprovided from @racketlink[m:call]{@racket[call]}. This simply makes standard function invocation available as a function, for use in cases where we cannot directly (i.e. syntactically) invoke the function.
+ This function is in some respects similar to the @hyperlink["https://typeclasses.com/featured/dollar"]{@racket[$] operator} in Haskell.
+
+@examples[
+    #:eval eval-for-docs
+    (call + 1 2 3 4)
+    (call = #:key string-upcase "Apple" "APPLE")
+    (map call (list add1 sqr) (list 2 3))
   ]
 }
 

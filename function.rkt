@@ -53,6 +53,7 @@
          app
          gen:application-scheme
          application-scheme/c
+         call
          (contract-out
           [application-scheme? (predicate/c)]
           [unthunk (binary-variadic-function/c procedure? any/c procedure?)]
@@ -121,6 +122,14 @@
           [|| (variadic-function/c procedure? function?)]
           [negate (function/c procedure? function?)]
           [!! (function/c procedure? function?)]))
+
+;; from mischief/function - reproviding it via require+provide runs aground
+;; of some "name is protected" error while building docs, not sure why;
+;; so including the implementation directly here for now
+(define call
+  (make-keyword-procedure
+   (lambda (ks vs f . xs)
+     (keyword-apply f ks vs xs))))
 
 (define (unthunk f . args)
   (f:thunk*
