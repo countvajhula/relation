@@ -181,7 +181,7 @@ This module provides general-purpose utilities to support programming in the @hy
 
  Analogous to @racketlink[b:compose]{@racket[compose]}, but yields a @racket[function] rather than a primitive Racket @seclink["procedures" "procedure" #:doc '(lib "scribblings/reference/reference.scrbl")]. In general, the composition is performed "naively" by simply wrapping the component functions with a new @racket[function]. In the common case where the component functions have @racketlink[eq?]{identical} composition and application schemes, however, the functions are composed "at the same level," preserving the @racketlink[monoid]{composition method} in the resulting composed function, whether it is the usual function composition or something else.
 
-@margin-note{In principle, composition of functions could be formally simplified in certain additional cases including homogeneous or trivial application schemes. This would have no impact on the behavior of the resulting function, however, and is left for future consideration.}
+@margin-note{In principle, composition of functions could be formally simplified in certain additional cases including homogeneous or trivial application schemes. This "runtime compilation" would have no impact on the behavior of the resulting function, however, and is left for future consideration.}
 
 @examples[
     #:eval eval-for-docs
