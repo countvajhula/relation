@@ -573,7 +573,7 @@ In the event no operands are received in the course of a computation, the result
 @defproc[(join [vs (sequenceof appendable?)])
          appendable?]{
 
- Equivalent to @racket[(apply .. vs)], this stitches together a sequence containing elements of any @racketlink[gen:appendable]{appendable} type, for instance, @tech/reference{strings}, @tech/reference{lists}, or @seclink["procedures" "procedures" #:doc '(lib "scribblings/reference/reference.scrbl")].
+ Equivalent to @racket[(apply .. vs)], this stitches together a sequence containing elements of any @racketlink[gen:appendable]{appendable} type, for instance, @tech/reference{strings}, @tech/reference{lists}, or @seclink["procedures" "procedures" #:doc '(lib "scribblings/reference/reference.scrbl")]. This function is sometimes called @hyperlink["https://docs.racket-lang.org/srfi/srfi-std/srfi-1.html#concatenate"]{@racket[concatenate]}.
 
 @examples[
     #:eval eval-for-docs

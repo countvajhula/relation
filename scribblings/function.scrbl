@@ -5,10 +5,10 @@
          racket/sandbox
          @for-label[relation/function
                     relation/type
-					(only-in relation/equivalence member? =)
-					(only-in relation/composition ..)
+                    (only-in relation/equivalence member? =)
+                    (only-in relation/composition ..)
                     data/maybe
-					(only-in data/collection sequence?)
+                    (only-in data/collection sequence?)
                     (rename-in racket (compose b:compose)
                                       (= b:=)
                                       (curry b:curry)
@@ -16,11 +16,11 @@
                                       (conjoin b:conjoin)
                                       (disjoin b:disjoin)
                                       (negate b:negate)
-									  (sequence? b:sequence?))
+                                      (sequence? b:sequence?))
                     (only-in racket/generator sequence->generator)
                     (prefix-in b: racket/function)
                     arguments
-					(only-in mischief/function (call m:call))
+                    (only-in mischief/function (call m:call))
                     (prefix-in f: data/functor)]]
 
 @(define eval-for-docs
@@ -428,12 +428,10 @@ This module provides general-purpose utilities to support programming in the @hy
   ]
 }
 
-@deftogether[(
 @defproc[(call [g procedure?]
                [v any/c]
                ...)
-         procedure?]
-  )]{
+         procedure?]{
 
  Reprovided from @racketlink[m:call]{@racket[call]}. This simply makes standard function invocation available as a function, for use in cases where we cannot directly (i.e. syntactically) invoke the function.
  This function is in some respects similar to the @hyperlink["https://typeclasses.com/featured/dollar"]{@racket[$] operator} in Haskell.
