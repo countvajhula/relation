@@ -512,6 +512,22 @@
 
 (define f> make-threading-function)
 
+;; maybe we just implement gen:applicative (for application)
+;; and gen:monad (for composition) or something
+;; (define-generics function
+;;   (call function . args)
+;;   (compose function other))
+;; spend some time defining, clarifying the problem to be solved
+;; prodigy rather than entropy approach, first
+
+
+;; (struct function-power (f power)
+;;   #:transparent
+
+;;   #:methods gen:function
+;;   [define (compose this other)
+;;     ()])
+
 (define-syntax-rule (lambda/function kw-formals body ...)
   (f (lambda kw-formals body ...)))
 
@@ -569,6 +585,28 @@
                                (stream-cons v
                                             (loop (rest remf)
                                                   v))))))))))
+;; (define (function-power-compose g h)
+;;   ;; define
+;;   )
+
+;; (define (compose-power g h)
+;;   ;; either or both could be function powers. in that case, the powrs
+;;   ;; need to be added; otherwise just incremented - actually just
+;;   ;; map a priori to function-powers that wold bbe set to 1, like a
+;;   ;; free functor, and them compose them as funcion powers
+;;   (let-values ([(p others) (select/remainder function-power? g h)])
+;;     (let ([components (function-components p)])
+;;       (if components))))
+
+;; (define (->function v)
+;;   (cond [(function-power? v) (function-power-function v)]))
+
+(define (~compatible? g h)
+  (and
+   (eq? (function-applier g)
+        (function-applier h))
+   (eq? (function-composer g)
+        (function-composer h))))
 
 (define (function-compose g h)
   ;; this composes functions "naively," wrapping the components with a
@@ -576,15 +614,16 @@
   ;; of the component functions are eq?
   ;; It could be improved to define the nature of composition for homogeneous
   ;; and heterogeneous composition and application schemes formally
-  (if (and
-       (eq? (function-applier g)
-            (function-applier h))
-       (eq? (function-composer g)
-            (function-composer h)))
-      (struct-copy function h
-                   [components (append (function-components g)
-                                       (function-components h))])
-      (f g h)))
+  (cond ;; [(or (eq? g h)
+        ;;      (equal? g h)
+        ;;      (and (~compatible? g h)
+        ;;           (apply equal? (map ->function (list g h)))))
+        ;;  (compose-power g h)]
+        [(~compatible? g h)
+         (struct-copy function h
+                      [components (append (function-components g)
+                                          (function-components h))])]
+        [else (f g h)]))
 
 (define (compose . gs)
   (let ([lifted-gs (reverse (map (if-f function? values f) gs))])
