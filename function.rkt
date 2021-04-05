@@ -39,7 +39,8 @@
          (for-syntax racket/base
                      syntax/parse/define)
          (only-in kw-utils/kw-hash
-                  apply/kw-hash))
+                  apply/kw-hash)
+         syntax/on)
 
 (require "private/util.rkt")
 
@@ -171,13 +172,13 @@
 (define (pack f . args)
   (sequence->list (map f args)))
 
-(define (~min-arity-value arity)
-  (cond [(number? arity) arity]
-        [(arity-at-least? arity) (arity-at-least-value arity)]
-        [(list? arity) (apply min (map ~min-arity-value arity))]
-        [else (raise-argument-error 'min-arity
-                                    "normalized-arity?"
-                                    arity)]))
+(define-switch (~min-arity-value arity)
+  [number? arity]
+  [arity-at-least? (call arity-at-least-value)]
+  [list? (apply min (lift ~min-arity-value))]
+  [else (raise-argument-error 'min-arity
+                              "normalized-arity?"
+                              arity)])
 
 (define (~min-arity f)
   (~min-arity-value (procedure-arity f)))
@@ -514,19 +515,20 @@
 
 ;; maybe we just implement gen:applicative (for application)
 ;; and gen:monad (for composition) or something
-;; (define-generics function
-;;   (call function . args)
-;;   (compose function other))
+;; (compose function other)
+;; maybe "compose" would get around the need to define a monoid
+;; but may be a little odd to define a notion of composition on a class
+;; unless we restrict it to homogeneous composition and handle the
+;; heteregeneous case externally in the compose interface
+;; but for now...
+(define-generics funxion)
 ;; spend some time defining, clarifying the problem to be solved
 ;; prodigy rather than entropy approach, first
 
-
-;; (struct function-power (f power)
-;;   #:transparent
-
-;;   #:methods gen:function
-;;   [define (compose this other)
-;;     ()])
+(struct function-power (f n)
+  #:transparent
+  #:methods gen:funxion
+  [])
 
 (define-syntax-rule (lambda/function kw-formals body ...)
   (f (lambda kw-formals body ...)))
@@ -585,45 +587,62 @@
                                (stream-cons v
                                             (loop (rest remf)
                                                   v))))))))))
-;; (define (function-power-compose g h)
-;;   ;; define
-;;   )
+(define (compose-powers g h)
+  ;; either or both could be function powers. in that case, the powers
+  ;; need to be added; otherwise just incremented - actually just
+  ;; map a priori to function-powers that would bbe set to 1, like a
+  ;; free functor, and then compose them as function powers
+  (let ([n (function-power-n g)]
+        [m (function-power-n h)])
+    (struct-copy function-power h
+                 [n (+ (function-power-n g)
+                       (function-power-n h))])))
 
-;; (define (compose-power g h)
-;;   ;; either or both could be function powers. in that case, the powrs
-;;   ;; need to be added; otherwise just incremented - actually just
-;;   ;; map a priori to function-powers that wold bbe set to 1, like a
-;;   ;; free functor, and them compose them as funcion powers
-;;   (let-values ([(p others) (select/remainder function-power? g h)])
-;;     (let ([components (function-components p)])
-;;       (if components))))
+(define-switch (underlying-function v)
+  [function-power? (call function-power-f)]
+  [else v])
 
-;; (define (->function v)
-;;   (cond [(function-power? v) (function-power-function v)]))
+(define-predicate (~compatible? g h)
+  (or (any (not function?))
+      (with-key function-applier eq?)
+      (with-key function-composer eq?)))
 
-(define (~compatible? g h)
-  (and
-   (eq? (function-applier g)
-        (function-applier h))
-   (eq? (function-composer g)
-        (function-composer h))))
+(define-switch (lift-to-power g)
+  [function-power? g]
+  [else (function-power g 1)])
 
-(define (function-compose g h)
+(define-switch (function-compose g h)
   ;; this composes functions "naively," wrapping the components with a
   ;; new function in all cases but those where the applier and composer
   ;; of the component functions are eq?
   ;; It could be improved to define the nature of composition for homogeneous
   ;; and heterogeneous composition and application schemes formally
-  (cond ;; [(or (eq? g h)
-        ;;      (equal? g h)
-        ;;      (and (~compatible? g h)
-        ;;           (apply equal? (map ->function (list g h)))))
-        ;;  (compose-power g h)]
-        [(~compatible? g h)
-         (struct-copy function h
-                      [components (append (function-components g)
-                                          (function-components h))])]
-        [else (f g h)]))
+  [(all function-power?)
+   (call compose-powers)]
+  [(or eq?
+       equal?
+       (and ~compatible?
+            (with-key underlying-function
+              equal?)))
+   (call (.. compose-powers lift-to-power))]
+  [~compatible? ; compose at same level
+   (struct-copy function h
+                [components (append (function-components g)
+                                    (function-components h))])]
+  [else f]) ; naive composition
+
+;; rename function -> composed-function
+;; generic interface "function"
+;; .. just composes whatever is there - whether primitive or rich function
+;; maybe we need to decouple the application scheme from composed-function
+;; so it's part of the generic interface itself somehow -- that's the rich type
+;; the composed function implements this and inherits from it, and provides
+;; additional goodies for composition
+;; power does the same for powers
+;; ... any others?
+;; maybe function is just a struct, and composed inherits from it? root contains
+;; applier, e.g.
+;; 
 
 (define (compose . gs)
   (let ([lifted-gs (reverse (map (if-f function? values f) gs))])

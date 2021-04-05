@@ -7,7 +7,8 @@
          exists
          for-all
          kwhash->altlist
-         join-list)
+         join-list
+         give)
 
 (module+ test
   (require rackunit))
@@ -44,6 +45,13 @@
 
 (define (join-list lst)
   (apply append lst))
+
+;; give a (list-)lifted function available arguments
+;; directly instead of wrapping them with a list
+;; related to `unpack`
+(define (give f)
+  (λ args
+    (f args)))
 
 (module+ test
   (test-case
