@@ -607,7 +607,7 @@
       (with-key function-applier eq?)
       (with-key function-composer eq?)))
 
-(define-switch (lift-to-power g)
+(define-switch (function->function-power g)
   [function-power? g]
   [else (function-power g 1)])
 
@@ -624,12 +624,14 @@
        (and ~compatible?
             (with-key underlying-function
               equal?)))
-   (call (.. compose-powers lift-to-power))]
-  [~compatible? ; compose at same level
+   (call (.. compose-powers
+             (% function->function-power)))]
+  [(and (all function?)
+        ~compatible?) ; compose at same level
    (struct-copy function h
                 [components (append (function-components g)
                                     (function-components h))])]
-  [else f]) ; naive composition
+  [else (call f)]) ; naive composition
 
 ;; rename function -> composed-function
 ;; generic interface "function"
