@@ -72,10 +72,10 @@
           [pack (binary-variadic-function/c procedure? any/c sequence?)]
           [struct monoid ((f procedure?)
                           (id procedure?))]
-          [struct function ((components list?)
-                            (composer monoid?)
-                            (applier application-scheme?)
-                            (chirality symbol?))]
+          [struct function ((applier application-scheme?)
+                            (chirality symbol?)
+                            (components list?)
+                            (composer monoid?))]
           [struct curried-arguments
             ((left list?)
              (right list?)
@@ -382,14 +382,16 @@
                      ;; the application scheme on what to do here
                      (λ (exn)
                        (struct-copy function f
-                                    [applier (handle-failure applier exn)]))]
+                                    [applier #:parent base-function
+                                             (handle-failure applier exn)]))]
                     [exn:fail:contract:arity?
                      (λ (exn)
                        (if (> (length pos-args)
                               (~min-arity f))
                            (raise exn)
                            (struct-copy function f
-                                        [applier (handle-failure applier exn)])))]
+                                        [applier #:parent base-function
+                                                 (handle-failure applier exn)])))]
                     [exn:fail:contract?
                      ;; presence of a keyword argument results in a premature
                      ;; contract failure that's not the arity error, even though
@@ -414,14 +416,15 @@
                                           (~min-arity f))))
                              (raise exn)
                              (struct-copy function f
-                                          [applier (handle-failure applier exn)]))))])
+                                          [applier #:parent base-function
+                                                   (handle-failure applier exn)]))))])
       (eval-function f args))))
 
 (define (apply-function f args)
-  (let* ([applier (function-applier f)]
+  (let* ([applier (base-function-applier f)]
          [updated-applier (pass applier
                                 args
-                                (function-chirality f))])
+                                (base-function-chirality f))])
     (eval-if-saturated f updated-applier)))
 
 (define-generics funxion
@@ -432,19 +435,22 @@
     (define funxion-keywords procedure-keywords)
     (define funxion-arity procedure-arity)]))
 
-(struct function (components
-                  composer
-                  applier
-                  chirality)
+(struct base-function (applier
+                       chirality)
   #:transparent
 
   #:property prop:procedure
   (lambda/arguments
    packed-args
+   ;; TODO: just replace apply-function with this
    (let* ([self (first (arguments-positional packed-args))]
           [args (make-arguments (rest (arguments-positional packed-args))
                                 (arguments-keyword packed-args))])
-     (apply-function self args)))
+     (apply-function self args))))
+
+(struct function base-function (components
+                                composer)
+  #:transparent
 
   #:methods gen:funxion
   [(define/generic -funxion-keywords funxion-keywords)
@@ -474,15 +480,15 @@
    (define (first self)
      (-first (function-components self)))
    (define (rest self)
-     (function (-rest (function-components self))
-               (function-composer self)
-               (function-applier self)
-               (function-chirality self)))
+     (function (base-function-applier self)
+               (base-function-chirality self)
+               (-rest (function-components self))
+               (function-composer self)))
    (define (reverse self)
-     (function (-reverse (function-components self))
-               (function-composer self)
-               (function-applier self)
-               (function-chirality self)))]
+     (function (base-function-applier self)
+               (base-function-chirality self)
+               (-reverse (function-components self))
+               (function-composer self)))]
 
   #:methods gen:countable
   [(define/generic -length length)
@@ -496,7 +502,7 @@
          [(#t) write]
          [(#f) display]
          [else (λ (p port) (print p port mode))]))
-     (let* ([applier (function-applier self)]
+     (let* ([applier (base-function-applier self)]
             [components (function-components self)]
             [composer (function-composer self)]
             [representation
@@ -514,10 +520,10 @@
                        #:apply-with [applier empty-curried-arguments]
                        #:curry-on [chirality 'left]
                        . fs)
-  (function fs
-            composer
-            applier
-            chirality))
+  (function applier
+            chirality
+            fs
+            composer))
 
 (define f make-function)
 
@@ -579,13 +585,13 @@
                  #:apply-with applier))
 
 (define (function-cons proc f)
-  (function (cons proc (function-components f))
-            (function-composer f)
-            (function-applier f)
-            (function-chirality f)))
+  (function (base-function-applier f)
+            (base-function-chirality f)
+            (cons proc (function-components f))
+            (function-composer f)))
 
 (define (function-flat-arguments f)
-  (flat-arguments (function-applier f)))
+  (flat-arguments (base-function-applier f)))
 
 (define/arguments (apply/steps args)
   (let ([f (first (arguments-positional args))]
@@ -624,7 +630,7 @@
 
 (define-predicate (~compatible? g h)
   (or (any (not function?))
-      (with-key function-applier eq?)
+      (with-key base-function-applier eq?)
       (with-key function-composer eq?)))
 
 (define-switch (function->function-power g)
@@ -676,15 +682,15 @@
 
 (define (~curry chirality func invocation-args)
   (if (and (function? func)
-           (curried-arguments? (function-applier func)))
+           (curried-arguments? (base-function-applier func)))
       ;; application scheme is compatible so just apply the
       ;; new args to the existing scheme
-      (function (function-components func)
-                (function-composer func)
-                (pass (function-applier func)
+      (function (pass (base-function-applier func)
                       invocation-args
                       chirality)
-                chirality)
+                chirality
+                (function-components func)
+                (function-composer func))
       ;; wrap the existing function with one that will be curried
       (f func
          #:curry-on chirality
