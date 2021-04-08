@@ -181,7 +181,7 @@
                               arity)])
 
 (define (~min-arity f)
-  (~min-arity-value (procedure-arity f)))
+  (~min-arity-value (funxion-arity f)))
 
 (struct monoid (f id)
   #:transparent
@@ -370,11 +370,9 @@
                      args)))
 
 (define (eval-if-saturated f applier)
-  (let* ([components (function-components f)]
-         [leading-function (if (null? components)
-                               (monoid-id (function-composer f))
-                               (last components))]
-         [args (flat-arguments applier)]
+  ;; attempt to eval the function. If it fails, return a new
+  ;; function with a modified applier
+  (let* ([args (flat-arguments applier)]
          [pos-args (arguments-positional args)]
          [kw-args (arguments-keyword args)])
     (with-handlers ([recoverable-apply-error?
@@ -388,7 +386,7 @@
                     [exn:fail:contract:arity?
                      (λ (exn)
                        (if (> (length pos-args)
-                              (~min-arity leading-function))
+                              (~min-arity f))
                            (raise exn)
                            (struct-copy function f
                                         [applier (handle-failure applier exn)])))]
@@ -400,12 +398,12 @@
                      ;; additionally, also handle invalid keyword arg here
                      (λ (exn)
                        (let-values ([(req-kw opt-kw)
-                                     (procedure-keywords leading-function)])
+                                     (funxion-keywords f)])
                          (if (or (empty? kw-args)
                                  ;; the arity error is masked in the presence of keyword
                                  ;; args so we check for it again here
                                  (> (length pos-args)
-                                    (~min-arity leading-function))
+                                    (~min-arity f))
                                  ;; any unexpected keywords?
                                  (any?
                                   (map (!! (in? (append req-kw opt-kw)))
@@ -413,7 +411,7 @@
                                  ;; all required arguments received?
                                  (and (subset? req-kw (hash-keys kw-args))
                                       (>= (length pos-args)
-                                          (~min-arity leading-function))))
+                                          (~min-arity f))))
                              (raise exn)
                              (struct-copy function f
                                           [applier (handle-failure applier exn)]))))])
@@ -425,6 +423,14 @@
                                 args
                                 (function-chirality f))])
     (eval-if-saturated f updated-applier)))
+
+(define-generics funxion
+  (funxion-keywords funxion)
+  (funxion-arity funxion)
+  #:defaults
+  ([procedure?
+    (define funxion-keywords procedure-keywords)
+    (define funxion-arity procedure-arity)]))
 
 (struct function (components
                   composer
@@ -439,6 +445,20 @@
           [args (make-arguments (rest (arguments-positional packed-args))
                                 (arguments-keyword packed-args))])
      (apply-function self args)))
+
+  #:methods gen:funxion
+  [(define/generic -funxion-keywords funxion-keywords)
+   (define/generic -funxion-arity funxion-arity)
+   (define (funxion-keywords self)
+     (let ([leading-function (switch ((function-components self))
+                                     [null? (monoid-id (function-composer self))]
+                                     [else (call last)])])
+       (-funxion-keywords leading-function)))
+   (define (funxion-arity self)
+     (let ([leading-function (switch ((function-components self))
+                                     [null? (monoid-id (function-composer self))]
+                                     [else (call last)])])
+       (-funxion-arity leading-function)))]
 
   #:methods gen:collection
   [(define (conj self elem)
