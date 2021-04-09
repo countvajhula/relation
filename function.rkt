@@ -378,17 +378,13 @@
                      ;; application scheme is not yet fulfilled. We consult
                      ;; the application scheme on what to do here
                      (λ (exn)
-                       (struct-copy function f
-                                    [applier #:parent base-function
-                                             (handle-failure applier exn)]))]
+                       (funxion-update-application f (handle-failure applier exn)))]
                     [exn:fail:contract:arity?
                      (λ (exn)
                        (if (> (length pos-args)
                               (~min-arity f))
                            (raise exn)
-                           (struct-copy function f
-                                        [applier #:parent base-function
-                                                 (handle-failure applier exn)])))]
+                           (funxion-update-application f (handle-failure applier exn))))]
                     [exn:fail:contract?
                      ;; presence of a keyword argument results in a premature
                      ;; contract failure that's not the arity error, even though
@@ -412,20 +408,22 @@
                                       (>= (length pos-args)
                                           (~min-arity f))))
                              (raise exn)
-                             (struct-copy function f
-                                          [applier #:parent base-function
-                                                   (handle-failure applier exn)]))))])
+                             (funxion-update-application f (handle-failure applier exn)))))])
       (funxion-apply f args))))
 
 (define-generics funxion
   (funxion-keywords funxion)
   (funxion-arity funxion)
   (funxion-apply funxion args)
+  ;; TODO: can this and the application scheme's handle-failure be merged?
+  ;; this consideration could shed light on the interplay between the two
+  (funxion-update-application funxion applier)
   #:defaults
   ([procedure?
     (define funxion-keywords procedure-keywords)
     (define funxion-arity procedure-arity)
-    (define funxion-apply apply/arguments)]))
+    (define funxion-apply apply/arguments)
+    (define funxion-update-application (arg 0))]))
 
 (struct base-function (applier
                        chirality)
@@ -451,6 +449,7 @@
   [(define/generic -funxion-keywords funxion-keywords)
    (define/generic -funxion-arity funxion-arity)
    (define/generic -funxion-apply funxion-apply)
+   (define/generic -funxion-update-application funxion-update-application)
    (define (funxion-keywords self)
      (let ([leading-function (switch ((function-components self))
                                      [null? (monoid-id (function-composer self))]
@@ -465,7 +464,11 @@
      (let ([components (function-components self)]
            [composer (function-composer self)])
        (-funxion-apply (apply composer components)
-                       args)))]
+                       args)))
+   (define (funxion-update-application self applier)
+     (struct-copy function self
+                  [applier #:parent base-function
+                           applier]))]
 
   #:methods gen:collection
   [(define (conj self elem)
@@ -546,12 +549,17 @@
   [(define/generic -funxion-keywords funxion-keywords)
    (define/generic -funxion-arity funxion-arity)
    (define/generic -funxion-apply funxion-apply)
+   (define/generic -funxion-update-application funxion-update-application)
    (define (funxion-keywords self)
      (-funxion-keywords (power-function-f self)))
    (define (funxion-arity self)
      (-funxion-arity (power-function-f self)))
    (define (funxion-apply self args)
-     (-funxion-apply (power (power-function-f self) (power-function-n)) args))])
+     (-funxion-apply (power (power-function-f self) (power-function-n self)) args))
+   (define (funxion-update-application self applier)
+     (struct-copy power-function self
+                  [applier #:parent base-function
+                           applier]))])
 
 (define-syntax-rule (lambda/function kw-formals body ...)
   (f (lambda kw-formals body ...)))
