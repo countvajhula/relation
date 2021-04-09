@@ -9,6 +9,7 @@
          racket/hash
          racket/set
          racket/format
+         racket/lazy-require
          (except-in racket/list
                     empty?
                     first
@@ -43,6 +44,9 @@
          syntax/on)
 
 (require "private/util.rkt")
+
+;; so the power-function type can use the `power` utility
+(lazy-require [relation/composition (power)])
 
 (provide lambda/function
          lambda/f
@@ -362,13 +366,6 @@
                                              (list k (from-just '_ v))))))
               port)))])
 
-(define (eval-function f args)
-  ;; the happy path
-  (let ([components (function-components f)]
-        [composer (function-composer f)])
-    (apply/arguments (apply composer components)
-                     args)))
-
 (define (eval-if-saturated f applier)
   ;; attempt to eval the function. If it fails, return a new
   ;; function with a modified applier
@@ -418,22 +415,17 @@
                              (struct-copy function f
                                           [applier #:parent base-function
                                                    (handle-failure applier exn)]))))])
-      (eval-function f args))))
-
-(define (apply-function f args)
-  (let* ([applier (base-function-applier f)]
-         [updated-applier (pass applier
-                                args
-                                (base-function-chirality f))])
-    (eval-if-saturated f updated-applier)))
+      (funxion-apply f args))))
 
 (define-generics funxion
   (funxion-keywords funxion)
   (funxion-arity funxion)
+  (funxion-apply funxion args)
   #:defaults
   ([procedure?
     (define funxion-keywords procedure-keywords)
-    (define funxion-arity procedure-arity)]))
+    (define funxion-arity procedure-arity)
+    (define funxion-apply apply/arguments)]))
 
 (struct base-function (applier
                        chirality)
@@ -442,11 +434,14 @@
   #:property prop:procedure
   (lambda/arguments
    packed-args
-   ;; TODO: just replace apply-function with this
    (let* ([self (first (arguments-positional packed-args))]
           [args (make-arguments (rest (arguments-positional packed-args))
-                                (arguments-keyword packed-args))])
-     (apply-function self args))))
+                                (arguments-keyword packed-args))]
+          [applier (base-function-applier self)]
+          [updated-applier (pass applier
+                                 args
+                                 (base-function-chirality self))])
+     (eval-if-saturated self updated-applier))))
 
 (struct function base-function (components
                                 composer)
@@ -455,6 +450,7 @@
   #:methods gen:funxion
   [(define/generic -funxion-keywords funxion-keywords)
    (define/generic -funxion-arity funxion-arity)
+   (define/generic -funxion-apply funxion-apply)
    (define (funxion-keywords self)
      (let ([leading-function (switch ((function-components self))
                                      [null? (monoid-id (function-composer self))]
@@ -464,7 +460,12 @@
      (let ([leading-function (switch ((function-components self))
                                      [null? (monoid-id (function-composer self))]
                                      [else (call last)])])
-       (-funxion-arity leading-function)))]
+       (-funxion-arity leading-function)))
+   (define (funxion-apply self args)
+     (let ([components (function-components self)]
+           [composer (function-composer self)])
+       (-funxion-apply (apply composer components)
+                       args)))]
 
   #:methods gen:collection
   [(define (conj self elem)
@@ -539,22 +540,18 @@
 
 (define f> make-threading-function)
 
-;; maybe we just implement gen:applicative (for application)
-;; and gen:monad (for composition) or something
-;; (compose function other)
-;; maybe "compose" would get around the need to define a monoid
-;; but may be a little odd to define a notion of composition on a class
-;; unless we restrict it to homogeneous composition and handle the
-;; heteregeneous case externally in the compose interface
-;; but for now...
-(define-generics funxion)
-;; spend some time defining, clarifying the problem to be solved
-;; prodigy rather than entropy approach, first
-
-(struct function-power (f n)
+(struct power-function base-function (f n)
   #:transparent
   #:methods gen:funxion
-  [])
+  [(define/generic -funxion-keywords funxion-keywords)
+   (define/generic -funxion-arity funxion-arity)
+   (define/generic -funxion-apply funxion-apply)
+   (define (funxion-keywords self)
+     (-funxion-keywords (power-function-f self)))
+   (define (funxion-arity self)
+     (-funxion-arity (power-function-f self)))
+   (define (funxion-apply self args)
+     (-funxion-apply (power (power-function-f self) (power-function-n)) args))])
 
 (define-syntax-rule (lambda/function kw-formals body ...)
   (f (lambda kw-formals body ...)))
@@ -618,14 +615,14 @@
   ;; need to be added; otherwise just incremented - actually just
   ;; map a priori to function-powers that would bbe set to 1, like a
   ;; free functor, and then compose them as function powers
-  (let ([n (function-power-n g)]
-        [m (function-power-n h)])
-    (struct-copy function-power h
-                 [n (+ (function-power-n g)
-                       (function-power-n h))])))
+  (let ([n (power-function-n g)]
+        [m (power-function-n h)])
+    (struct-copy power-function h
+                 [n (+ (power-function-n g)
+                       (power-function-n h))])))
 
 (define-switch (underlying-function v)
-  [function-power? (call function-power-f)]
+  [power-function? (call power-function-f)]
   [else v])
 
 (define-predicate (~compatible? g h)
@@ -633,9 +630,9 @@
       (with-key base-function-applier eq?)
       (with-key function-composer eq?)))
 
-(define-switch (function->function-power g)
-  [function-power? g]
-  [else (function-power g 1)])
+(define-switch (function->power-function g)
+  [power-function? g]
+  [else (power-function g 1)])
 
 (define-switch (function-compose g h)
   ;; this composes functions "naively," wrapping the components with a
@@ -643,7 +640,7 @@
   ;; of the component functions are eq?
   ;; It could be improved to define the nature of composition for homogeneous
   ;; and heterogeneous composition and application schemes formally
-  [(all function-power?)
+  [(all power-function?)
    (call compose-powers)]
   [(or eq?
        equal?
@@ -651,7 +648,7 @@
             (with-key underlying-function
               equal?)))
    (call (.. compose-powers
-             (% function->function-power)))]
+             (% function->power-function)))]
   [(and (all function?)
         ~compatible?) ; compose at same level
    (struct-copy function h
