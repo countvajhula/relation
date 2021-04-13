@@ -531,6 +531,14 @@
 
 (define f make-function)
 
+(define (make-power-function g n
+                             #:apply-with [applier empty-curried-arguments]
+                             #:curry-on [chirality 'left])
+  (power-function applier
+                  chirality
+                  g
+                  n))
+
 (define (make-threading-function #:compose-with [composer usual-composition]
                                  #:apply-with [applier empty-curried-arguments]
                                  #:curry-on [chirality 'left]
@@ -625,7 +633,7 @@
   ;; free functor, and then compose them as function powers
   (let ([n (power-function-n g)]
         [m (power-function-n h)])
-    (struct-copy power-function h
+    (struct-copy power-function g
                  [n (+ (power-function-n g)
                        (power-function-n h))])))
 
@@ -633,14 +641,13 @@
   [power-function? (call power-function-f)]
   [else v])
 
-(define-predicate (~compatible? g h)
-  (or (any (not function?))
-      (with-key base-function-applier eq?)
-      (with-key function-composer eq?)))
+(define-predicate (~compatible-compositions? g h)
+  (and (with-key base-function-applier eq?)
+       (with-key function-composer eq?)))
 
-(define-switch (function->power-function g)
+(define-switch (->power-function g)
   [power-function? g]
-  [else (power-function g 1)])
+  [else (make-power-function g 1)])
 
 (define-switch (function-compose g h)
   ;; this composes functions "naively," wrapping the components with a
@@ -648,18 +655,23 @@
   ;; of the component functions are eq?
   ;; It could be improved to define the nature of composition for homogeneous
   ;; and heterogeneous composition and application schemes formally
-  [(all power-function?)
+  [(and (all power-function?)
+        (with-key underlying-function eq?))
    (call compose-powers)]
+  [(and (any power-function?)
+        (with-key underlying-function eq?))
+   (call (.. compose-powers (% ->power-function)))]
   [(or eq?
        equal?
-       (and ~compatible?
-            (with-key underlying-function
+       (and (all function?)
+            ~compatible-compositions?
+            (with-key function-components
               equal?)))
    (call (.. compose-powers
-             (% function->power-function)))]
+             (% ->power-function)))]
   [(and (all function?)
-        ~compatible?) ; compose at same level
-   (struct-copy function h
+        ~compatible-compositions?) ; compose at same level
+   (struct-copy function g
                 [components (append (function-components g)
                                     (function-components h))])]
   [else (call f)]) ; naive composition
