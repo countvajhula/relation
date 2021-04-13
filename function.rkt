@@ -441,6 +441,25 @@
                                  (base-function-chirality self))])
      (eval-if-saturated self updated-applier))))
 
+(struct atomic-function base-function (f)
+  #:transparent
+
+  #:methods gen:procedure
+  [(define/generic -keywords keywords)
+   (define/generic -arity arity)
+   (define/generic -procedure-apply procedure-apply)
+   (define/generic -update-application update-application)
+   (define (keywords self)
+     (-keywords (atomic-function-f self)))
+   (define (arity self)
+     (-arity (atomic-function-f self)))
+   (define (procedure-apply self args)
+     (-procedure-apply (atomic-function-f self) args))
+   (define (update-application self applier)
+     (struct-copy atomic-function self
+                  [applier #:parent base-function
+                           applier]))])
+
 (struct function base-function (components
                                 composer)
   #:transparent
@@ -464,7 +483,7 @@
      (let ([components (function-components self)]
            [composer (function-composer self)])
        (-procedure-apply (apply composer components)
-                       args)))
+                         args)))
    (define (update-application self applier)
      (struct-copy function self
                   [applier #:parent base-function
@@ -520,6 +539,13 @@
                           components))])
        (recur representation port)))])
 
+(define (make-atomic-function g
+                              #:apply-with [applier empty-curried-arguments]
+                              #:curry-on [chirality 'left])
+  (atomic-function applier
+                   chirality
+                   g))
+
 (define (make-function #:compose-with [composer usual-composition]
                        #:apply-with [applier empty-curried-arguments]
                        #:curry-on [chirality 'left]
@@ -530,14 +556,6 @@
             composer))
 
 (define f make-function)
-
-(define (make-power-function g n
-                             #:apply-with [applier empty-curried-arguments]
-                             #:curry-on [chirality 'left])
-  (power-function applier
-                  chirality
-                  g
-                  n))
 
 (define (make-threading-function #:compose-with [composer usual-composition]
                                  #:apply-with [applier empty-curried-arguments]
@@ -550,6 +568,14 @@
          (reverse fs)))
 
 (define f> make-threading-function)
+
+(define (make-power-function g n
+                             #:apply-with [applier empty-curried-arguments]
+                             #:curry-on [chirality 'left])
+  (power-function applier
+                  chirality
+                  g
+                  n))
 
 (struct power-function base-function (f n)
   #:transparent
