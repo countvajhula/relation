@@ -185,7 +185,7 @@
                               arity)])
 
 (define (~min-arity f)
-  (~min-arity-value (funxion-arity f)))
+  (~min-arity-value (arity f)))
 
 (struct monoid (f id)
   #:transparent
@@ -378,13 +378,13 @@
                      ;; application scheme is not yet fulfilled. We consult
                      ;; the application scheme on what to do here
                      (λ (exn)
-                       (funxion-update-application f (handle-failure applier exn)))]
+                       (update-application f (handle-failure applier exn)))]
                     [exn:fail:contract:arity?
                      (λ (exn)
                        (if (> (length pos-args)
                               (~min-arity f))
                            (raise exn)
-                           (funxion-update-application f (handle-failure applier exn))))]
+                           (update-application f (handle-failure applier exn))))]
                     [exn:fail:contract?
                      ;; presence of a keyword argument results in a premature
                      ;; contract failure that's not the arity error, even though
@@ -393,7 +393,7 @@
                      ;; additionally, also handle invalid keyword arg here
                      (λ (exn)
                        (let-values ([(req-kw opt-kw)
-                                     (funxion-keywords f)])
+                                     (keywords f)])
                          (if (or (empty? kw-args)
                                  ;; the arity error is masked in the presence of keyword
                                  ;; args so we check for it again here
@@ -408,22 +408,22 @@
                                       (>= (length pos-args)
                                           (~min-arity f))))
                              (raise exn)
-                             (funxion-update-application f (handle-failure applier exn)))))])
-      (funxion-apply f args))))
+                             (update-application f (handle-failure applier exn)))))])
+      (procedure-apply f args))))
 
-(define-generics funxion
-  (funxion-keywords funxion)
-  (funxion-arity funxion)
-  (funxion-apply funxion args)
+(define-generics procedure
+  (keywords procedure)
+  (arity procedure)
+  (procedure-apply procedure args)
   ;; TODO: can this and the application scheme's handle-failure be merged?
   ;; this consideration could shed light on the interplay between the two
-  (funxion-update-application funxion applier)
+  (update-application procedure applier)
   #:defaults
-  ([procedure?
-    (define funxion-keywords procedure-keywords)
-    (define funxion-arity procedure-arity)
-    (define funxion-apply apply/arguments)
-    (define funxion-update-application (arg 0))]))
+  ([b:procedure?
+    (define keywords procedure-keywords)
+    (define arity procedure-arity)
+    (define procedure-apply apply/arguments)
+    (define update-application (arg 0))]))
 
 (struct base-function (applier
                        chirality)
@@ -445,27 +445,27 @@
                                 composer)
   #:transparent
 
-  #:methods gen:funxion
-  [(define/generic -funxion-keywords funxion-keywords)
-   (define/generic -funxion-arity funxion-arity)
-   (define/generic -funxion-apply funxion-apply)
-   (define/generic -funxion-update-application funxion-update-application)
-   (define (funxion-keywords self)
+  #:methods gen:procedure
+  [(define/generic -keywords keywords)
+   (define/generic -arity arity)
+   (define/generic -procedure-apply procedure-apply)
+   (define/generic -update-application update-application)
+   (define (keywords self)
      (let ([leading-function (switch ((function-components self))
                                      [null? (monoid-id (function-composer self))]
                                      [else (call last)])])
-       (-funxion-keywords leading-function)))
-   (define (funxion-arity self)
+       (-keywords leading-function)))
+   (define (arity self)
      (let ([leading-function (switch ((function-components self))
                                      [null? (monoid-id (function-composer self))]
                                      [else (call last)])])
-       (-funxion-arity leading-function)))
-   (define (funxion-apply self args)
+       (-arity leading-function)))
+   (define (procedure-apply self args)
      (let ([components (function-components self)]
            [composer (function-composer self)])
-       (-funxion-apply (apply composer components)
+       (-procedure-apply (apply composer components)
                        args)))
-   (define (funxion-update-application self applier)
+   (define (update-application self applier)
      (struct-copy function self
                   [applier #:parent base-function
                            applier]))]
@@ -545,18 +545,18 @@
 
 (struct power-function base-function (f n)
   #:transparent
-  #:methods gen:funxion
-  [(define/generic -funxion-keywords funxion-keywords)
-   (define/generic -funxion-arity funxion-arity)
-   (define/generic -funxion-apply funxion-apply)
-   (define/generic -funxion-update-application funxion-update-application)
-   (define (funxion-keywords self)
-     (-funxion-keywords (power-function-f self)))
-   (define (funxion-arity self)
-     (-funxion-arity (power-function-f self)))
-   (define (funxion-apply self args)
-     (-funxion-apply (power (power-function-f self) (power-function-n self)) args))
-   (define (funxion-update-application self applier)
+  #:methods gen:procedure
+  [(define/generic -keywords keywords)
+   (define/generic -arity arity)
+   (define/generic -procedure-apply procedure-apply)
+   (define/generic -update-application update-application)
+   (define (keywords self)
+     (-keywords (power-function-f self)))
+   (define (arity self)
+     (-arity (power-function-f self)))
+   (define (procedure-apply self args)
+     (-procedure-apply (power (power-function-f self) (power-function-n self)) args))
+   (define (update-application self applier)
      (struct-copy power-function self
                   [applier #:parent base-function
                            applier]))])
