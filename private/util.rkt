@@ -1,14 +1,15 @@
 #lang racket/base
 
 (require racket/list
-         relation/logic)
+         syntax/on)
 
 (provide check-pairwise
          exists
          for-all
          kwhash->altlist
          join-list
-         give)
+         give
+         singleton?)
 
 (module+ test
   (require rackunit))
@@ -52,6 +53,12 @@
 (define (give f)
   (λ args
     (f args)))
+
+(define-predicate (singleton? seq)
+  ;; cheap check to see if a list is of length 1,
+  ;; instead of traversing to compute the length
+  (and (not empty?)
+       (.. empty? rest)))
 
 (module+ test
   (test-case

@@ -97,7 +97,7 @@
                               (#:compose-with monoid?
                                #:apply-with application-scheme?)
                               #:rest (listof procedure?)
-                              composed-function?)]
+                              function?)]
           [make-threading-function (->* ()
                                         (#:compose-with monoid?
                                          #:apply-with application-scheme?)
@@ -112,7 +112,7 @@
                    (#:compose-with monoid?
                     #:apply-with application-scheme?)
                    #:rest (listof procedure?)
-                   function?)]
+                   composed-function?)]
           [function-null (->* ()
                               (#:compose-with monoid?
                                #:apply-with application-scheme?)
@@ -459,7 +459,7 @@
    (define (arity self)
      (-arity (atomic-function-f self)))
    (define (procedure-apply self args)
-     (-procedure-apply (atomic-function-f self) args))
+     (apply/arguments (atomic-function-f self) args))
    (define (update-application self applier)
      (struct-copy atomic-function self
                   [applier #:parent function
@@ -551,14 +551,29 @@
                    chirality
                    g))
 
-(define (make-function #:compose-with [composer usual-composition]
-                       #:apply-with [applier empty-curried-arguments]
-                       #:curry-on [chirality 'left]
-                       . fs)
+(define (make-composed-function #:compose-with [composer usual-composition]
+                                #:apply-with [applier empty-curried-arguments]
+                                #:curry-on [chirality 'left]
+                                . fs)
   (composed-function applier
                      chirality
                      fs
                      composer))
+
+(define (make-function #:compose-with [composer usual-composition]
+                       #:apply-with [applier empty-curried-arguments]
+                       #:curry-on [chirality 'left]
+                       . fs)
+  (if (singleton? fs)
+      (atomic-function applier
+                       chirality
+                       (first fs))
+      ;; TODO: use compose interface
+      (composed-function applier
+                         chirality
+                         fs
+                         composer)))
+
 
 (define f make-function)
 
@@ -629,10 +644,16 @@
                  #:apply-with applier))
 
 (define (function-cons proc f)
-  (composed-function (function-applier f)
-                     (function-chirality f)
-                     (cons proc (composed-function-components f))
-                     (composed-function-composer f)))
+  (switch (f)
+    [atomic-function?
+     (composed-function (function-applier f)
+                        (function-chirality f)
+                        (cons proc (list (atomic-function-f f)))
+                        usual-composition)] ;
+    [composed-function?
+     (struct-copy composed-function f
+                  [components (cons proc (composed-function-components f))])]
+    [else (compose proc f)]))
 
 (define (function-flat-arguments f)
   (flat-arguments (function-applier f)))
@@ -720,25 +741,28 @@
 ;; applier, e.g.
 ;; 
 
-(define (compose . gs)
-  (let ([lifted-gs (reverse (map (if-f function? values f) gs))])
-    (if (empty? lifted-gs)
-        (function-null)
-        (if (empty? (rest lifted-gs))
-            (first lifted-gs)
-            (foldl function-compose (first lifted-gs) (rest lifted-gs))))))
+(define (compose #:compose-with [composer usual-composition]
+                 . gs)
+  (switch (gs)
+          [empty? (function-null #:compose-with composer)]
+          [(.. empty? rest) (call first)]
+          [else
+           (let ([gs (reverse gs)])
+             (foldl function-compose
+                    (first gs)
+                    (rest gs)))]))
 
 (define (~curry chirality func invocation-args)
-  (if (and (function? func)
+  (if (and (composed-function? func) ;
            (curried-arguments? (function-applier func)))
       ;; application scheme is compatible so just apply the
       ;; new args to the existing scheme
       (composed-function (pass (function-applier func)
-                      invocation-args
-                      chirality)
-                chirality
-                (composed-function-components func)
-                (composed-function-composer func))
+                               invocation-args
+                               chirality)
+                         chirality
+                         (composed-function-components func)
+                         (composed-function-composer func))
       ;; wrap the existing function with one that will be curried
       (f func
          #:curry-on chirality
