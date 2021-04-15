@@ -463,7 +463,22 @@
    (define (update-application self applier)
      (struct-copy atomic-function self
                   [applier #:parent function
-                           applier]))])
+                           applier]))]
+
+  #:methods gen:custom-write
+  [(define (write-proc self port mode)
+     (define recur
+       (case mode
+         [(#t) write]
+         [(#f) display]
+         [else (λ (p port) (print p port mode))]))
+     (let* ([applier (function-applier self)]
+            [f (atomic-function-f self)]
+            [representation
+             (list 'λ
+                   applier
+                   f)])
+       (recur representation port)))])
 
 (struct composed-function function (components
                                     composer)
