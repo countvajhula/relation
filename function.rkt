@@ -98,6 +98,11 @@
                                #:apply-with application-scheme?)
                               #:rest (listof procedure?)
                               function?)]
+          [make-composed-function (->* ()
+                                       (#:compose-with monoid?
+                                        #:apply-with application-scheme?)
+                                       #:rest (listof procedure?)
+                                       composed-function?)]
           [make-threading-function (->* ()
                                         (#:compose-with monoid?
                                          #:apply-with application-scheme?)
