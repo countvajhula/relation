@@ -105,6 +105,10 @@
      (check-equal? (pack ->string 1) (list "1"))
      (check-equal? (pack ->string) (list)))
    (test-case
+       "give"
+     (check-equal? (give (curry apply +) 1 2 3) 6)
+     (check-equal? (give length "hello" 23 'banana) 3))
+   (test-case
        "make-function"
      (check-equal? ((make-function add1 add1 +) 3 2) 7)
      (check-equal? ((make-function +) 3 2) 5)

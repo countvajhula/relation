@@ -414,17 +414,27 @@ This module provides general-purpose utilities to support programming in the @hy
   ]
 }
 
+@deftogether[(
 @defproc[(pack [g procedure?]
                [v any/c]
                ...)
-         procedure?]{
+         list?]
+@defproc[(give [g procedure?]
+               [v any/c]
+               ...)
+         any/c]
+)]{
 
- "Pack" the provided arguments into a list and map them individually under @racket[g]. While @racket[map] allows a function operating on individual arguments to operate on such arguments provided as a list, @racket[pack] analogously allows the function to operate on such arguments provided directly as multiple arguments.
+ @racket[pack] "packs" the provided arguments into a list and maps them individually under @racket[g]. @racket[give] packs the provided arguments into a list and provides that list to @racket[g] as an argument.
+
+While @racket[map] allows a function operating on individual arguments to operate on such arguments provided as a list, @racket[pack] analogously allows the function to operate on such arguments provided directly as multiple arguments. While @racket[apply] allows a function operating on provided arguments to operate on such arguments provided as a list, @racket[give] enables the opposite, allowing a function expecting a list to operate on multiple arguments instead.
 
 @examples[
     #:eval eval-for-docs
     (pack sqr 1 2 3 4)
     (pack ->string 1 2 3)
+    (give (curry apply +) 1 2 3 4)
+    (give length "apple" 23 'banana)
   ]
 }
 

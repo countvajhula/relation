@@ -56,6 +56,7 @@
           [flip* functional/c]
           [lift functional/c]
           [pack (binary-variadic-function/c procedure? any/c sequence?)]
+          [give (binary-variadic-function/c procedure? any/c any/c)]
           [uncurry (functional/c)]
           [apply/steps (unconstrained-domain-> sequence?)]
           [compose (variadic-function/c procedure? function?)]
@@ -101,6 +102,9 @@
 
 (define (pack f . args)
   (b:map f args))
+
+(define (give f . args)
+  (f args))
 
 (define-simple-macro (lambda. v ...
                               (~or* (~datum ->) (~datum →))
