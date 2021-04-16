@@ -1,7 +1,6 @@
 #lang racket/base
 
 (require racket/function
-         racket/list
          contract/social
          (except-in racket/contract/base
                     predicate/c))

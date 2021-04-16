@@ -1,36 +1,12 @@
 #lang racket/base
 
-(require (prefix-in f: racket/function)
-         (except-in racket/contract/base
+(require (except-in racket/contract/base
                     predicate/c)
-         racket/match
-         racket/generic
-         racket/set
-         racket/lazy-require
-         (except-in racket/list
-                    empty?
-                    first
-                    rest)
+         racket/list
          arguments
-         syntax/parse/define
-         (prefix-in b: racket/base)
          (only-in data/collection
-                  gen:collection
-                  gen:sequence
-                  gen:countable
-                  empty?
-                  first
-                  rest
-                  nth
-                  sequence->list
-                  reverse
-                  repeat
                   conj)
-         mischief/shorthand
          contract/social
-         relation/logic
-         (only-in relation/equivalence
-                  in?)
          syntax/on)
 
 (require relation/function/types/procedure
