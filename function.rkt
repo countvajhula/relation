@@ -4,16 +4,8 @@
          (except-in racket/contract/base
                     predicate/c)
          racket/match
-         racket/generic
          racket/stream
          racket/hash
-         racket/set
-         racket/format
-         racket/lazy-require
-         (except-in racket/list
-                    empty?
-                    first
-                    rest)
          arguments
          syntax/parse/define
          (prefix-in b: racket/base)
@@ -33,12 +25,10 @@
          mischief/shorthand
          contract/social
          (except-in data/maybe maybe/c)
-         typed-stack
-         (for-syntax racket/base
-                     syntax/parse/define)
          (only-in kw-utils/kw-hash
                   apply/kw-hash)
-         syntax/on)
+         syntax/on
+         (for-syntax racket/base))
 
 (require relation/logic
          (only-in relation/equivalence
@@ -46,9 +36,7 @@
          (except-in relation/function/core
                     negate !!)
          relation/function/application-scheme
-         relation/function/types
-         "private/util.rkt")
-
+         relation/function/types)
 
 (provide (all-from-out
           relation/function/core

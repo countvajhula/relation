@@ -3,45 +3,14 @@
 (require (prefix-in f: racket/function)
          (except-in racket/contract/base
                     predicate/c)
-         racket/match
          racket/generic
-         racket/stream
          racket/hash
-         racket/set
          racket/format
-         racket/lazy-require
-         (except-in racket/list
-                    empty?
-                    first
-                    rest)
          arguments
-         syntax/parse/define
          (prefix-in b: racket/base)
-         (only-in data/collection
-                  gen:collection
-                  gen:sequence
-                  gen:countable
-                  empty?
-                  first
-                  rest
-                  nth
-                  sequence->list
-                  reverse
-                  repeat)
-         (only-in data/functor
-                  (map f:map))
-         mischief/shorthand
          contract/social
-         relation/logic
          (except-in data/maybe maybe/c)
-         typed-stack
-         (only-in relation/equivalence
-                  in?)
-         (for-syntax racket/base
-                     syntax/parse/define)
-         (only-in kw-utils/kw-hash
-                  apply/kw-hash)
-         syntax/on)
+         typed-stack)
 
 (require "../private/util.rkt")
 

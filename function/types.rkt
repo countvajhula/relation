@@ -5,10 +5,7 @@
                     predicate/c)
          racket/match
          racket/generic
-         racket/stream
-         racket/hash
          racket/set
-         racket/format
          racket/lazy-require
          (except-in racket/list
                     empty?
@@ -28,19 +25,11 @@
                   sequence->list
                   reverse
                   repeat)
-         (only-in data/functor
-                  (map f:map))
          mischief/shorthand
          contract/social
          relation/logic
-         (except-in data/maybe maybe/c)
-         typed-stack
          (only-in relation/equivalence
                   in?)
-         (for-syntax racket/base
-                     syntax/parse/define)
-         (only-in kw-utils/kw-hash
-                  apply/kw-hash)
          syntax/on)
 
 (require relation/function/application-scheme
