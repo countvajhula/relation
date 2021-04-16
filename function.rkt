@@ -32,35 +32,35 @@
                   (map f:map))
          mischief/shorthand
          contract/social
-         relation/logic
          (except-in data/maybe maybe/c)
          typed-stack
-         (only-in relation/equivalence
-                  in?)
          (for-syntax racket/base
                      syntax/parse/define)
          (only-in kw-utils/kw-hash
                   apply/kw-hash)
          syntax/on)
 
-(require "private/util.rkt")
+(require relation/logic
+         (only-in relation/equivalence
+                  in?)
+         relation/function/application-scheme
+         "private/util.rkt")
 
 ;; so the power-function type can use the `power` utility
 (lazy-require [relation/composition (power)])
 
-(provide lambda/function
+(provide (all-from-out
+          relation/function/application-scheme)
+         lambda/function
          lambda/f
          λ/f
          define/function
          define/f
          lambda.
          λ.
-         app
-         gen:application-scheme
-         application-scheme/c
          call
+         app
          (contract-out
-          [application-scheme? (predicate/c)]
           [unthunk (binary-variadic-function/c procedure? any/c procedure?)]
           [if-f (-> (unconstrained-domain-> boolean?)
                     procedure?
@@ -85,14 +85,6 @@
                                      (chirality symbol?)
                                      (components list?)
                                      (composer monoid?))]
-          [struct curried-arguments
-            ((left list?)
-             (right list?)
-             (kw hash?))]
-          [struct template-arguments
-            ((pos list?)
-             (kw hash?))]
-          [empty-curried-arguments curried-arguments?]
           [make-function (->* ()
                               (#:compose-with monoid?
                                #:apply-with application-scheme?)
@@ -126,17 +118,17 @@
           [function-flat-arguments (function/c function? arguments?)]
           [apply/steps (unconstrained-domain-> sequence?)]
           [compose (variadic-function/c procedure? function?)]
-          [curry (unconstrained-domain-> function?)]
-          [curryr (unconstrained-domain-> function?)]
-          [partial (unconstrained-domain-> function?)]
-          [partial/template (unconstrained-domain-> function?)]
           [uncurry (functional/c)]
           [conjoin (variadic-function/c procedure? function?)]
           [&& (variadic-function/c procedure? function?)]
           [disjoin (variadic-function/c procedure? function?)]
           [|| (variadic-function/c procedure? function?)]
           [negate (function/c procedure? function?)]
-          [!! (function/c procedure? function?)]))
+          [!! (function/c procedure? function?)]
+          [curry (unconstrained-domain-> function?)]
+          [curryr (unconstrained-domain-> function?)]
+          [partial (unconstrained-domain-> function?)]
+          [partial/template (unconstrained-domain-> function?)]))
 
 ;; from mischief/function - reproviding it via require+provide runs aground
 ;; of some "name is protected" error while building docs, not sure why;
@@ -184,7 +176,7 @@
   (curry f:map f))
 
 (define (pack f . args)
-  (sequence->list (map f args)))
+  (b:map f args))
 
 (define-switch (~min-arity-value arity)
   [number? arity]
@@ -208,173 +200,6 @@
 (define usual-composition (monoid b:compose values))
 (define conjoin-composition (monoid f:conjoin true.))
 (define disjoin-composition (monoid f:disjoin false.))
-
-;; TODO: ideally add tests for method implementations in each
-;; application-scheme in a test submodule
-(define-generics application-scheme
-  ;; pass accepts an arguments structure representing args provided in a
-  ;; single invocation, and returns an updated application-scheme instance
-  ;; if the arguments are acceptable, otherwise, it raises an error that
-  ;; may be either recoverable or non-recoverable. Recoverable errors
-  ;; (for instance, insufficient arguments; on the other hand, excess
-  ;; or invalid arguments are non-recoverable) could be handled in an
-  ;; outer application scheme while non-recoverable (any other) errors
-  ;; would simply be raised to the caller
-  (pass application-scheme args chirality)
-
-  ;; flat-arguments compiles all previously supplied arguments
-  ;; into a "flat" arguments structure that represents the
-  ;; arguments for the invocation of the underlying function
-  (flat-arguments application-scheme)
-
-  ;; handle-failure is expected to either
-  ;; 1. return a modified application scheme instance, OR
-  ;; 2. raise an exception
-  (handle-failure application-scheme exception)
-
-  #:defaults
-  ([arguments? (define (pass this args chirality)
-                 (if (eq? chirality 'left)
-                     (arguments-merge this args)
-                     (arguments-merge args this)))
-               (define (flat-arguments this)
-                 this)
-               (define (handle-failure this exception)
-                 (raise exception))]))
-
-(struct curried-arguments (left right kw)
-  #:transparent
-
-  #:methods gen:application-scheme
-  [(define (pass this args chirality)
-     ;; incorporate fresh arguments into the partial application,
-     ;; retaining existing arg positions and appending the fresh ones
-     ;; at the positions implied by the chirality
-     (let ([left-args (if (eq? chirality 'left)
-                          (append (curried-arguments-left this)
-                                  (arguments-positional args))
-                          (curried-arguments-left this))]
-           [right-args (if (eq? chirality 'right)
-                           ;; note order reversed for right args
-                           (append (arguments-positional args)
-                                   (curried-arguments-right this))
-                           (curried-arguments-right this))])
-       (curried-arguments left-args
-                          right-args
-                          (hash-union (curried-arguments-kw this)
-                                      (arguments-keyword args)))))
-   (define (flat-arguments this)
-     (make-arguments (curried-arguments-positional this)
-                     (curried-arguments-kw this)))
-   (define (handle-failure this exception)
-     this)]
-
-  #:methods gen:custom-write
-  [(define (write-proc self port mode)
-     (define recur
-       (case mode
-         [(#t) write]
-         [(#f) display]
-         [else (λ (p port) (print p port mode))]))
-     (let ([left (curried-arguments-left self)]
-           [right (curried-arguments-right self)]
-           [kw (curried-arguments-kw self)])
-       (cond [(null? right)
-              (recur (append left (list '_)) port)]
-             [(null? left)
-              (recur (append (list '_) right) port)]
-             [else (recur (append left
-                                  (list '_)
-                                  right
-                                  (kwhash->altlist kw))
-                          port)])))])
-
-(define empty-curried-arguments
-  (curried-arguments null null (hash)))
-
-(define (curried-arguments-positional args)
-  (append (curried-arguments-left args)
-          (curried-arguments-right args)))
-
-(define (arguments-cons v args)
-  (make-arguments (cons v (arguments-positional args))
-                  (arguments-keyword args)))
-
-(struct recoverable-apply-error exn:fail:contract ())
-
-(struct template-arguments (pos kw)
-  #:transparent
-
-  #:methods gen:application-scheme
-  [(define (pass this args chirality)
-     (define n-expected-args
-       (length (filter nothing? (template-arguments-pos this))))
-     (define arg-stack (apply make-stack (arguments-positional args)))
-     (define filled-in-pos-template
-       (for/list ([arg (template-arguments-pos this)])
-         (if (just? arg)
-             arg
-             (if (stack-empty? arg-stack)
-                 (raise (recoverable-apply-error (~a "Not enough arguments, expected: "
-                                                     n-expected-args)
-                                                 (current-continuation-marks)))
-                 (just (pop! arg-stack))))))
-     (unless (stack-empty? arg-stack)
-       ;; too many args provided
-       ;; TODO: better error reporting
-       (raise-arity-error 'pass
-                          n-expected-args
-                          (stack->list arg-stack)))
-     (define filled-in-kw-template
-       (for/hash ([k (hash-keys (template-arguments-kw this))])
-         (let ([v (hash-ref (template-arguments-kw this) k)])
-           (values k (from-just (hash-ref (arguments-keyword args) k nothing)
-                                v)))))
-     ;; invocation kwargs should be present in blank template keys
-     (define expected-keys
-       (for/list ([k (hash-keys (template-arguments-kw this))]
-                  #:when (nothing? (hash-ref (template-arguments-kw this) k)))
-         k))
-     (hash-for-each
-      (arguments-keyword args)
-      (λ (k v)
-        (unless (member k expected-keys)
-          (raise-arguments-error
-           'pass
-           "Unexpected keyword argument provided to template!"
-           "keyword" k))))
-     ;; all blank template keys should be present in invocation kwargs
-     (hash-for-each
-      filled-in-kw-template
-      (λ (k v)
-        (when (nothing? v)
-          (raise (recoverable-apply-error (~a "Missing keyword argument in template!\n"
-                                              "keyword: " k)
-                                          (current-continuation-marks))))))
-     (template-arguments filled-in-pos-template
-                         filled-in-kw-template))
-
-   (define (flat-arguments this)
-     (make-arguments (filter-just (template-arguments-pos this))
-                     (template-arguments-kw this)))
-
-   (define (handle-failure this exception)
-     (raise exception))]
-
-  #:methods gen:custom-write
-  [(define (write-proc self port mode)
-     (define recur
-       (case mode
-         [(#t) write]
-         [(#f) display]
-         [else (λ (p port) (print p port mode))]))
-     (let ([pos (template-arguments-pos self)]
-           [kw (template-arguments-kw self)])
-       (recur (append (map (f:curry from-just '_) pos)
-                      (join-list (hash-map kw
-                                           (λ (k v)
-                                             (list k (from-just '_ v))))))
-              port)))])
 
 (define (eval-if-saturated f applier)
   ;; attempt to eval the function. If it fails, return a new
@@ -425,6 +250,7 @@
   (keywords procedure)
   (arity procedure)
   (procedure-apply procedure args)
+  ;; (pass-args procedure args)
   ;; TODO: can this and the application scheme's handle-failure be merged?
   ;; this consideration could shed light on the interplay between the two
   (update-application procedure applier)
@@ -432,6 +258,7 @@
   ([b:procedure?
     (define keywords procedure-keywords)
     (define arity procedure-arity)
+    ;; (define pass-args (arg 0))
     (define procedure-apply apply/arguments)
     (define update-application (arg 0))]))
 
@@ -772,6 +599,31 @@
                     (first gs)
                     (rest gs)))]))
 
+(define (uncurry f)
+  (λ/f args
+    (let loop ([rem-args (reverse args)])
+      (match rem-args
+        ['() (f)]
+        [(list v) (f v)]
+        [(list v vs ...) ((loop vs) v)]))))
+
+(define (conjoin . fs)
+  (apply f
+         #:compose-with conjoin-composition
+         fs))
+
+(define (disjoin . fs)
+  (apply f
+         #:compose-with disjoin-composition
+         fs))
+
+(define (negate g)
+  (f not g))
+
+(define && conjoin)
+(define || disjoin)
+(define !! negate)
+
 (define (~curry chirality func invocation-args)
   (if (and (composed-function? func) ;
            (curried-arguments? (function-applier func)))
@@ -783,6 +635,9 @@
                          chirality
                          (composed-function-components func)
                          (composed-function-composer func))
+      ;; (pass-args func
+      ;;            invocation-args
+      ;;            chirality)
       ;; wrap the existing function with one that will be curried
       (f func
          #:curry-on chirality
@@ -845,28 +700,3 @@
                     (app-keyword-parser vs ...)
                     func
                     (app-positional-parser vs ...))])
-
-(define (uncurry f)
-  (λ/f args
-    (let loop ([rem-args (reverse args)])
-      (match rem-args
-        ['() (f)]
-        [(list v) (f v)]
-        [(list v vs ...) ((loop vs) v)]))))
-
-(define (conjoin . fs)
-  (apply f
-         #:compose-with conjoin-composition
-         fs))
-
-(define (disjoin . fs)
-  (apply f
-         #:compose-with disjoin-composition
-         fs))
-
-(define (negate g)
-  (f not g))
-
-(define && conjoin)
-(define || disjoin)
-(define !! negate)

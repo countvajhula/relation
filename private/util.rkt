@@ -1,6 +1,7 @@
 #lang racket/base
 
 (require racket/list
+         arguments
          syntax/on)
 
 (provide check-pairwise
@@ -9,7 +10,8 @@
          kwhash->altlist
          join-list
          give
-         singleton?)
+         singleton?
+         arguments-cons)
 
 (module+ test
   (require rackunit))
@@ -59,6 +61,10 @@
   ;; instead of traversing to compute the length
   (and (not empty?)
        (.. empty? rest)))
+
+(define (arguments-cons v args)
+  (make-arguments (cons v (arguments-positional args))
+                  (arguments-keyword args)))
 
 (module+ test
   (test-case
