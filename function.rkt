@@ -43,12 +43,15 @@
 (require relation/logic
          (only-in relation/equivalence
                   in?)
+         (except-in relation/function/core
+                    negate !!)
          relation/function/application-scheme
          relation/function/types
          "private/util.rkt")
 
 
 (provide (all-from-out
+          relation/function/core
           relation/function/application-scheme
           relation/function/types)
          lambda.
@@ -61,10 +64,6 @@
                     procedure?
                     procedure?
                     procedure?)]
-          [true. (unconstrained-domain-> boolean?)]
-          [false. (unconstrained-domain-> boolean?)]
-          [arg (function/c natural-number/c procedure?)]
-          [flip functional/c]
           [flip$ functional/c]
           [flip* functional/c]
           [lift functional/c]
@@ -100,22 +99,6 @@
     (if (apply pred args)
         (apply f args)
         (apply g args))))
-
-(define true.
-  (procedure-rename (f:const #t)
-                    'true.))
-
-(define false.
-  (procedure-rename (f:const #f)
-                    'false.))
-
-(define (arg n)
-  (λ args
-    (nth args n)))
-
-(define (flip f)
-  (λ (x y . args)
-    (apply f y x args)))
 
 (define (flip$ f)
   (λ (x . args)

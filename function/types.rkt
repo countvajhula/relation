@@ -44,6 +44,7 @@
          syntax/on)
 
 (require relation/function/application-scheme
+         relation/function/core
          "../private/util.rkt")
 
 ;; so the power-function type can use the `power` utility
@@ -127,30 +128,6 @@
 
 (define (~min-arity f)
   (~min-arity-value (arity f)))
-
-;; temporary v
-(define (flip f)
-  (λ (x y . args)
-    (apply f y x args)))
-
-(define true.
-  (procedure-rename (f:const #t)
-                    'true.))
-
-(define false.
-  (procedure-rename (f:const #f)
-                    'false.))
-
-(define (negate g)
-  (f not g))
-
-(define !! negate)
-
-(define (arg n)
-  (λ args
-    (nth args n)))
-
-;; temporary ^
 
 (struct monoid (f id)
   #:transparent
