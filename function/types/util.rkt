@@ -6,12 +6,11 @@
          (except-in racket/contract/base
                     predicate/c))
 
-(provide (contract-out
+(provide !!
+         (contract-out
           [flip functional/c]
           [true. (unconstrained-domain-> boolean?)]
           [false. (unconstrained-domain-> boolean?)]
-          [negate (self-map/c procedure?)]
-          [!! (self-map/c procedure?)]
           [arg (function/c natural-number/c procedure?)]))
 
 (define (flip f)
@@ -25,9 +24,6 @@
 (define false.
   (procedure-rename (const #f)
                     'false.))
-
-(define (negate g)
-  (compose not g))
 
 (define !! negate)
 

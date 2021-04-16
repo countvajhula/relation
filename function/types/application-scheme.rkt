@@ -12,7 +12,7 @@
          (except-in data/maybe maybe/c)
          typed-stack)
 
-(require "../private/util.rkt")
+(require "../../private/util.rkt")
 
 (provide gen:application-scheme
          application-scheme/c
@@ -200,4 +200,3 @@
                                            (λ (k v)
                                              (list k (from-just '_ v))))))
               port)))])
-
