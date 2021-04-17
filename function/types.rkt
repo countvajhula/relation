@@ -28,47 +28,39 @@
          (contract-out
           [make-function (->* ()
                               (#:compose-with monoid?
-                               #:apply-with application-scheme?
-                               #:curry-on symbol?)
+                               #:apply-with application-scheme?)
                               #:rest (listof procedure?)
                               function?)]
           [f (->* ()
                   (#:compose-with monoid?
-                   #:apply-with application-scheme?
-                   #:curry-on symbol?)
+                   #:apply-with application-scheme?)
                   #:rest (listof procedure?)
                   function?)]
           [make-threading-function (->* ()
                                         (#:compose-with monoid?
-                                         #:apply-with application-scheme?
-                                         #:curry-on symbol?)
+                                         #:apply-with application-scheme?)
                                         #:rest (listof procedure?)
                                         composed-function?)]
           [f> (->* ()
                    (#:compose-with monoid?
-                    #:apply-with application-scheme?
-                    #:curry-on symbol?)
+                    #:apply-with application-scheme?)
                    #:rest (listof procedure?)
                    function?)]
           [function-null (->* ()
                               (#:compose-with monoid?
-                               #:apply-with application-scheme?
-                               #:curry-on symbol?)
+                               #:apply-with application-scheme?)
                               function?)]
           [function-cons (binary-constructor/c procedure? function?)]
           [function-flat-arguments (function/c function? arguments?)]))
 
 (define (make-function #:compose-with [composer usual-composition]
                        #:apply-with [applier empty-curried-arguments]
-                       #:curry-on [chirality 'left]
                        . fs)
   (if (singleton? fs)
       (atomic-function applier
-                       chirality
-                       (first fs))
+                       (unwrap fs))
       ;; TODO: use compose interface
       (composed-function applier
-                         chirality
                          fs
                          composer)))
 
@@ -76,28 +68,23 @@
 
 (define (make-threading-function #:compose-with [composer usual-composition]
                                  #:apply-with [applier empty-curried-arguments]
-                                 #:curry-on [chirality 'left]
                                  . fs)
   (apply f
          #:compose-with composer
          #:apply-with applier
-         #:curry-on chirality
          (reverse fs)))
 
 (define f> make-threading-function)
 
 (define (function-null #:compose-with [composer usual-composition]
-                       #:apply-with [applier empty-curried-arguments]
-                       #:curry-on [chirality 'left])
+                       #:apply-with [applier empty-curried-arguments])
   (make-function #:compose-with composer
-                 #:apply-with applier
-                 #:curry-on chirality))
+                 #:apply-with applier))
 
 (define (function-cons proc f)
   (switch (f)
     [atomic-function?
      (composed-function (function-applier f)
-                        (function-chirality f)
                         (cons proc (list (atomic-function-f f)))
                         usual-composition)] ;
     [composed-function?

@@ -32,13 +32,11 @@
           [struct monoid ((f procedure?)
                           (id procedure?))]
           [struct composed-function ((applier application-scheme?)
-                                     (chirality symbol?)
                                      (components list?)
                                      (composer monoid?))]
           [make-composed-function (->* ()
                                        (#:compose-with monoid?
-                                        #:apply-with application-scheme?
-                                        #:curry-on symbol?)
+                                        #:apply-with application-scheme?)
                                        #:rest (listof procedure?)
                                        composed-function?)]
           [apply/steps (unconstrained-domain-> sequence?)])
@@ -90,9 +88,7 @@
                   [applier #:parent function
                            (pass (function-applier self)
                                  args
-                                 chirality)]
-                  [chirality #:parent function
-                             chirality]))]
+                                 chirality)]))]
 
   #:methods gen:collection
   [(define (conj self elem)
@@ -110,12 +106,10 @@
      (-first (composed-function-components self)))
    (define (rest self)
      (composed-function (function-applier self)
-                        (function-chirality self)
                         (-rest (composed-function-components self))
                         (composed-function-composer self)))
    (define (reverse self)
      (composed-function (function-applier self)
-                        (function-chirality self)
                         (-reverse (composed-function-components self))
                         (composed-function-composer self)))]
 
@@ -147,10 +141,8 @@
 
 (define (make-composed-function #:compose-with [composer usual-composition]
                                 #:apply-with [applier empty-curried-arguments]
-                                #:curry-on [chirality 'left]
                                 . fs)
   (composed-function applier
-                     chirality
                      fs
                      composer))
 

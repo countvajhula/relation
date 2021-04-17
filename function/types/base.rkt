@@ -8,11 +8,9 @@
          "../evaluation.rkt")
 
 (provide (contract-out
-          [struct function ((applier application-scheme?)
-                            (chirality symbol?))]))
+          [struct function ((applier application-scheme?))]))
 
-(struct function (applier
-                  chirality)
+(struct function (applier)
   #:transparent
 
   #:property prop:procedure
@@ -24,5 +22,5 @@
           [applier (function-applier self)]
           [updated-applier (pass applier
                                  args
-                                 (function-chirality self))])
+                                 (chirality applier))])
      (eval-if-saturated self updated-applier))))

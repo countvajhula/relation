@@ -136,7 +136,7 @@ This module provides general-purpose utilities to support programming in the @hy
   @defproc[(function-cons [v procedure?] [w function?])
            function?]
   @defproc[(function-null [#:compose-with composer monoid? (monoid #, @racketlink[b:compose]{@racket[compose]} values)]
-                          [#:curry-on side symbol? 'left])
+                          [#:apply-with applier application-scheme? empty-curried-arguments])
            function?]
   )]{
  Constructors for the @racket[function] type analogous to @racket[cons] and @racket[null] for lists. @racket[function-null] also serves as the identity value for composition.
@@ -472,15 +472,13 @@ While @racket[map] allows a function operating on individual arguments to operat
 
 @defstruct[function ([components list?]
                      [composer monoid?]
-                     [applier application-scheme?]
-                     [chirality symbol?])
+                     [applier application-scheme?])
                     #:omit-constructor]{
   A type that represents any procedure, whether elementary or composed. It is @hyperlink["https://en.wikipedia.org/wiki/Currying"]{curried} by default, meaning that partially supplying arguments results in a new function parametrized by these already-provided arguments.
 @itemlist[
 @item{@racket[components] - A list of functions that comprise this one.}
 @item{@racket[composer] - The definition of composition for this function. By default (when constructed using @racket[make-function]), this is the usual function composition, i.e. @racketlink[b:compose]{@racket[compose]} together with @racket[values] as the identity.}
-@item{@racket[applier] - The definition of application for this function. By default, this is curried partial application, meaning the function takes an arbitrary number of positional and keyword arguments at a time and evaluates to a result when sufficient arguments have been provided, or to a new function accepting more arguments otherwise. Other possible application schemes include uncurried with optional partial application (a minimal generalization of the default behavior for normal Racket functions) and template-based partial application (resembling the application behavior in @other-doc['(lib "fancy-app/main.scrbl")]).}
-@item{@racket[chirality] - The direction (@racket[left]-to-right or @racket[right]-to-left) in which provided arguments will be incorporated.}]
+@item{@racket[applier] - The definition of application for this function. By default, this is curried partial application, meaning the function takes an arbitrary number of positional and keyword arguments at a time and evaluates to a result when sufficient arguments have been provided, or to a new function accepting more arguments otherwise. Other possible application schemes include uncurried with optional partial application (a minimal generalization of the default behavior for normal Racket functions) and template-based partial application (resembling the application behavior in @other-doc['(lib "fancy-app/main.scrbl")]).}]
 }
 
 @defstruct[monoid ([f (-> procedure? procedure? procedure?)]
@@ -564,9 +562,9 @@ While @racket[map] allows a function operating on individual arguments to operat
     (application-scheme? empty-arguments)
     (application-scheme? (arguments 1 2 3 #:key number->string))
     (application-scheme? empty-curried-arguments)
-    (application-scheme? (curried-arguments (list 1 2 3) (list 4 5) (hash '#:key number->string)))
-    (application-scheme? (template-arguments (list) (hash)))
-    (application-scheme? (template-arguments (list nothing (just 3)) (hash '#:key (just number->string) '#:kw nothing)))
+    (application-scheme? (curried-arguments 'left (list 1 2 3) (list 4 5) (hash '#:key number->string)))
+    (application-scheme? (template-arguments 'left (list) (hash)))
+    (application-scheme? (template-arguments 'left (list nothing (just 3)) (hash '#:key (just number->string) '#:kw nothing)))
   ]
 
  To define custom application schemes, the following methods need to be implemented.
@@ -592,10 +590,17 @@ While @racket[map] allows a function operating on individual arguments to operat
  If the function using the application scheme fails when applied, this method is called to give the application scheme an opportunity to define what happens. One of two things must happen: either a fresh application scheme object should be produced (often this is simply the object itself, signaling partial application which may succeed on a future invocation), or an exception (possibly @racket[exception] itself) should be raised. Note that if any exceptions occur in the process of application that are clear errors reported by the underlying function (e.g. more arguments than it accepts), those would simply be raised directly and would not be forwarded to this method to solicit a contingency plan.
  }
 
+ @defproc[(chirality [application-scheme application-scheme?])
+          symbol?]{
+
+ Indicate the chirality of the application scheme, that is, the direction in which fresh arguments will be parsed. This must be either @racket['left] or @racket['right].
+ }
+
 }
 
 @deftogether[(
-@defstruct[curried-arguments ([left list?]
+@defstruct[curried-arguments ([chirality (one-of/c 'left 'right)]
+                              [left list?]
                               [right list?]
                               [kw hash?])
                              #:omit-constructor]
@@ -606,18 +611,21 @@ While @racket[map] allows a function operating on individual arguments to operat
  @racket[empty-curried-arguments] represents an empty set of curried arguments, often used as the initial application scheme in a curried function that may accumulate arguments over time.
 
  @itemlist[
-    @item{@racket[left-args] - The positional arguments that parametrize this function on the left (e.g. passed in by left-currying).}
-    @item{@racket[right-args] - The positional arguments that parametrize this function on the right (e.g. passed in by right-currying).}
-    @item{@racket[kw-args] - The keyword arguments that parametrize this function.}
+    @item{@racket[chirality] - The direction (@racket[left]-to-right or @racket[right]-to-left) in which provided arguments will be incorporated.}
+    @item{@racket[left] - The positional arguments that parametrize this function on the left (e.g. passed in by left-currying).}
+    @item{@racket[right] - The positional arguments that parametrize this function on the right (e.g. passed in by right-currying).}
+    @item{@racket[kw] - The keyword arguments that parametrize this function.}
    ]
 }
 
-@defstruct[template-arguments ([pos list?]
+@defstruct[template-arguments ([chirality (one-of/c 'left 'right)]
+                               [pos list?]
                                [kw hash?])
                                #:omit-constructor]{
  An @tech{application scheme} encoding a template expressing the expected arguments -- whether positional or keyword -- to a function. The values of positional or keyword arguments are expected to be @tech[#:doc '(lib "scribblings/data/functional.scrbl")]{optional values}. Typically, template-based partial application would be used via the @racket[app] macro, so that there is no need to muck about with optional values in normal usage.
 
  @itemlist[
+    @item{@racket[chirality] - The direction (@racket[left]-to-right or @racket[right]-to-left) in which provided arguments will be incorporated.}
     @item{@racket[pos] - The positional arguments that parametrize this function, which may be actual values or blanks expected to be filled at invocation time.}
     @item{@racket[kw] - The keyword arguments that parametrize this function, which may be actual values or blanks expected to be filled at invocation time.}
    ]

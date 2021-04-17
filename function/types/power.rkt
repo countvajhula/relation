@@ -13,21 +13,15 @@
 
 (provide (contract-out
           [struct power-function ((applier application-scheme?)
-                                  (chirality symbol?)
                                   (f procedure?)
                                   (n number?))]
           [make-power-function (->* (procedure? number?)
-                                    (#:apply-with application-scheme?
-                                     #:curry-on symbol?)
+                                    (#:apply-with application-scheme?)
                                     power-function?)]))
 
 (define (make-power-function g n
-                             #:apply-with [applier empty-curried-arguments]
-                             #:curry-on [chirality 'left])
-  (power-function applier
-                  chirality
-                  g
-                  n))
+                             #:apply-with [applier empty-curried-arguments])
+  (power-function applier g n))
 
 (struct power-function function (f n)
   #:transparent
@@ -51,6 +45,4 @@
                   [applier #:parent function
                            (pass (function-applier self)
                                  args
-                                 chirality)]
-                  [chirality #:parent function
-                             chirality]))])
+                                 chirality)]))])

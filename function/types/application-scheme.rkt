@@ -4,6 +4,7 @@
          (except-in racket/contract/base
                     predicate/c)
          racket/generic
+         racket/match
          racket/hash
          racket/format
          arguments
@@ -21,11 +22,13 @@
          (contract-out
           [application-scheme? (predicate/c)]
           [struct curried-arguments
-            ((left list?)
+            ((chirality symbol?)
+             (left list?)
              (right list?)
              (kw hash?))]
           [struct template-arguments
-            ((pos list?)
+            ((chirality symbol?)
+             (pos list?)
              (kw hash?))]
           [empty-curried-arguments curried-arguments?]
           [pass (-> application-scheme?
@@ -36,7 +39,9 @@
                                       arguments?)]
           [handle-failure (binary-function/c application-scheme?
                                              exn?
-                                             application-scheme?)]))
+                                             application-scheme?)]
+          [chirality (function/c application-scheme?
+                                 symbol?)]))
 
 ;; TODO: ideally add tests for method implementations in each
 ;; application-scheme in a test submodule
@@ -61,6 +66,9 @@
   ;; 2. raise an exception
   (handle-failure application-scheme exception)
 
+  ;; the direction in which fresh arguments will be parsed
+  (chirality application-scheme)
+
   #:defaults
   ([arguments? (define (pass this args chirality)
                  (if (eq? chirality 'left)
@@ -69,9 +77,14 @@
                (define (flat-arguments this)
                  this)
                (define (handle-failure this exception)
-                 (raise exception))]))
+                 (raise exception))
+               (define (chirality this)
+                 'left)]))
 
-(struct curried-arguments (left right kw)
+(struct base-application-scheme (chirality)
+  #:transparent)
+
+(struct curried-arguments base-application-scheme (left right kw)
   #:transparent
 
   #:methods gen:application-scheme
@@ -88,7 +101,8 @@
                            (append (arguments-positional args)
                                    (curried-arguments-right this))
                            (curried-arguments-right this))])
-       (curried-arguments left-args
+       (curried-arguments chirality
+                          left-args
                           right-args
                           (hash-union (curried-arguments-kw this)
                                       (arguments-keyword args)))))
@@ -96,7 +110,8 @@
      (make-arguments (curried-arguments-positional this)
                      (curried-arguments-kw this)))
    (define (handle-failure this exception)
-     this)]
+     this)
+   (define chirality base-application-scheme-chirality)]
 
   #:methods gen:custom-write
   [(define (write-proc self port mode)
@@ -119,7 +134,7 @@
                           port)])))])
 
 (define empty-curried-arguments
-  (curried-arguments null null (hash)))
+  (curried-arguments 'left null null (hash)))
 
 (define (curried-arguments-positional args)
   (append (curried-arguments-left args)
@@ -127,14 +142,18 @@
 
 (struct recoverable-apply-error exn:fail:contract ())
 
-(struct template-arguments (pos kw)
+(struct template-arguments base-application-scheme (pos kw)
   #:transparent
 
   #:methods gen:application-scheme
   [(define (pass this args chirality)
      (define n-expected-args
        (length (filter nothing? (template-arguments-pos this))))
-     (define arg-stack (apply make-stack (arguments-positional args)))
+     (define arg-stack
+       (apply make-stack
+              (match chirality
+                ['left (arguments-positional args)]
+                [_ (reverse (arguments-positional args))])))
      (define filled-in-pos-template
        (for/list ([arg (template-arguments-pos this)])
          (if (just? arg)
@@ -176,7 +195,8 @@
           (raise (recoverable-apply-error (~a "Missing keyword argument in template!\n"
                                               "keyword: " k)
                                           (current-continuation-marks))))))
-     (template-arguments filled-in-pos-template
+     (template-arguments chirality
+                         filled-in-pos-template
                          filled-in-kw-template))
 
    (define (flat-arguments this)
@@ -184,7 +204,9 @@
                      (template-arguments-kw this)))
 
    (define (handle-failure this exception)
-     (raise exception))]
+     (raise exception))
+
+   (define chirality base-application-scheme-chirality)]
 
   #:methods gen:custom-write
   [(define (write-proc self port mode)

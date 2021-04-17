@@ -10,7 +10,6 @@
 
 (provide (contract-out
           [struct atomic-function ((applier application-scheme?)
-                                   (chirality symbol?)
                                    (f procedure?))]))
 
 (struct atomic-function function (f)
@@ -34,9 +33,7 @@
                   [applier #:parent function
                            (pass (function-applier self)
                                  args
-                                 chirality)]
-                  [chirality #:parent function
-                             chirality]))]
+                                 chirality)]))]
 
   #:methods gen:custom-write
   [(define (write-proc self port mode)
@@ -54,8 +51,5 @@
        (recur representation port)))])
 
 (define (make-atomic-function g
-                              #:apply-with [applier empty-curried-arguments]
-                              #:curry-on [chirality 'left])
-  (atomic-function applier
-                   chirality
-                   g))
+                              #:apply-with [applier empty-curried-arguments])
+  (atomic-function applier g))

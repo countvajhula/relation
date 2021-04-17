@@ -93,7 +93,6 @@
                  chirality)
       ;; wrap the existing function with one that will be curried
       (f func
-         #:curry-on chirality
          #:apply-with (pass empty-curried-arguments
                             invocation-args
                             chirality))))
@@ -123,4 +122,4 @@
   (let* ([func (first (arguments-positional args))]
          [pos (rest (arguments-positional args))]
          [kw (arguments-keyword args)])
-    (f func #:apply-with (template-arguments pos kw))))
+    (f func #:apply-with (template-arguments 'left pos kw))))
