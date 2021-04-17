@@ -220,7 +220,9 @@
      (check-equal? ((app = #:key string-upcase "hi" _) "HI") (= #:key string-upcase "hi" "HI"))
      (check-exn exn:fail:contract? (thunk ((app = #:key string-upcase "hi" _) #:key string-downcase "HI")) "overriding template not allowed")
      (check-equal? ((app = #:key _ _ "hi") #:key string-upcase "HI") (= #:key string-upcase "hi" "HI"))
-     (check-exn exn:fail:contract? (thunk ((app = #:key _ _ "hi") "HI")) "missing keyword arg in template"))
+     (check-exn exn:fail:contract? (thunk ((app = #:key _ _ "hi") "HI")) "missing keyword arg in template")
+     (check-equal? ((f string-append #:apply-with (template-arguments 'left (list nothing (just "-") nothing) (hash))) "a" "b") "a-b" "left-chiral template")
+     (check-equal? ((f string-append #:apply-with (template-arguments 'right (list nothing (just "-") nothing) (hash))) "a" "b") "b-a") "right-chiral template")
    (test-case
        "application scheme composition"
      (check-equal? ((curry (app string-append _ "-" _) "a") "b") "a-b")
