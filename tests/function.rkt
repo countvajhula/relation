@@ -109,6 +109,11 @@
      (check-equal? (give (curry apply +) 1 2 3) 6)
      (check-equal? (give length "hello" 23 'banana) 3))
    (test-case
+       "unwrap"
+     (check-equal? (unwrap (list 5)) 5)
+     (let-values ([(a b) (unwrap (list 2 3))])
+       (check-equal? (list a b) (list 2 3))))
+   (test-case
        "make-function"
      (check-equal? ((make-function add1 add1 +) 3 2) 7)
      (check-equal? ((make-function +) 3 2) 5)

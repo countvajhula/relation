@@ -454,6 +454,18 @@ While @racket[map] allows a function operating on individual arguments to operat
   ]
 }
 
+@defproc[(unwrap [v list?])
+         any]{
+
+ Unwrap the contents of a list, returning them as @racket[values].
+
+@examples[
+    #:eval eval-for-docs
+    (unwrap (list 3))
+    (unwrap (list 1 2 3))
+  ]
+}
+
 @section[#:tag "function:types"]{Types}
 
 @subsection{Functions and Composition}

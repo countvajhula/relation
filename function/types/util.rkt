@@ -10,7 +10,8 @@
           [flip functional/c]
           [true. (unconstrained-domain-> boolean?)]
           [false. (unconstrained-domain-> boolean?)]
-          [arg (function/c natural-number/c procedure?)]))
+          [arg (function/c natural-number/c procedure?)]
+          [unwrap (-> list? any)]))
 
 (define (flip f)
   (λ (x y . args)
@@ -29,3 +30,6 @@
 (define (arg n)
   (λ args
     (list-ref args n)))
+
+(define (unwrap vs)
+  (apply values vs))
