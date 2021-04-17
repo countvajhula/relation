@@ -93,7 +93,10 @@
                  chirality)
       ;; wrap the existing function with one that will be curried
       (f func
-         #:apply-with (pass empty-curried-arguments
+         ;; passed-in chirality overrides the attribute
+         ;; so it doesn't matter that we're using 'left' here
+         ;; since it's empty
+         #:apply-with (pass empty-left-curried-arguments
                             invocation-args
                             chirality))))
 

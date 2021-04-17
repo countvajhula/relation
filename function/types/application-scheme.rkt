@@ -30,7 +30,8 @@
             ((chirality symbol?)
              (pos list?)
              (kw hash?))]
-          [empty-curried-arguments curried-arguments?]
+          [empty-left-curried-arguments curried-arguments?]
+          [empty-right-curried-arguments curried-arguments?]
           [pass (-> application-scheme?
                     arguments?
                     symbol?
@@ -133,8 +134,11 @@
                                   (kwhash->altlist kw))
                           port)])))])
 
-(define empty-curried-arguments
+(define empty-left-curried-arguments
   (curried-arguments 'left null null (hash)))
+
+(define empty-right-curried-arguments
+  (curried-arguments 'right null null (hash)))
 
 (define (curried-arguments-positional args)
   (append (curried-arguments-left args)

@@ -51,5 +51,5 @@
        (recur representation port)))])
 
 (define (make-atomic-function g
-                              #:apply-with [applier empty-curried-arguments])
+                              #:apply-with [applier empty-left-curried-arguments])
   (atomic-function applier g))

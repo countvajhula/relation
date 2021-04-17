@@ -54,7 +54,7 @@
           [function-flat-arguments (function/c function? arguments?)]))
 
 (define (make-function #:compose-with [composer usual-composition]
-                       #:apply-with [applier empty-curried-arguments]
+                       #:apply-with [applier empty-left-curried-arguments]
                        . fs)
   (if (singleton? fs)
       (atomic-function applier
@@ -67,7 +67,7 @@
 (define f make-function)
 
 (define (make-threading-function #:compose-with [composer usual-composition]
-                                 #:apply-with [applier empty-curried-arguments]
+                                 #:apply-with [applier empty-left-curried-arguments]
                                  . fs)
   (apply f
          #:compose-with composer
@@ -77,7 +77,7 @@
 (define f> make-threading-function)
 
 (define (function-null #:compose-with [composer usual-composition]
-                       #:apply-with [applier empty-curried-arguments])
+                       #:apply-with [applier empty-left-curried-arguments])
   (make-function #:compose-with composer
                  #:apply-with applier))
 

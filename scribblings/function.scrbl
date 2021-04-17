@@ -136,7 +136,7 @@ This module provides general-purpose utilities to support programming in the @hy
   @defproc[(function-cons [v procedure?] [w function?])
            function?]
   @defproc[(function-null [#:compose-with composer monoid? (monoid #, @racketlink[b:compose]{@racket[compose]} values)]
-                          [#:apply-with applier application-scheme? empty-curried-arguments])
+                          [#:apply-with applier application-scheme? empty-left-curried-arguments])
            function?]
   )]{
  Constructors for the @racket[function] type analogous to @racket[cons] and @racket[null] for lists. @racket[function-null] also serves as the identity value for composition.
@@ -493,22 +493,22 @@ While @racket[map] allows a function operating on individual arguments to operat
 
 @deftogether[(
   @defproc[(make-function [#:compose-with composer monoid? (monoid #, @racketlink[b:compose]{@racket[compose]} values)]
-                          [#:apply-with applier application-scheme? empty-curried-arguments]
+                          [#:apply-with applier application-scheme? empty-left-curried-arguments]
                           [g procedure?]
                           ...)
            function?]
   @defproc[(f [#:compose-with composer monoid? (monoid #, @racketlink[b:compose]{@racket[compose]} values)]
-              [#:apply-with applier application-scheme? empty-curried-arguments]
+              [#:apply-with applier application-scheme? empty-left-curried-arguments]
               [g procedure?]
               ...)
            function?]
   @defproc[(make-threading-function [#:compose-with composer monoid? (monoid #, @racketlink[b:compose]{@racket[compose]} values)]
-                                    [#:apply-with applier application-scheme? empty-curried-arguments]
+                                    [#:apply-with applier application-scheme? empty-left-curried-arguments]
                                     [g procedure?]
                                     ...)
            function?]
   @defproc[(f> [#:compose-with composer monoid? (monoid #, @racketlink[b:compose]{@racket[compose]} values)]
-               [#:apply-with applier application-scheme? empty-curried-arguments]
+               [#:apply-with applier application-scheme? empty-left-curried-arguments]
                [g procedure?]
                ...)
            function?]
@@ -561,7 +561,7 @@ While @racket[map] allows a function operating on individual arguments to operat
     #:eval eval-for-docs
     (application-scheme? empty-arguments)
     (application-scheme? (arguments 1 2 3 #:key number->string))
-    (application-scheme? empty-curried-arguments)
+    (application-scheme? empty-left-curried-arguments)
     (application-scheme? (curried-arguments 'left (list 1 2 3) (list 4 5) (hash '#:key number->string)))
     (application-scheme? (template-arguments 'left (list) (hash)))
     (application-scheme? (template-arguments 'left (list nothing (just 3)) (hash '#:key (just number->string) '#:kw nothing)))
@@ -604,11 +604,11 @@ While @racket[map] allows a function operating on individual arguments to operat
                               [right list?]
                               [kw hash?])
                              #:omit-constructor]
-@defthing[empty-curried-arguments curried-arguments?]
+@defthing[empty-left-curried-arguments curried-arguments?]
            )]{
  An @tech{application scheme} representing the arguments that parametrize (i.e. have already been supplied to) a function. This includes all arguments that have been supplied by either left- or right-currying.
 
- @racket[empty-curried-arguments] represents an empty set of curried arguments, often used as the initial application scheme in a curried function that may accumulate arguments over time.
+ @racket[empty-left-curried-arguments] represents an empty set of curried arguments, often used as the initial application scheme in a curried function that may accumulate arguments over time.
 
  @itemlist[
     @item{@racket[chirality] - The direction (@racket[left]-to-right or @racket[right]-to-left) in which provided arguments will be incorporated.}

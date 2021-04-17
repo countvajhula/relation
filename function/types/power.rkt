@@ -20,7 +20,7 @@
                                     power-function?)]))
 
 (define (make-power-function g n
-                             #:apply-with [applier empty-curried-arguments])
+                             #:apply-with [applier empty-left-curried-arguments])
   (power-function applier g n))
 
 (struct power-function function (f n)

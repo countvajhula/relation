@@ -140,7 +140,7 @@
        (recur representation port)))])
 
 (define (make-composed-function #:compose-with [composer usual-composition]
-                                #:apply-with [applier empty-curried-arguments]
+                                #:apply-with [applier empty-left-curried-arguments]
                                 . fs)
   (composed-function applier
                      fs
