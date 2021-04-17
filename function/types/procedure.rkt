@@ -22,6 +22,10 @@
           [procedure-apply (-> procedure?
                                arguments?
                                any)]
+          [pass-args (-> procedure?
+                         arguments?
+                         symbol?
+                         procedure?)]
           [update-application (binary-function/c procedure?
                                                  application-scheme?
                                                  procedure?)]))
@@ -30,7 +34,7 @@
   (keywords procedure)
   (arity procedure)
   (procedure-apply procedure args)
-  ;; (pass-args procedure args)
+  (pass-args procedure args chirality)
   ;; TODO: can this and the application scheme's handle-failure be merged?
   ;; this consideration could shed light on the interplay between the two
   (update-application procedure applier)
@@ -38,6 +42,6 @@
   ([b:procedure?
     (define keywords procedure-keywords)
     (define arity procedure-arity)
-    ;; (define pass-args (arg 0))
+    (define pass-args (arg 0))
     (define procedure-apply apply/arguments)
     (define update-application (arg 0))]))

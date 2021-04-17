@@ -84,19 +84,13 @@
            [(list v vs ...) ((loop vs) v)])))))
 
 (define (~curry chirality func invocation-args)
-  (if (and (composed-function? func) ;
+  (if (and (function? func)
            (curried-arguments? (function-applier func)))
       ;; application scheme is compatible so just apply the
       ;; new args to the existing scheme
-      (composed-function (pass (function-applier func)
-                               invocation-args
-                               chirality)
-                         chirality
-                         (composed-function-components func)
-                         (composed-function-composer func))
-      ;; (pass-args func
-      ;;            invocation-args
-      ;;            chirality)
+      (pass-args func
+                 invocation-args
+                 chirality)
       ;; wrap the existing function with one that will be curried
       (f func
          #:curry-on chirality

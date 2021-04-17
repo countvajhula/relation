@@ -66,7 +66,6 @@
   [(define/generic -keywords keywords)
    (define/generic -arity arity)
    (define/generic -procedure-apply procedure-apply)
-   (define/generic -update-application update-application)
    (define (keywords self)
      (let ([leading-function (switch ((composed-function-components self))
                                      [null? (monoid-id (composed-function-composer self))]
@@ -85,7 +84,15 @@
    (define (update-application self applier)
      (struct-copy composed-function self
                   [applier #:parent function
-                           applier]))]
+                           applier]))
+   (define (pass-args self args chirality)
+     (struct-copy composed-function self
+                  [applier #:parent function
+                           (pass (function-applier self)
+                                 args
+                                 chirality)]
+                  [chirality #:parent function
+                             chirality]))]
 
   #:methods gen:collection
   [(define (conj self elem)

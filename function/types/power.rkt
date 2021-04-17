@@ -31,11 +31,11 @@
 
 (struct power-function function (f n)
   #:transparent
+
   #:methods gen:procedure
   [(define/generic -keywords keywords)
    (define/generic -arity arity)
    (define/generic -procedure-apply procedure-apply)
-   (define/generic -update-application update-application)
    (define (keywords self)
      (-keywords (power-function-f self)))
    (define (arity self)
@@ -45,4 +45,12 @@
    (define (update-application self applier)
      (struct-copy power-function self
                   [applier #:parent function
-                           applier]))])
+                           applier]))
+   (define (pass-args self args chirality)
+     (struct-copy power-function self
+                  [applier #:parent function
+                           (pass (function-applier self)
+                                 args
+                                 chirality)]
+                  [chirality #:parent function
+                             chirality]))])
