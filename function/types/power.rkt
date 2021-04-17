@@ -2,8 +2,9 @@
 
 (require racket/lazy-require
          racket/contract/base
-         racket/generic
-         "procedure.rkt"
+         racket/generic)
+
+(require "procedure.rkt"
          "application-scheme.rkt"
          "base.rkt")
 

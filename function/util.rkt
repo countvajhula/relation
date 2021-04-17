@@ -18,8 +18,9 @@
          (only-in data/functor
                   (map f:map))
          arguments
-         contract/social
-         "types.rkt")
+         contract/social)
+
+(require "types.rkt")
 
 (provide call
          (contract-out

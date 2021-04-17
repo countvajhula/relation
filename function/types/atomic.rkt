@@ -2,8 +2,9 @@
 
 (require racket/contract/base
          racket/generic
-         arguments
-         "procedure.rkt"
+         arguments)
+
+(require "procedure.rkt"
          "application-scheme.rkt"
          "base.rkt")
 

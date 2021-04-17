@@ -6,9 +6,10 @@
          (only-in kw-utils/kw-hash
                   apply/kw-hash)
          data/maybe
-         relation/function/types
-         "util.rkt"
          (for-syntax racket/base))
+
+(require relation/function/types
+         "util.rkt")
 
 (provide lambda/function
          lambda/f

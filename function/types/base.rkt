@@ -2,8 +2,9 @@
 
 (require racket/list
          racket/contract/base
-         arguments
-         "application-scheme.rkt"
+         arguments)
+
+(require "application-scheme.rkt"
          "../evaluation.rkt")
 
 (provide (contract-out

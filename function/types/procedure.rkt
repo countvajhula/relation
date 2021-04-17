@@ -6,8 +6,9 @@
                     predicate/c)
          contract/social
          (prefix-in b: racket/base)
-         arguments
-         "util.rkt"
+         arguments)
+
+(require "util.rkt"
          "application-scheme.rkt")
 
 (provide gen:procedure

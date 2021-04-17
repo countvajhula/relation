@@ -21,8 +21,9 @@
                   reverse
                   repeat)
          arguments
-         syntax/on
-         "procedure.rkt"
+         syntax/on)
+
+(require "procedure.rkt"
          "application-scheme.rkt"
          "base.rkt"
          "util.rkt")

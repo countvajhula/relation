@@ -4,8 +4,9 @@
                     predicate/c)
          racket/list
          contract/social
-         syntax/on
-         "types.rkt")
+         syntax/on)
+
+(require "types.rkt")
 
 (provide (contract-out
           [compose (variadic-function/c procedure? function?)]

@@ -2,8 +2,9 @@
 
 (require racket/set
          arguments
-         syntax/on
-         relation/logic
+         syntax/on)
+
+(require relation/logic
          (only-in relation/equivalence
                   in?)
          relation/function/types/procedure
