@@ -25,10 +25,6 @@
 (provide call
          (contract-out
           [unthunk (binary-variadic-function/c procedure? any/c procedure?)]
-          [if-f (-> (unconstrained-domain-> boolean?)
-                    procedure?
-                    procedure?
-                    procedure?)]
           [flip$ functional/c]
           [flip* functional/c]
           [lift functional/c]
@@ -51,12 +47,6 @@
 (define (unthunk f . args)
   (f:thunk*
    (apply f args)))
-
-(define (if-f pred f g)
-  (λ args
-    (if (apply pred args)
-        (apply f args)
-        (apply g args))))
 
 (define (flip$ f)
   (λ (x . args)

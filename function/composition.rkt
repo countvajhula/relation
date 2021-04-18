@@ -33,12 +33,29 @@
   [else v])
 
 (define-predicate (~compatible-compositions? g h)
-  (and (with-key function-applier eq?)
-       (with-key composed-function-composer eq?)))
+  (or (any (not composed-function?))
+      (with-key composed-function-composer eq?)))
+
+(define (appropriate-composer g h)
+  (switch (g h)
+          [(none composed-function?) usual-composition]
+          [(all composed-function?)
+           (switch (g h)
+                   [(with-key composed-function-composer eq?)
+                    (composed-function-composer g)]
+                   [else #f])]
+          [else (if (composed-function? g)
+                    (composed-function-composer g)
+                    (composed-function-composer h))]))
 
 (define-switch (->power-function g)
   [power-function? g]
   [else (make-power-function g 1)])
+
+(define-switch (~function-members g)
+  [atomic-function? (call (.. list atomic-function-f))]
+  [composed-function? (call composed-function-components)]
+  [else (call list)])
 
 (define-switch (function-compose g h)
   ;; this composes functions "naively," wrapping the components with a
@@ -46,26 +63,29 @@
   ;; of the component functions are eq?
   ;; It could be improved to define the nature of composition for homogeneous
   ;; and heterogeneous composition and application schemes formally
-  [(and (all power-function?)
-        (with-key underlying-function eq?))
-   (call compose-powers)]
-  [(and (any power-function?)
-        (with-key underlying-function eq?))
-   (call (.. compose-powers (% ->power-function)))]
-  [(or eq?
-       equal?
-       (and (all composed-function?)
-            ~compatible-compositions?
-            (with-key composed-function-components
-              equal?)))
-   (call (.. compose-powers
-             (% ->power-function)))]
-  [(and (all composed-function?)
-        ~compatible-compositions?) ; compose at same level
-   (struct-copy composed-function g
-                [components (append (composed-function-components g)
-                                    (composed-function-components h))])]
-  [else (call f)]) ; naive composition
+  ;; [(and (all power-function?)
+  ;;       (with-key underlying-function eq?))
+  ;;  (call compose-powers)]
+  ;; [(and (any power-function?)
+  ;;       (with-key underlying-function eq?))
+  ;;  (call (.. compose-powers (% ->power-function)))]
+  ;; [(or eq?
+  ;;      equal?
+  ;;      (and (all composed-function?)
+  ;;           ~compatible-compositions?
+  ;;           (with-key composed-function-components
+  ;;             equal?)))
+  ;;  (call (.. compose-powers
+  ;;            (% ->power-function)))]
+  [appropriate-composer ; compose at same level
+   (apply make-composed-function
+          #:apply-with (switch (h)
+                               [function? (call function-applier)]
+                               [else empty-left-curried-arguments])
+          #:compose-with result
+          (append (~function-members g)
+                  (~function-members h)))]
+  [else (call f)])
 
 ;; rename function -> composed-function
 ;; generic interface "function"

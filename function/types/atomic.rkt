@@ -10,7 +10,10 @@
 
 (provide (contract-out
           [struct atomic-function ((applier application-scheme?)
-                                   (f procedure?))]))
+                                   (f procedure?))]
+          [make-atomic-function (->* (procedure?)
+                                     (#:apply-with application-scheme?)
+                                     atomic-function?)]))
 
 (struct atomic-function function (f)
   #:transparent
