@@ -6,7 +6,8 @@
          contract/social
          syntax/on)
 
-(require "types.rkt")
+(require "types.rkt"
+         "../private/util.rkt")
 
 (provide (contract-out
           [compose (variadic-function/c procedure? function?)]
@@ -44,9 +45,8 @@
                    [(with-key composed-function-composer eq?)
                     (composed-function-composer g)]
                    [else #f])]
-          [else (if (composed-function? g)
-                    (composed-function-composer g)
-                    (composed-function-composer h))]))
+          [else (composed-function-composer
+                 (find composed-function? (list g h)))]))
 
 (define-switch (->power-function g)
   [power-function? g]
@@ -77,14 +77,14 @@
   ;;             equal?)))
   ;;  (call (.. compose-powers
   ;;            (% ->power-function)))]
-  [appropriate-composer ; compose at same level
-   (apply make-composed-function
-          #:apply-with (switch (h)
-                               [function? (call function-applier)]
-                               [else empty-left-curried-arguments])
-          #:compose-with result
-          (append (~function-members g)
-                  (~function-members h)))]
+  [appropriate-composer (apply make-composed-function ; compose at same level
+                               #:apply-with
+                               (switch (h)
+                                       [function? (call function-applier)]
+                                       [else empty-left-curried-arguments])
+                               #:compose-with <result>
+                               (append (~function-members g)
+                                       (~function-members h)))]
   [else (call f)])
 
 ;; rename function -> composed-function

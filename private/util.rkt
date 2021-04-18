@@ -1,12 +1,14 @@
 #lang racket/base
 
 (require racket/list
+         racket/match
          arguments
          syntax/on)
 
 (provide check-pairwise
          exists
          for-all
+         find
          kwhash->altlist
          join-list
          singleton?
@@ -36,6 +38,12 @@
       #t
       (and (apply pred (map first seqs))
            (apply for-all pred (map rest seqs)))))
+
+(define (find pred lst)
+  (match lst
+    ['() #f]
+    [(cons v vs) (or (and (pred v) v)
+                     (find pred vs))]))
 
 (define (kwhash->altlist v)
   (foldr (λ (a b)
