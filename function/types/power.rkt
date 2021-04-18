@@ -6,24 +6,28 @@
 
 (require "procedure.rkt"
          "application-scheme.rkt"
-         "base.rkt")
+         "base.rkt"
+         "composed.rkt")
 
 ;; so the power-function type can use the `power` utility
 (lazy-require [relation/composition (power)])
 
 (provide (contract-out
           [struct power-function ((applier application-scheme?)
+                                  (composer monoid?)
                                   (f procedure?)
                                   (n number?))]
           [make-power-function (->* (procedure? number?)
-                                    (#:apply-with application-scheme?)
+                                    (#:apply-with application-scheme?
+                                     #:compose-with monoid?)
                                     power-function?)]))
 
 (define (make-power-function g n
-                             #:apply-with [applier empty-left-curried-arguments])
-  (power-function applier g n))
+                             #:apply-with [applier empty-left-curried-arguments]
+                             #:compose-with [composer usual-composition])
+  (power-function applier composer g n))
 
-(struct power-function function (f n)
+(struct power-function base-composed-function (f n)
   #:transparent
 
   #:methods gen:procedure
