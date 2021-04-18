@@ -78,14 +78,32 @@
   ;;             equal?)))
   ;;  (call (.. compose-powers
   ;;            (% ->power-function)))]
-  [appropriate-composer (apply make-composed-function ; compose at same level
-                               #:apply-with
-                               (switch (h)
-                                       [function? (call function-applier)]
-                                       [else empty-left-curried-arguments])
-                               #:compose-with <result>
-                               (append (~function-members g)
-                                       (~function-members h)))]
+  [appropriate-composer
+   (let ([composer <result>])
+     (switch (g h)
+             [common-underlying-function
+              (let ([m (if (power-function? g)
+                           (power-function-n g)
+                           1)]
+                    [n (if (power-function? h)
+                           (power-function-n h)
+                           1)])
+                (make-power-function
+                 #:apply-with (switch (h)
+                                      [function? (call function-applier)]
+                                      [else empty-left-curried-arguments])
+                 #:compose-with composer
+                 <result>
+                 (+ m n)))]
+             [else
+              (apply make-composed-function ; compose at same level
+                     #:apply-with
+                     (switch (h)
+                             [function? (call function-applier)]
+                             [else empty-left-curried-arguments])
+                     #:compose-with composer
+                     (append (~function-members g)
+                             (~function-members h)))]))]
   [else (call f)])
 
 ;; rename function -> composed-function

@@ -2,7 +2,8 @@
 
 (require racket/lazy-require
          racket/contract/base
-         racket/generic)
+         racket/generic
+         racket/match)
 
 (require "procedure.rkt"
          "application-scheme.rkt"
@@ -49,4 +50,28 @@
                   [applier #:parent function
                            (pass (function-applier self)
                                  args
-                                 chirality)]))])
+                                 chirality)]))]
+
+  #:methods gen:custom-write
+  [(define (write-proc self port mode)
+     (define recur
+       (case mode
+         [(#t) write]
+         [(#f) display]
+         [else (λ (p port) (print p port mode))]))
+     (let* ([applier (function-applier self)]
+            [composer (base-composed-function-composer self)]
+            [f (power-function-f self)]
+            [n (power-function-n self)]
+            [representation
+             (list 'λ
+                   applier
+                   (list (match composer
+                           [(== usual-composition) '..]
+                           [(== conjoin-composition) '&&]
+                           [(== disjoin-composition) '||]
+                           [_ '??])
+                         '^
+                         n
+                         f))])
+       (recur representation port)))])
