@@ -31,22 +31,23 @@
 
 (define-switch (underlying-function v)
   [power-function? (call power-function-f)]
+  [atomic-function? (call atomic-function-f)]
   [else v])
 
-(define-predicate (~compatible-compositions? g h)
-  (or (any (not composed-function?))
-      (with-key composed-function-composer eq?)))
+(define-switch (common-underlying-function g h)
+  [(with-key underlying-function eq?)
+   (underlying-function g)]
+  [else #f])
 
-(define (appropriate-composer g h)
-  (switch (g h)
-          [(none composed-function?) usual-composition]
-          [(all composed-function?)
-           (switch (g h)
-                   [(with-key composed-function-composer eq?)
-                    (composed-function-composer g)]
-                   [else #f])]
-          [else (composed-function-composer
-                 (find composed-function? (list g h)))]))
+(define-switch (appropriate-composer g h)
+  [(none composed-function?) usual-composition]
+  [(all composed-function?)
+   (switch (g h)
+           [(with-key base-composed-function-composer eq?)
+            (base-composed-function-composer g)]
+           [else #f])]
+  [else (base-composed-function-composer
+         (find composed-function? (list g h)))])
 
 (define-switch (->power-function g)
   [power-function? g]

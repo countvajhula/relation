@@ -40,7 +40,7 @@
                                         (#:compose-with monoid?
                                          #:apply-with application-scheme?)
                                         #:rest (listof procedure?)
-                                        composed-function?)]
+                                        function?)]
           [f> (->* ()
                    (#:compose-with monoid?
                     #:apply-with application-scheme?)
@@ -61,8 +61,8 @@
                        (unwrap fs))
       ;; TODO: use compose interface
       (composed-function applier
-                         fs
-                         composer)))
+                         composer
+                         fs)))
 
 (define f make-function)
 
@@ -85,8 +85,8 @@
   (switch (f)
     [atomic-function?
      (composed-function (function-applier f)
-                        (cons proc (list (atomic-function-f f)))
-                        usual-composition)] ;
+                        usual-composition
+                        (cons proc (list (atomic-function-f f))))] ;
     [composed-function?
      (conj f proc)]
     [else (compose proc f)]))

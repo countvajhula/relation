@@ -31,9 +31,11 @@
 (provide (contract-out
           [struct monoid ((f procedure?)
                           (id procedure?))]
+          [struct base-composed-function ((applier application-scheme?)
+                                          (composer monoid?))]
           [struct composed-function ((applier application-scheme?)
-                                     (components list?)
-                                     (composer monoid?))]
+                                     (composer monoid?)
+                                     (components list?))]
           [make-composed-function (->* ()
                                        (#:compose-with monoid?
                                         #:apply-with application-scheme?)
@@ -56,8 +58,10 @@
 (define conjoin-composition (monoid conjoin true.))
 (define disjoin-composition (monoid disjoin false.))
 
-(struct composed-function function (components
-                                    composer)
+(struct base-composed-function function (composer)
+  #:transparent)
+
+(struct composed-function base-composed-function (components)
   #:transparent
 
   #:methods gen:procedure
@@ -66,17 +70,17 @@
    (define/generic -procedure-apply procedure-apply)
    (define (keywords self)
      (let ([leading-function (switch ((composed-function-components self))
-                                     [null? (monoid-id (composed-function-composer self))]
+                                     [null? (monoid-id (base-composed-function-composer self))]
                                      [else (call last)])])
        (-keywords leading-function)))
    (define (arity self)
      (let ([leading-function (switch ((composed-function-components self))
-                                     [null? (monoid-id (composed-function-composer self))]
+                                     [null? (monoid-id (base-composed-function-composer self))]
                                      [else (call last)])])
        (-arity leading-function)))
    (define (procedure-apply self args)
      (let ([components (composed-function-components self)]
-           [composer (composed-function-composer self)])
+           [composer (base-composed-function-composer self)])
        (-procedure-apply (apply composer components)
                          args)))
    (define (update-application self applier)
@@ -106,12 +110,12 @@
      (-first (composed-function-components self)))
    (define (rest self)
      (composed-function (function-applier self)
-                        (-rest (composed-function-components self))
-                        (composed-function-composer self)))
+                        (base-composed-function-composer self)
+                        (-rest (composed-function-components self))))
    (define (reverse self)
      (composed-function (function-applier self)
-                        (-reverse (composed-function-components self))
-                        (composed-function-composer self)))]
+                        (base-composed-function-composer self)
+                        (-reverse (composed-function-components self))))]
 
   #:methods gen:countable
   [(define/generic -length length)
@@ -126,8 +130,8 @@
          [(#f) display]
          [else (λ (p port) (print p port mode))]))
      (let* ([applier (function-applier self)]
+            [composer (base-composed-function-composer self)]
             [components (composed-function-components self)]
-            [composer (composed-function-composer self)]
             [representation
              (list 'λ
                    applier
@@ -143,8 +147,8 @@
                                 #:apply-with [applier empty-left-curried-arguments]
                                 . fs)
   (composed-function applier
-                     fs
-                     composer))
+                     composer
+                     fs))
 
 (define/arguments (apply/steps args)
   (let ([f (first (arguments-positional args))]
