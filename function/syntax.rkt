@@ -9,6 +9,7 @@
          (for-syntax racket/base))
 
 (require relation/function/types
+         relation/function/composition
          "util.rkt")
 
 (provide lambda/function

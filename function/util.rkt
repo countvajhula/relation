@@ -20,7 +20,8 @@
          arguments
          contract/social)
 
-(require "types.rkt")
+(require "types.rkt"
+         "composition.rkt")
 
 (provide call
          (contract-out

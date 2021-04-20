@@ -251,6 +251,20 @@
      (check-equal? ((compose add1 sub1) 3) 3)
      (check-equal? ((compose (f add1) (f sub1)) 3) 3)
      (check-equal? ((compose (f add1) (curry + 2)) 3) 6))
+   ;; (exists nonempty application?)
+   ;; -> compose naively
+   ;; (none function)
+   ;; -> compose naively
+   ;; (one function)
+   ;; -> unwrap and compose
+   ;; (none base-composed-function) [i.e. all atomic]
+   ;; -> unwrap both and compose
+   ;; (and (all base-composed-function?) composers are (eq? composer))
+   ;; -> if common-underlying-function compose as powers
+   ;; -> otherwise unwrap both and compose components
+   ;; one base-composed-function and one atomic
+   ;; -> if bcf composer is (eq? composer), then unwrap both and compose
+   ;; -> otherwise naive compose but unwrap the atomic
    (test-case
        "heterogeneous composition"
      (let ([g (compose add1 +)])

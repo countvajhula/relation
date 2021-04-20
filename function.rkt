@@ -1,7 +1,6 @@
 #lang racket/base
 
-(require (except-in relation/function/types
-                    !!)
+(require relation/function/types
          relation/function/syntax
          relation/function/util
          relation/function/evaluation

@@ -3,6 +3,12 @@
 (require (except-in racket/contract/base
                     predicate/c)
          racket/list
+         (only-in racket/function
+                  curry
+                  curryr)
+         (only-in racket/base
+                  (compose b:compose))
+         arguments
          contract/social
          syntax/on)
 
@@ -16,18 +22,44 @@
           [disjoin (variadic-function/c procedure? function?)]
           [|| (variadic-function/c procedure? function?)]
           [negate (function/c procedure? function?)]
-          [!! (function/c procedure? function?)]))
+          [!! (function/c procedure? function?)]
+          [make-function (->* ()
+                              (#:compose-with monoid?
+                               #:apply-with application-scheme?)
+                              #:rest (listof procedure?)
+                              function?)]
+          [f (->* ()
+                  (#:compose-with monoid?
+                   #:apply-with application-scheme?)
+                  #:rest (listof procedure?)
+                  function?)]
+          [make-threading-function (->* ()
+                                        (#:compose-with monoid?
+                                         #:apply-with application-scheme?)
+                                        #:rest (listof procedure?)
+                                        function?)]
+          [f> (->* ()
+                   (#:compose-with monoid?
+                    #:apply-with application-scheme?)
+                   #:rest (listof procedure?)
+                   function?)]
+          [function-null (->* ()
+                              (#:compose-with monoid?
+                               #:apply-with application-scheme?)
+                              function?)]))
 
-(define (compose-powers g h)
+(define (compose-powers g h composer applier)
   ;; either or both could be function powers. in that case, the powers
   ;; need to be added; otherwise just incremented - actually just
   ;; map a priori to function-powers that would bbe set to 1, like a
   ;; free functor, and then compose them as function powers
   (let ([n (power-function-n g)]
-        [m (power-function-n h)])
-    (struct-copy power-function g
-                 [n (+ (power-function-n g)
-                       (power-function-n h))])))
+        [m (power-function-n h)]
+        [f (power-function-f h)])
+    (make-power-function #:apply-with applier
+                         #:compose-with composer
+                         f
+                         (+ m n))))
 
 (define-switch (underlying-function v)
   [power-function? (call power-function-f)]
@@ -39,104 +71,97 @@
    (underlying-function g)]
   [else #f])
 
-(define-switch (appropriate-composer g h)
-  [(none composed-function?) usual-composition]
-  [(all composed-function?)
-   (switch (g h)
-           [(with-key base-composed-function-composer eq?)
-            (base-composed-function-composer g)]
-           [else #f])]
-  [else (base-composed-function-composer
-         (find composed-function? (list g h)))])
-
-(define-switch (->power-function g)
+(define-switch (->power-function g composer applier)
   [power-function? g]
-  [else (make-power-function g 1)])
+  [else (make-power-function g 1
+                             #:compose-with composer
+                             #:apply-with applier)])
+
+(define (->function g applier)
+  (switch (g)
+          [function? g]
+          [else (atomic-function applier g)]))
 
 (define-switch (~function-members g)
   [atomic-function? (call (.. list atomic-function-f))]
+  [power-function? (call (.. list power-function-f))]
   [composed-function? (call composed-function-components)]
   [else (call list)])
 
-(define-switch (function-compose g h)
-  ;; this composes functions "naively," wrapping the components with a
-  ;; new function in all cases but those where the applier and composer
-  ;; of the component functions are eq?
-  ;; It could be improved to define the nature of composition for homogeneous
-  ;; and heterogeneous composition and application schemes formally
-  ;; [(and (all power-function?)
-  ;;       (with-key underlying-function eq?))
-  ;;  (call compose-powers)]
-  ;; [(and (any power-function?)
-  ;;       (with-key underlying-function eq?))
-  ;;  (call (.. compose-powers (% ->power-function)))]
-  ;; [(or eq?
-  ;;      equal?
-  ;;      (and (all composed-function?)
-  ;;           ~compatible-compositions?
-  ;;           (with-key composed-function-components
-  ;;             equal?)))
-  ;;  (call (.. compose-powers
-  ;;            (% ->power-function)))]
-  [appropriate-composer
-   (let ([composer <result>])
-     (switch (g h)
-             [common-underlying-function
-              (let ([m (if (power-function? g)
-                           (power-function-n g)
-                           1)]
-                    [n (if (power-function? h)
-                           (power-function-n h)
-                           1)])
-                (make-power-function
-                 #:apply-with (switch (h)
-                                      [function? (call function-applier)]
-                                      [else empty-left-curried-arguments])
-                 #:compose-with composer
-                 <result>
-                 (+ m n)))]
-             [else
-              (apply make-composed-function ; compose at same level
-                     #:apply-with
-                     (switch (h)
-                             [function? (call function-applier)]
-                             [else empty-left-curried-arguments])
-                     #:compose-with composer
-                     (append (~function-members g)
-                             (~function-members h)))]))]
-  [else (call f)])
+(define-predicate (~empty-application? applier)
+  (.. (equal? empty-arguments) flat-arguments))
 
-;; rename function -> composed-function
-;; generic interface "function"
-;; .. just composes whatever is there - whether primitive or rich function
-;; maybe we need to decouple the application scheme from composed-function
-;; so it's part of the generic interface itself somehow -- that's the rich type
-;; the composed function implements this and inherits from it, and provides
-;; additional goodies for composition
-;; power does the same for powers
-;; ... any others?
-;; maybe function is just a struct, and composed inherits from it? root contains
-;; applier, e.g.
-;; 
+(define (function-compose g h composer applier)
+  (switch (g h)
+          [(or (with-key (.. function-applier (curryr ->function applier))
+                 (any (not ~empty-application?)))
+               (none function?))
+           (make-composed-function #:compose-with composer
+                                   #:apply-with applier
+                                   g h)]
+          [(any (not function?))
+           (apply make-composed-function
+                  #:compose-with composer
+                  #:apply-with applier
+                  (append (~function-members g)
+                          (~function-members h)))]
+          [(none base-composed-function?)
+           (apply make-composed-function
+                  #:compose-with composer
+                  #:apply-with applier
+                  (append (~function-members g)
+                          (~function-members h)))]
+          [(or (all (and base-composed-function?
+                         (with-key base-composed-function-composer
+                           (all (eq? composer)))))
+               (and (any (not base-composed-function?))
+                    (.. (eq? composer)
+                        base-composed-function-composer
+                        (curry find base-composed-function?)
+                        list)))
+           (switch (g h)
+                   [common-underlying-function
+                    (compose-powers (->power-function g composer applier)
+                                    (->power-function h composer applier)
+                                    composer
+                                    applier)]
+                   [else
+                    (apply make-composed-function ; compose at same level
+                           #:apply-with applier
+                           #:compose-with composer
+                           (append (~function-members g)
+                                   (~function-members h)))])]
+          [else
+           ;; incompatible composition, so compose naively, but unwrap atomic
+           (make-composed-function #:compose-with composer
+                                   #:apply-with applier
+                                   (if (atomic-function? g)
+                                       (atomic-function-f g)
+                                       g)
+                                   (if (atomic-function? h)
+                                       (atomic-function-f h)
+                                       h))]))
 
 (define (compose #:compose-with [composer usual-composition]
+                 #:apply-with [applier empty-left-curried-arguments]
                  . gs)
   (switch (gs)
-          [empty? (function-null #:compose-with composer)]
+          [empty? (function-null #:compose-with composer
+                                 #:apply-with applier)]
           [(.. empty? rest) (call first)]
           [else
            (let ([gs (reverse gs)])
-             (foldl function-compose
+             (foldl (curryr function-compose composer applier)
                     (first gs)
                     (rest gs)))]))
 
 (define (conjoin . fs)
-  (apply f
+  (apply make-composed-function
          #:compose-with conjoin-composition
          fs))
 
 (define (disjoin . fs)
-  (apply f
+  (apply make-composed-function
          #:compose-with disjoin-composition
          fs))
 
@@ -146,3 +171,30 @@
 (define && conjoin)
 (define || disjoin)
 (define !! negate)
+
+(define (make-function #:compose-with [composer usual-composition]
+                       #:apply-with [applier empty-left-curried-arguments]
+                       . fs)
+  (switch (fs)
+          [singleton? (atomic-function applier (unwrap fs))]
+          [else (call
+                 (apply compose
+                        #:compose-with composer
+                        #:apply-with applier))]))
+
+(define f make-function)
+
+(define (make-threading-function #:compose-with [composer usual-composition]
+                                 #:apply-with [applier empty-left-curried-arguments]
+                                 . fs)
+  (apply f
+         #:compose-with composer
+         #:apply-with applier
+         (reverse fs)))
+
+(define f> make-threading-function)
+
+(define (function-null #:compose-with [composer usual-composition]
+                       #:apply-with [applier empty-left-curried-arguments])
+  (make-composed-function #:compose-with composer
+                          #:apply-with applier))

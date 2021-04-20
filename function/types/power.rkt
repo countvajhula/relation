@@ -3,7 +3,10 @@
 (require racket/lazy-require
          racket/contract/base
          racket/generic
-         racket/match)
+         racket/match
+         (only-in data/collection
+                  gen:collection)
+         syntax/on)
 
 (require "procedure.rkt"
          "application-scheme.rkt"
@@ -51,6 +54,17 @@
                            (pass (function-applier self)
                                  args
                                  chirality)]))]
+
+  #:methods gen:collection
+  [(define (conj self elem)
+     (switch (elem)
+             [(eq? (power-function-f self))
+              (struct-copy power-function self
+                           [n (add1 (power-function-n self))])]
+             [else
+              (composed-function (function-applier self)
+                                 (base-composed-function-composer self)
+                                 (list elem self))]))]
 
   #:methods gen:custom-write
   [(define (write-proc self port mode)

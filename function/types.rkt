@@ -15,8 +15,8 @@
          relation/function/types/composed
          relation/function/types/power
          relation/function/types/application-scheme
-         relation/function/types/util
-         "../private/util.rkt")
+         (except-in relation/function/types/util
+                    !!))
 
 (provide (all-from-out relation/function/types/procedure
                        relation/function/types/base
@@ -26,70 +26,10 @@
                        relation/function/types/application-scheme
                        relation/function/types/util)
          (contract-out
-          [make-function (->* ()
-                              (#:compose-with monoid?
-                               #:apply-with application-scheme?)
-                              #:rest (listof procedure?)
-                              function?)]
-          [f (->* ()
-                  (#:compose-with monoid?
-                   #:apply-with application-scheme?)
-                  #:rest (listof procedure?)
-                  function?)]
-          [make-threading-function (->* ()
-                                        (#:compose-with monoid?
-                                         #:apply-with application-scheme?)
-                                        #:rest (listof procedure?)
-                                        function?)]
-          [f> (->* ()
-                   (#:compose-with monoid?
-                    #:apply-with application-scheme?)
-                   #:rest (listof procedure?)
-                   function?)]
-          [function-null (->* ()
-                              (#:compose-with monoid?
-                               #:apply-with application-scheme?)
-                              function?)]
-          [function-cons (binary-constructor/c procedure? function?)]
+          [function-cons (binary-constructor/c procedure? composed-function?)]
           [function-flat-arguments (function/c function? arguments?)]))
 
-(define (make-function #:compose-with [composer usual-composition]
-                       #:apply-with [applier empty-left-curried-arguments]
-                       . fs)
-  (if (singleton? fs)
-      (atomic-function applier
-                       (unwrap fs))
-      ;; TODO: use compose interface
-      (composed-function applier
-                         composer
-                         fs)))
-
-(define f make-function)
-
-(define (make-threading-function #:compose-with [composer usual-composition]
-                                 #:apply-with [applier empty-left-curried-arguments]
-                                 . fs)
-  (apply f
-         #:compose-with composer
-         #:apply-with applier
-         (reverse fs)))
-
-(define f> make-threading-function)
-
-(define (function-null #:compose-with [composer usual-composition]
-                       #:apply-with [applier empty-left-curried-arguments])
-  (make-function #:compose-with composer
-                 #:apply-with applier))
-
-(define (function-cons proc f)
-  (switch (f)
-    [atomic-function?
-     (composed-function (function-applier f)
-                        usual-composition
-                        (cons proc (list (atomic-function-f f))))] ;
-    [composed-function?
-     (conj f proc)]
-    [else (compose proc f)]))
+(define function-cons (flip conj))
 
 (define (function-flat-arguments f)
   (flat-arguments (function-applier f)))
