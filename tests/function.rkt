@@ -134,12 +134,12 @@
        (check-equal? (((curryr str-append-3 "there") " ") "hello") "hello there")
        (check-equal? ((curryr str-append-3 " " "there") "hello") "hello there")
        (check-equal? (length (arguments-positional (function-flat-arguments (((curryr str-append-3 "there") " "))))) 2 "invoking with incomplete args")
-       (check-equal? ((function-cons ->bytes (curry str-append-3 "hello" " ")) "there") #"hello there")
+       (check-equal? ((function-cons ->bytes (make-composed-function (curry str-append-3 "hello" " "))) "there") #"hello there")
        (check-exn exn:fail:contract:arity? (thunk ((curry str-append-3 "hello" "there") "blah" "blah")) "invoking with too many args")
        (check-exn exn:fail:contract:arity? (thunk ((curry str-append-3 "hello" "there" "blah") "blah")) "invoking with too many args")
        (check-exn exn:fail:contract:arity? (thunk ((curry str-append-3 "hello") "there" "blah" "blah")) "invoking with too many args")
        (check-exn exn:fail:contract:arity? (thunk ((curry str-append-3 "hello" "there" "blah" "blah"))))
-       (check-exn exn:fail:contract:arity? (thunk ((curry str-append-3 "hello" "there" "blah" "blah")))) "invoking with too many args")
+       (check-exn exn:fail:contract:arity? (thunk ((curry str-append-3 "hello" "there" "blah" "blah"))) "invoking with too many args"))
      (let ([compare (λ/f (x y #:key [key #f])
                          (= #:key key x y))])
        (check-exn exn:fail:contract? (thunk (compare 5 "5" #:key number->string))
@@ -235,7 +235,7 @@
      (check-exn exn:fail:contract? (thunk (((partial (app string-append _ "-" _)) "a") "b")) "partial application does not curry"))
    (test-case
        "elementary constructors"
-     (check-equal? ((function-cons add1 (f sub1)) 3) 3)
+     (check-equal? ((function-cons add1 (make-composed-function sub1)) 3) 3)
      (check-equal? ((function-cons add1 (function-null)) 3) 4)
      (check-equal? ((function-cons positive? (function-cons integer? (function-null #:compose-with (monoid f:conjoin (const #t))))) 5) #t))
    (test-case
