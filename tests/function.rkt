@@ -564,66 +564,7 @@
                    (match spec
                      [(list g0 g1 check-fn)
                       (check-fn g0 g1 (compose g0 g1))]))
-                 test-spec))
-     (let ([g (compose add1 +)])
-       ;; built-in procedures
-       (check-equal? (first g) add1)
-       (check-equal? (second g) +)
-       (check-equal? (base-composed-function-composer g) usual-composition)
-       (check-equal? (function-applier g) empty-left-curried-arguments "uses default"))
-     (let ([g (compose (make-atomic-function add1)
-                       (make-atomic-function + #:apply-with empty-right-curried-arguments))])
-       ;; atomic functions
-       (check-equal? (first g) add1)
-       (check-equal? (second g) +)
-       (check-equal? (base-composed-function-composer g) usual-composition)
-       (check-equal? (function-applier g) empty-left-curried-arguments "uses the default"))
-     (let ([g (compose (make-composed-function add1 sub1)
-                       (make-atomic-function + #:apply-with empty-right-curried-arguments))])
-       ;; composed and atomic
-       (check-equal? (first g) add1)
-       (check-equal? (second g) sub1)
-       (check-equal? (third g) +)
-       (check-equal? (base-composed-function-composer g) usual-composition)
-       (check-equal? (function-applier g) empty-left-curried-arguments))
-     (let ([g (compose (make-atomic-function +)
-                       (make-composed-function add1 sub1 #:apply-with empty-right-curried-arguments))])
-       ;; atomic and composed
-       (check-equal? (first g) +)
-       (check-equal? (second g) add1)
-       (check-equal? (third g) sub1)
-       (check-equal? (base-composed-function-composer g) usual-composition)
-       (check-equal? (function-applier g) empty-left-curried-arguments))
-     (let* ([g0 (make-atomic-function +)]
-            [g1 (make-composed-function add1
-                                        sub1
-                                        #:apply-with empty-right-curried-arguments
-                                        #:compose-with conjoin-composition)]
-            [g (compose g0 g1)])
-       ;; atomic and composed with some composer
-       (check-equal? (first g) +)
-       (check-equal? (second g) g1)
-       (check-equal? (base-composed-function-composer g) usual-composition)
-       (check-equal? (function-applier g) empty-left-curried-arguments))
-     (let ([g (compose (make-composed-function add1 sub1)
-                       (make-composed-function + #:apply-with empty-right-curried-arguments))])
-       ;; composed with consonant composition
-       (check-equal? (first g) add1)
-       (check-equal? (second g) sub1)
-       (check-equal? (third g) +)
-       (check-equal? (base-composed-function-composer g) usual-composition)
-       (check-equal? (function-applier g) empty-left-curried-arguments))
-     (let* ([g0 (make-composed-function add1 sub1
-                                        #:compose-with disjoin-composition)]
-            [g1 (make-composed-function +
-                                        #:compose-with conjoin-composition
-                                        #:apply-with empty-right-curried-arguments)]
-            [g (compose g0 g1)])
-       ;; composed with dissonant composition
-       (check-equal? (first g) g0)
-       (check-equal? (second g) g1)
-       (check-equal? (base-composed-function-composer g) usual-composition)
-       (check-equal? (function-applier g) empty-left-curried-arguments "uses default")))
+                 test-spec)))
    (test-case
        "conjoin"
      (check-true ((conjoin positive? integer?) 5))
