@@ -5,6 +5,7 @@
          racket/stream
          racket/bool
          racket/math
+         racket/match
          (except-in data/collection
                     foldl
                     foldl/steps
@@ -16,7 +17,98 @@
                   (conjoin f:conjoin))
          arguments
          relation
+         syntax/on
          "private/util.rkt")
+
+(define-predicate (~empty-application? applier)
+  (.. (equal? empty-arguments) flat-arguments))
+
+(define-predicate (singleton? seq)
+  ;; cheap check to see if a list is of length 1,
+  ;; instead of traversing to compute the length
+  (and (not empty?)
+       (.. empty? rest)))
+
+(define (~maybe-unwrap g)
+  ;; if the application is empty
+  ;; unwrap atomic function
+  ;; composed function if it's a singleton
+  ;; and power function if the exponent is 1
+  (switch (g)
+          [(and function?
+                (.. ~empty-application? function-applier))
+           (switch (g)
+                   [atomic-function? (call atomic-function-f)]
+                   [(and composed-function?
+                         (.. singleton?
+                             composed-function-components))
+                    (call (.. first composed-function-components))]
+                   [(and power-function? (.. (= 1) power-function-n))
+                    (call power-function-f)]
+                   [else g])]
+          [else g]))
+
+(define (check-naive-composition g0 g1 g)
+  (check-equal? (first g) g0)
+  (check-equal? (second g) g1)
+  (check-equal? (base-composed-function-composer g) usual-composition)
+  (check-equal? (function-applier g) empty-left-curried-arguments "uses the default"))
+
+(define (check-naive-unwrapped-composition g0 g1 g)
+  (check-equal? (first g)
+                (~maybe-unwrap g0))
+  (check-equal? (second g)
+                (~maybe-unwrap g1))
+  (check-equal? (base-composed-function-composer g) usual-composition)
+  (check-equal? (function-applier g) empty-left-curried-arguments "uses the default"))
+
+(define (check-partially-unwrapped-composition g0 g1 g)
+  ;; only unwraps the compatible part
+  (switch (g0)
+          [(and base-composed-function?
+                (with-key base-composed-function-composer
+                  (eq? (base-composed-function-composer g))))
+           (check-equal? (~function-members g0) (take (length g0) g))]
+          [else (check-equal? (first g) g0)])
+  (switch (g1)
+          [(and base-composed-function?
+                (with-key base-composed-function-composer
+                  (eq? (base-composed-function-composer g))))
+           (check-equal? (->list (reverse (~function-members g1))) (->list (take (length g1) (reverse g))))]
+          [else (check-equal? (second g) g1)])
+  (check-equal? (base-composed-function-composer g) usual-composition)
+  (check-equal? (function-applier g) empty-left-curried-arguments "uses the default"))
+
+(define-switch (~function-members g)
+  [atomic-function? (call (.. list atomic-function-f))]
+  [composed-function? (call composed-function-components)]
+  [else (call list)])
+
+(define-switch (~underlying-function v)
+  [power-function? (call power-function-f)]
+  [atomic-function? (call atomic-function-f)]
+  [(and composed-function?
+        (.. singleton?
+            composed-function-components))
+   (call (.. first composed-function-components))]
+  [else v])
+
+(define (check-unwrapped-composition g0 g1 g)
+  ;; note that power is not unwrapped
+  (check-equal? (composed-function-components g)
+                (append (~function-members g0)
+                        (~function-members g1)))
+  (check-equal? (base-composed-function-composer g) usual-composition)
+  (check-equal? (function-applier g) empty-left-curried-arguments "uses the default"))
+
+(define (check-power-composition g0 g1 g)
+  (check-true (power-function? g))
+  (check-equal? (~underlying-function g) (~underlying-function g0))
+  (check-equal? (power-function-n g)
+                (+ (if (power-function? g0) (power-function-n g0) 1)
+                   (if (power-function? g1) (power-function-n g1) 1)))
+  (check-equal? (base-composed-function-composer g) usual-composition)
+  (check-equal? (function-applier g) empty-left-curried-arguments "uses the default"))
 
 (define tests
   (test-suite
@@ -251,22 +343,228 @@
      (check-equal? ((compose add1 sub1) 3) 3)
      (check-equal? ((compose (f add1) (f sub1)) 3) 3)
      (check-equal? ((compose (f add1) (curry + 2)) 3) 6))
-   ;; (exists nonempty application?)
-   ;; -> compose naively
-   ;; (none function)
-   ;; -> compose naively
-   ;; (one function)
-   ;; -> unwrap and compose
-   ;; (none base-composed-function) [i.e. all atomic]
-   ;; -> unwrap both and compose
-   ;; (and (all base-composed-function?) composers are (eq? composer))
-   ;; -> if common-underlying-function compose as powers
-   ;; -> otherwise unwrap both and compose components
-   ;; one base-composed-function and one atomic
-   ;; -> if bcf composer is (eq? composer), then unwrap both and compose
-   ;; -> otherwise naive compose but unwrap the atomic
    (test-case
        "heterogeneous composition"
+     (test-case "non-empty application always composes naively"
+       (define test-spec
+         (list
+          (list add1
+                (make-atomic-function + #:apply-with (arguments 1))
+                check-naive-composition)
+          (list add1
+                (make-composed-function sub1 + #:apply-with (arguments 1))
+                check-naive-composition)
+          (list add1
+                (make-power-function add1 3 #:apply-with (arguments 1))
+                check-naive-composition)
+          (list (make-atomic-function
+                 + #:apply-with (pass empty-right-curried-arguments
+                                      (arguments 1)
+                                      'right))
+                (make-atomic-function +)
+                check-naive-unwrapped-composition)
+          (list (make-atomic-function +)
+                (make-atomic-function + #:apply-with (pass empty-right-curried-arguments
+                                                           (arguments 1)
+                                                           'right))
+                check-naive-unwrapped-composition)
+          (list (make-composed-function add1 +)
+                (make-atomic-function + #:apply-with (pass empty-right-curried-arguments
+                                                           (arguments 1)
+                                                           'right))
+                check-naive-composition)
+          (list (make-atomic-function +)
+                (make-composed-function add1 +
+                                        #:apply-with (pass empty-right-curried-arguments
+                                                           (arguments 1)
+                                                           'right))
+                check-naive-unwrapped-composition)
+          (list (make-composed-function add1 +)
+                (make-composed-function add1 +
+                                        #:apply-with (pass empty-right-curried-arguments
+                                                           (arguments 1)
+                                                           'right))
+                check-naive-composition)
+          (list (make-composed-function sub1 +
+                                        #:apply-with (pass empty-right-curried-arguments
+                                                           (arguments 1)
+                                                           'right))
+                (make-composed-function add1 +)
+                check-naive-composition)
+          (list (make-composed-function sub1 +
+                                        #:apply-with (pass empty-right-curried-arguments
+                                                           (arguments 1)
+                                                           'right))
+                (make-power-function add1 3)
+                check-naive-composition)
+          (list (make-power-function add1 3)
+                (make-composed-function add1
+                                        #:apply-with (pass empty-right-curried-arguments
+                                                           (arguments 1)
+                                                           'right))
+                check-naive-composition)
+          (list (make-power-function add1 3)
+                (make-power-function add1 2
+                                     #:apply-with (pass empty-right-curried-arguments
+                                                        (arguments 1)
+                                                        'right))
+                check-naive-composition)
+          (list (make-power-function add1 3)
+                (make-atomic-function add1
+                                      #:apply-with (pass empty-right-curried-arguments
+                                                         (arguments 1)
+                                                         'right))
+                check-naive-composition)
+          (list (make-power-function add1 3
+                                     #:apply-with (pass empty-right-curried-arguments
+                                                        (arguments 1)
+                                                        'right))
+                (make-atomic-function add1
+                                      #:apply-with (pass empty-right-curried-arguments
+                                                         (arguments 1)
+                                                         'right))
+                check-naive-composition)))
+
+       (for-each (λ (spec)
+                   (match spec
+                     [(list g0 g1 check-fn)
+                      (check-fn g0 g1 (compose g0 g1))]))
+                 test-spec))
+     (test-case "primitive procedures compose naively or as powers"
+       (define test-spec
+         (list
+          (list add1
+                sub1
+                check-naive-composition)
+          (list add1
+                +
+                check-naive-composition)
+          (list add1
+                add1
+                check-power-composition)))
+
+       (for-each (λ (spec)
+                   (match spec
+                     [(list g0 g1 check-fn)
+                      (check-fn g0 g1 (compose g0 g1))]))
+                 test-spec))
+     (test-case "rich type composed with primitive procedure"
+       (define test-spec
+         (list
+          (list add1
+                (make-atomic-function sub1)
+                check-naive-unwrapped-composition)
+          (list (make-atomic-function sub1)
+                add1
+                check-naive-unwrapped-composition)
+          (list add1
+                (make-composed-function sub1 add1)
+                check-unwrapped-composition)
+          (list (make-composed-function sub1 add1)
+                add1
+                check-unwrapped-composition)
+          (list add1
+                (make-power-function add1 2)
+                check-power-composition)
+          (list (make-power-function add1 2)
+                add1
+                check-power-composition)))
+
+       (for-each (λ (spec)
+                   (match spec
+                     [(list g0 g1 check-fn)
+                      (check-fn g0 g1 (compose g0 g1))]))
+                 test-spec))
+     (test-case "composing atomic functions"
+       (define test-spec
+         (list
+          (list (make-atomic-function add1)
+                (make-atomic-function sub1)
+                check-unwrapped-composition)
+          (list (make-atomic-function add1)
+                (make-atomic-function add1)
+                check-power-composition)
+          (list (make-atomic-function add1)
+                (make-composed-function sub1)
+                check-unwrapped-composition)
+          (list (make-atomic-function add1)
+                (make-composed-function add1)
+                check-power-composition)
+          (list (make-atomic-function add1)
+                (make-power-function sub1 2)
+                check-naive-unwrapped-composition)
+          (list (make-atomic-function add1)
+                (make-power-function add1 2)
+                check-power-composition)))
+
+       (for-each (λ (spec)
+                   (match spec
+                     [(list g0 g1 check-fn)
+                      (check-fn g0 g1 (compose g0 g1))]))
+                 test-spec))
+     (test-case "composing compatible compositions"
+       (define test-spec
+         (list
+          (list (make-composed-function add1)
+                (make-composed-function sub1)
+                check-unwrapped-composition)
+          (list (make-composed-function add1)
+                (make-composed-function add1)
+                check-power-composition)
+          (list (make-composed-function add1)
+                (make-power-function sub1 2)
+                check-unwrapped-composition)
+          (list (make-power-function sub1 2)
+                (make-composed-function add1)
+                check-unwrapped-composition)
+          (list (make-composed-function add1)
+                (make-power-function add1 2)
+                check-power-composition)
+          (list (make-power-function add1 2)
+                (make-composed-function add1)
+                check-power-composition)
+          (list (make-power-function add1 2)
+                (make-power-function add1 1)
+                check-power-composition)
+          (list (make-power-function sub1 2)
+                (make-power-function add1 1)
+                check-naive-unwrapped-composition)))
+
+       (for-each (λ (spec)
+                   (match spec
+                     [(list g0 g1 check-fn)
+                      (check-fn g0 g1 (compose g0 g1))]))
+                 test-spec))
+     (test-case "incompatible higher-level composition"
+       (define test-spec
+         (list
+          (list (make-composed-function add1 #:compose-with conjoin-composition)
+                (make-composed-function sub1)
+                check-partially-unwrapped-composition)
+          (list (make-composed-function add1 #:compose-with conjoin-composition)
+                (make-composed-function add1)
+                check-partially-unwrapped-composition)))
+
+       (for-each (λ (spec)
+                   (match spec
+                     [(list g0 g1 check-fn)
+                      (check-fn g0 g1 (compose g0 g1))]))
+                 test-spec))
+     (test-case "incompatible same-level composition"
+       (define test-spec
+         (list
+          (list (make-composed-function add1 #:compose-with conjoin-composition)
+                (make-composed-function sub1 #:compose-with disjoin-composition)
+                check-naive-composition)
+          (list (make-composed-function add1 #:compose-with conjoin-composition)
+                (make-composed-function add1 #:compose-with disjoin-composition)
+                check-naive-composition)))
+
+       (for-each (λ (spec)
+                   (match spec
+                     [(list g0 g1 check-fn)
+                      (check-fn g0 g1 (compose g0 g1))]))
+                 test-spec))
      (let ([g (compose add1 +)])
        ;; built-in procedures
        (check-equal? (first g) add1)
