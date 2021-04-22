@@ -2,12 +2,10 @@
 
 (require (except-in racket/contract/base
                     predicate/c)
-         racket/list
          arguments
          (only-in data/collection
                   conj)
-         contract/social
-         syntax/on)
+         contract/social)
 
 (require relation/function/types/procedure
          relation/function/types/base

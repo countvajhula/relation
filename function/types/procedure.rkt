@@ -14,6 +14,7 @@
 (provide gen:procedure
          procedure/c
          (contract-out
+          [procedure? (predicate/c)]
           [keywords (-> procedure?
                         (values (listof keyword?)
                                 (maybe/c (listof keyword?))))]

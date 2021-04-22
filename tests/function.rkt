@@ -93,7 +93,7 @@
    (call (.. first composed-function-components))]
   [else v])
 
-(define (check-unwrapped-composition g0 g1 g)
+(define (check-merged-composition g0 g1 g)
   ;; note that power is not unwrapped
   (check-equal? (composed-function-components g)
                 (append (~function-members g0)
@@ -459,10 +459,10 @@
                 check-naive-unwrapped-composition)
           (list add1
                 (make-composed-function sub1 add1)
-                check-unwrapped-composition)
+                check-merged-composition)
           (list (make-composed-function sub1 add1)
                 add1
-                check-unwrapped-composition)
+                check-merged-composition)
           (list add1
                 (make-power-function add1 2)
                 check-power-composition)
@@ -480,13 +480,13 @@
          (list
           (list (make-atomic-function add1)
                 (make-atomic-function sub1)
-                check-unwrapped-composition)
+                check-merged-composition)
           (list (make-atomic-function add1)
                 (make-atomic-function add1)
                 check-power-composition)
           (list (make-atomic-function add1)
                 (make-composed-function sub1)
-                check-unwrapped-composition)
+                check-merged-composition)
           (list (make-atomic-function add1)
                 (make-composed-function add1)
                 check-power-composition)
@@ -507,16 +507,16 @@
          (list
           (list (make-composed-function add1)
                 (make-composed-function sub1)
-                check-unwrapped-composition)
+                check-merged-composition)
           (list (make-composed-function add1)
                 (make-composed-function add1)
                 check-power-composition)
           (list (make-composed-function add1)
                 (make-power-function sub1 2)
-                check-unwrapped-composition)
+                check-merged-composition)
           (list (make-power-function sub1 2)
                 (make-composed-function add1)
-                check-unwrapped-composition)
+                check-merged-composition)
           (list (make-composed-function add1)
                 (make-power-function add1 2)
                 check-power-composition)
