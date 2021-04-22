@@ -61,20 +61,6 @@
                          f
                          (+ m n))))
 
-(define-switch (~underlying-function v)
-  [power-function? (call power-function-f)]
-  [atomic-function? (call atomic-function-f)]
-  [(and composed-function?
-        (.. singleton?
-            composed-function-components))
-   (call (.. first composed-function-components))]
-  [else v])
-
-(define-switch (common-underlying-function g h)
-  [(with-key ~underlying-function eq?)
-   (~underlying-function g)]
-  [else #f])
-
 (define (->power-function g composer applier)
   (switch (g)
           [power-function? g]
@@ -120,56 +106,56 @@
 (define-predicate (~empty-application? applier)
   (.. (equal? empty-arguments) flat-arguments))
 
+(define (~compatible-composition? g h composer)
+  (on (g h)
+      (or (all (and base-composed-function?
+                    (.. (all (eq? composer))
+                        (% base-composed-function-composer))))
+          (and (any base-composed-function?)
+               (any (not base-composed-function?))
+               (.. (eq? composer)
+                   base-composed-function-composer
+                   (curry find base-composed-function?)
+                   list))
+          (all atomic-function?)
+          (none function?))))
+
+(define (~compose-as-powers g h composer applier)
+  (compose-powers (->power-function g composer applier)
+                  (->power-function h composer applier)
+                  composer
+                  applier))
+
+(define (~compose-naively g h composer applier)
+  (make-composed-function #:compose-with composer
+                          #:apply-with applier
+                          (~maybe-unwrap g composer)
+                          (~maybe-unwrap h composer)))
+
+(define (~compose-by-merging g h composer applier)
+  (apply make-composed-function ; compose at same level
+         #:apply-with applier
+         #:compose-with composer
+         (append (~function-members g)
+                 (~function-members h))))
+
 (define (function-compose g h composer applier)
-  ;; this function will deal only in functions
+  ;; this function g and h are rich function types
   (switch (g h)
-          [(with-key (.. function-applier (curryr ->function applier))
-             (any (not ~empty-application?)))
-           (make-composed-function #:compose-with composer
-                                   #:apply-with applier
-                                   (~maybe-unwrap g composer)
-                                   (~maybe-unwrap h composer))]
-          [(all atomic-function?)
+          [(.. (any (not ~empty-application?))
+               (% function-applier))
+           (~compose-naively g h composer applier)]
+          [(and (.. equal? (% ~function-members))
+                (curryr ~compatible-composition? composer))
+           (~compose-as-powers g h composer applier)]
+          [(curryr ~compatible-composition? composer)
            (switch (g h)
-                   [common-underlying-function
-                    (compose-powers (->power-function <result> composer applier)
-                                    (->power-function <result> composer applier)
-                                    composer
-                                    applier)]
-                   [else (make-composed-function #:compose-with composer
-                                                 #:apply-with applier
-                                                 (~underlying-function g)
-                                                 (~underlying-function h))])]
-          [(or (all (and base-composed-function?
-                         (with-key base-composed-function-composer
-                           (all (eq? composer)))))
-               (and (any (not base-composed-function?))
-                    (.. (eq? composer)
-                        base-composed-function-composer
-                        (curry find base-composed-function?)
-                        list)))
-           (switch (g h)
-                   [(.. equal? (% ~function-members))
-                    (compose-powers (->power-function g composer applier)
-                                    (->power-function h composer applier)
-                                    composer
-                                    applier)]
                    [(any power-function?)
-                    (make-composed-function #:compose-with composer
-                                            #:apply-with applier
-                                            (~maybe-unwrap g composer)
-                                            (~maybe-unwrap h composer))]
-                   [else (apply make-composed-function ; compose at same level
-                                #:apply-with applier
-                                #:compose-with composer
-                                (append (~function-members g)
-                                        (~function-members h)))])]
+                    (~compose-naively g h composer applier)]
+                   [else (~compose-by-merging g h composer applier)])]
           [else
            ;; incompatible composition, so compose naively, but unwrap atomic
-           (make-composed-function #:compose-with composer
-                                   #:apply-with applier
-                                   (~maybe-unwrap g composer)
-                                   (~maybe-unwrap h composer))]))
+           (~compose-naively g h composer applier)]))
 
 (define (compose #:compose-with [composer usual-composition]
                  #:apply-with [applier empty-left-curried-arguments]
