@@ -140,22 +140,17 @@
                  (~function-members h))))
 
 (define (function-compose g h composer applier)
-  ;; this function g and h are rich function types
+  ;; this function assumes g and h are rich function types
   (switch (g h)
-          [(.. (any (not ~empty-application?))
-               (% function-applier))
+          [(or (.. (any (not ~empty-application?))
+                   (% function-applier))
+               (not (curryr ~compatible-composition? composer)))
            (~compose-naively g h composer applier)]
-          [(and (.. equal? (% ~function-members))
-                (curryr ~compatible-composition? composer))
+          [(.. equal? (% ~function-members))
            (~compose-as-powers g h composer applier)]
-          [(curryr ~compatible-composition? composer)
-           (switch (g h)
-                   [(any power-function?)
-                    (~compose-naively g h composer applier)]
-                   [else (~compose-by-merging g h composer applier)])]
-          [else
-           ;; incompatible composition, so compose naively, but unwrap atomic
-           (~compose-naively g h composer applier)]))
+          [(any power-function?)
+           (~compose-naively g h composer applier)]
+          [else (~compose-by-merging g h composer applier)]))
 
 (define (compose #:compose-with [composer usual-composition]
                  #:apply-with [applier empty-left-curried-arguments]
