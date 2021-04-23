@@ -3,6 +3,7 @@
 (require racket/contract/base
          racket/list
          racket/set
+         (only-in racket/function curry)
          arguments
          syntax/on)
 
@@ -53,10 +54,9 @@
                      ;; at this level has already signed off on it, but a nested
                      ;; application scheme is not yet fulfilled. We consult
                      ;; the application scheme on what to do here
-                     (λ (exn)
-                       (if (scheme-can-continue? applier exn)
-                           f
-                           (raise exn)))]
+                     (λ01 (exn)
+                          [(curry scheme-can-continue? applier) f]
+                          [else (call raise)])]
                     [exn:fail:contract:arity?
                      (λ (exn)
                        (if (> (length pos-args)
