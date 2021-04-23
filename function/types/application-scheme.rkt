@@ -169,10 +169,11 @@
                  (just (pop! arg-stack))))))
      (unless (stack-empty? arg-stack)
        ;; too many args provided
-       ;; TODO: better error reporting
-       (raise-arity-error 'pass
-                          n-expected-args
-                          (stack->list arg-stack)))
+       (apply raise-arity-error
+              'pass
+              n-expected-args
+              (append (filter-just filled-in-pos-template)
+                      (stack->list arg-stack))))
      (define filled-in-kw-template
        (for/hash ([k (hash-keys (template-arguments-kw this))])
          (let ([v (hash-ref (template-arguments-kw this) k)])

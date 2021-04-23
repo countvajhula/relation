@@ -304,6 +304,7 @@
      (check-equal? ((app + _ 2) 1) (+ 1 2))
      (check-equal? ((app + _ 2 _) 1 3) (+ 1 2 3))
      (check-exn exn:fail:contract? (thunk ((app +) 1)) "extra args")
+     (check-exn exn:fail:contract? (thunk ((app + _) 1 2)) "extra args")
      (check-exn exn:fail:contract? (thunk ((app + _))) "not enough args")
      (define string-append-3 (procedure-reduce-arity string-append 3))
      (check-equal? ((app string-append-3 _ "-" _) "a" "b") (string-append-3 "a" "-" "b"))
