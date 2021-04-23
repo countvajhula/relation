@@ -36,8 +36,6 @@
   (arity procedure)
   (procedure-apply procedure args)
   (pass-args procedure args chirality)
-  ;; TODO: can this and the application scheme's handle-failure be merged?
-  ;; this consideration could shed light on the interplay between the two
   (update-application procedure applier)
   #:defaults
   ([b:procedure?
