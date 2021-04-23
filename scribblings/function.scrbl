@@ -16,6 +16,7 @@
                                       (conjoin b:conjoin)
                                       (disjoin b:disjoin)
                                       (negate b:negate)
+                                      (procedure? b:procedure?)
                                       (sequence? b:sequence?))
                     (only-in racket/generator sequence->generator)
                     (prefix-in b: racket/function)
@@ -143,7 +144,7 @@ This module provides general-purpose utilities to support programming in the @hy
 
 @examples[
     #:eval eval-for-docs
-    (function-cons add1 (f ->number))
+    (function-cons add1 (f sqr ->number))
     ((function-cons add1 (function-null)) 3)
   ]
 }

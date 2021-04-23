@@ -164,7 +164,7 @@
                  (if (eq? other ID)
                      appendable
                      (if (function? other)
-                         (function-cons appendable other)
+                         (r:compose appendable other)
                          (b:compose appendable other))))
                (define (appendable-identity appendable)
                  values)]
