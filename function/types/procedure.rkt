@@ -26,21 +26,16 @@
           [pass-args (-> procedure?
                          arguments?
                          symbol?
-                         procedure?)]
-          [update-application (binary-function/c procedure?
-                                                 application-scheme?
-                                                 procedure?)]))
+                         procedure?)]))
 
 (define-generics procedure
   (keywords procedure)
   (arity procedure)
   (procedure-apply procedure args)
   (pass-args procedure args chirality)
-  (update-application procedure applier)
   #:defaults
   ([b:procedure?
     (define keywords procedure-keywords)
     (define arity procedure-arity)
     (define pass-args (arg 0))
-    (define procedure-apply apply/arguments)
-    (define update-application (arg 0))]))
+    (define procedure-apply apply/arguments)]))

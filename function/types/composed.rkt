@@ -83,10 +83,6 @@
            [composer (base-composed-function-composer self)])
        (-procedure-apply (apply composer components)
                          args)))
-   (define (update-application self applier)
-     (struct-copy composed-function self
-                  [applier #:parent function
-                           applier]))
    (define (pass-args self args chirality)
      (struct-copy composed-function self
                   [applier #:parent function

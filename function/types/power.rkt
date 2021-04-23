@@ -44,10 +44,6 @@
      (-arity (power-function-f self)))
    (define (procedure-apply self args)
      (-procedure-apply (power (power-function-f self) (power-function-n self)) args))
-   (define (update-application self applier)
-     (struct-copy power-function self
-                  [applier #:parent function
-                           applier]))
    (define (pass-args self args chirality)
      (struct-copy power-function self
                   [applier #:parent function

@@ -27,10 +27,6 @@
      (-arity (atomic-function-f self)))
    (define (procedure-apply self args)
      (apply/arguments (atomic-function-f self) args))
-   (define (update-application self applier)
-     (struct-copy atomic-function self
-                  [applier #:parent function
-                           applier]))
    (define (pass-args self args chirality)
      (struct-copy atomic-function self
                   [applier #:parent function
