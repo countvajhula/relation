@@ -54,17 +54,17 @@
                      ;; application scheme is not yet fulfilled. We consult
                      ;; the application scheme on what to do here
                      (λ (exn)
-                       (begin
-                         (handle-failure applier exn)
-                         f))]
+                       (if (scheme-can-continue? applier exn)
+                           f
+                           (raise exn)))]
                     [exn:fail:contract:arity?
                      (λ (exn)
                        (if (> (length pos-args)
                               (~min-arity f))
                            (raise exn)
-                           (begin
-                             (handle-failure applier exn)
-                             f)))]
+                           (if (scheme-can-continue? applier exn)
+                               f
+                               (raise exn))))]
                     [exn:fail:contract?
                      ;; presence of a keyword argument results in a premature
                      ;; contract failure that's not the arity error, even though
@@ -88,7 +88,7 @@
                                       (>= (length pos-args)
                                           (~min-arity f))))
                              (raise exn)
-                             (begin
-                               (handle-failure applier exn)
-                               f))))])
+                             (if (scheme-can-continue? applier exn)
+                                 f
+                                 (raise exn)))))])
       (procedure-apply f args))))

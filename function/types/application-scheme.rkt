@@ -38,9 +38,8 @@
                     application-scheme?)]
           [flat-arguments (function/c application-scheme?
                                       arguments?)]
-          [handle-failure (binary-function/c application-scheme?
-                                             exn?
-                                             application-scheme?)]
+          [scheme-can-continue? (binary-predicate/c application-scheme?
+                                                    exn?)]
           [chirality (function/c application-scheme?
                                  symbol?)]))
 
@@ -62,10 +61,13 @@
   ;; arguments for the invocation of the underlying function
   (flat-arguments application-scheme)
 
-  ;; handle-failure is expected to either
-  ;; 1. return a modified application scheme instance, OR
-  ;; 2. raise an exception
-  (handle-failure application-scheme exception)
+  ;; scheme-can-continue? is a predicate that should determine,
+  ;; in light of an exception that occurred during an attempted
+  ;; application, whether the scheme could continue accepting
+  ;; arguments or not. For instance, curried application may
+  ;; opt to continue when insufficient arguments were provided
+  ;; for the application to succeed.
+  (scheme-can-continue? application-scheme exception)
 
   ;; the direction in which fresh arguments will be parsed
   (chirality application-scheme)
@@ -77,8 +79,8 @@
                      (arguments-merge args this)))
                (define (flat-arguments this)
                  this)
-               (define (handle-failure this exception)
-                 (raise exception))
+               (define (scheme-can-continue? this exception)
+                 #f)
                (define (chirality this)
                  'left)]))
 
@@ -110,8 +112,8 @@
    (define (flat-arguments this)
      (make-arguments (curried-arguments-positional this)
                      (curried-arguments-kw this)))
-   (define (handle-failure this exception)
-     this)
+   (define (scheme-can-continue? this exception)
+     #t)
    (define chirality base-application-scheme-chirality)]
 
   #:methods gen:custom-write
@@ -208,8 +210,8 @@
      (make-arguments (filter-just (template-arguments-pos this))
                      (template-arguments-kw this)))
 
-   (define (handle-failure this exception)
-     (raise exception))
+   (define (scheme-can-continue? this exception)
+     #f)
 
    (define chirality base-application-scheme-chirality)]
 
