@@ -135,12 +135,12 @@ This module provides general-purpose utilities to support programming in the @hy
 
 @deftogether[(
   @defproc[(function-cons [v procedure?] [w base-composed-function?])
-           function?]
+           base-composed-function?]
   @defproc[(function-null [#:compose-with composer monoid? (monoid #, @racketlink[b:compose]{@racket[compose]} values)]
                           [#:apply-with applier application-scheme? empty-left-curried-arguments])
-           function?]
+           composed-function?]
   )]{
- Constructors for the @racket[function] type analogous to @racket[cons] and @racket[null] for lists. @racket[function-null] also serves as the identity value for composition.
+ Constructors for the @racket[base-composed-function] type analogous to @racket[cons] and @racket[null] for lists. @racket[function-null] also serves as the identity value for composition.
 
 @examples[
     #:eval eval-for-docs

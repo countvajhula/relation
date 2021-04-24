@@ -46,7 +46,7 @@
           [function-null (->* ()
                               (#:compose-with monoid?
                                #:apply-with application-scheme?)
-                              function?)]))
+                              composed-function?)]))
 
 (define (compose-powers g h composer applier)
   ;; either or both could be function powers. in that case, the powers

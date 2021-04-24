@@ -21,6 +21,7 @@
          recoverable-apply-error?
          (contract-out
           [application-scheme? (predicate/c)]
+          [struct base-application-scheme ((chirality symbol?))]
           [struct curried-arguments
             ((chirality symbol?)
              (left list?)
