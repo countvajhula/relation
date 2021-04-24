@@ -24,7 +24,7 @@
                        relation/function/types/application-scheme
                        relation/function/types/util)
          (contract-out
-          [function-cons (binary-constructor/c procedure? composed-function?)]
+          [function-cons (binary-constructor/c procedure? base-composed-function?)]
           [function-flat-arguments (function/c function? arguments?)]))
 
 (define function-cons (flip conj))
