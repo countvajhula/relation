@@ -415,6 +415,22 @@ This module provides general-purpose utilities to support programming in the @hy
   ]
 }
 
+@defproc[(call [g procedure?]
+               [v any/c]
+               ...)
+         procedure?]{
+
+ Reprovided from @racketlink[m:call]{@racket[call]}. This simply makes standard function invocation available as a function, for use in cases where we cannot directly (i.e. syntactically) invoke the function.
+ This function is in some respects similar to the @hyperlink["https://typeclasses.com/featured/dollar"]{@racket[$] operator} in Haskell.
+
+@examples[
+    #:eval eval-for-docs
+    (call + 1 2 3 4)
+    (call = #:key string-upcase "Apple" "APPLE")
+    (map call (list add1 sqr) (list 2 3))
+  ]
+}
+
 @deftogether[(
 @defproc[(pack [g procedure?]
                [v any/c]
@@ -422,7 +438,7 @@ This module provides general-purpose utilities to support programming in the @hy
          any/c]
 @defproc[(pack-map [g procedure?]
                    [v any/c]
-               ...)
+                   ...)
          list?]
 )]{
 
@@ -439,19 +455,23 @@ While @racket[apply] allows a function operating on provided arguments to operat
   ]
 }
 
-@defproc[(call [g procedure?]
-               [v any/c]
-               ...)
-         procedure?]{
+@deftogether[(
+@defproc[(map-values [g procedure?]
+                     [v any/c]
+                     ...)
+         any]
+@defproc[(filter-values [g procedure?]
+                        [v any/c]
+                        ...)
+         any]
+)]{
 
- Reprovided from @racketlink[m:call]{@racket[call]}. This simply makes standard function invocation available as a function, for use in cases where we cannot directly (i.e. syntactically) invoke the function.
- This function is in some respects similar to the @hyperlink["https://typeclasses.com/featured/dollar"]{@racket[$] operator} in Haskell.
+ Similar to @racket[map] and @racket[filter] but these accept and return multiple @racket[values] instead of lists.
 
 @examples[
     #:eval eval-for-docs
-    (call + 1 2 3 4)
-    (call = #:key string-upcase "Apple" "APPLE")
-    (map call (list add1 sqr) (list 2 3))
+	(map-values add1 3 5)
+	(filter-values positive? 1 -2 3)
   ]
 }
 

@@ -31,6 +31,8 @@
           [lift functional/c]
           [pack (binary-variadic-function/c procedure? any/c any/c)]
           [pack-map (binary-variadic-function/c procedure? any/c sequence?)]
+          [map-values (-> procedure? any/c ... any)]
+          [filter-values (-> procedure? any/c ... any)]
           [uncurry (functional/c)]
           [curry (unconstrained-domain-> function?)]
           [curryr (unconstrained-domain-> function?)]
@@ -65,6 +67,12 @@
 
 (define (pack-map f . args)
   (map f args))
+
+(define (map-values f . args)
+  (apply values (map f args)))
+
+(define (filter-values f . args)
+  (apply values (filter f args)))
 
 (define (uncurry g)
   (f (λ args

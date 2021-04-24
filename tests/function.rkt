@@ -201,6 +201,14 @@
      (check-equal? (pack-map ->string 1) (list "1"))
      (check-equal? (pack-map ->string) (list)))
    (test-case
+       "map-values"
+     (let-values ([(a b c) (map-values add1 1 2 3)])
+       (check-equal? (list a b c) (list 2 3 4))))
+   (test-case
+       "filter-values"
+     (let-values ([(a b) (filter-values positive? 1 -2 3)])
+       (check-equal? (list a b) (list 1 3))))
+   (test-case
        "unwrap"
      (check-equal? (unwrap (list 5)) 5)
      (let-values ([(a b) (unwrap (list 2 3))])
