@@ -29,8 +29,8 @@
           [flip$ functional/c]
           [flip* functional/c]
           [lift functional/c]
-          [pack (binary-variadic-function/c procedure? any/c sequence?)]
-          [give (binary-variadic-function/c procedure? any/c any/c)]
+          [pack (binary-variadic-function/c procedure? any/c any/c)]
+          [pack-map (binary-variadic-function/c procedure? any/c sequence?)]
           [uncurry (functional/c)]
           [curry (unconstrained-domain-> function?)]
           [curryr (unconstrained-domain-> function?)]
@@ -61,10 +61,10 @@
   (curry f:map f))
 
 (define (pack f . args)
-  (map f args))
-
-(define (give f . args)
   (f args))
+
+(define (pack-map f . args)
+  (map f args))
 
 (define (uncurry g)
   (f (λ args

@@ -193,13 +193,13 @@
      (check-equal? ((lift add1) (just 3)) (just 4)))
    (test-case
        "pack"
-     (check-equal? (pack add1 1 2 3) (list 2 3 4))
-     (check-equal? (pack ->string 1) (list "1"))
-     (check-equal? (pack ->string) (list)))
+     (check-equal? (pack (curry apply +) 1 2 3) 6)
+     (check-equal? (pack length "hello" 23 'banana) 3))
    (test-case
-       "give"
-     (check-equal? (give (curry apply +) 1 2 3) 6)
-     (check-equal? (give length "hello" 23 'banana) 3))
+       "pack-map"
+     (check-equal? (pack-map add1 1 2 3) (list 2 3 4))
+     (check-equal? (pack-map ->string 1) (list "1"))
+     (check-equal? (pack-map ->string) (list)))
    (test-case
        "unwrap"
      (check-equal? (unwrap (list 5)) 5)
