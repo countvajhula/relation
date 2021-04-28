@@ -115,7 +115,7 @@
                (any (not base-composed-function?))
                (.. (eq? composer)
                    base-composed-function-composer
-                   (curry find base-composed-function?)
+                   (find base-composed-function? _)
                    list))
           (all atomic-function?)
           (none function?))))
@@ -144,13 +144,13 @@
   (switch (g h)
           [(or (.. (any (not ~empty-application?))
                    (% function-applier))
-               (not (curryr ~compatible-composition? composer)))
-           (~compose-naively g h composer applier)]
+               (not (~compatible-composition? composer)))
+           (call (~compose-naively composer applier))]
           [(.. equal? (% ~function-members))
-           (~compose-as-powers g h composer applier)]
+           (call (~compose-as-powers composer applier))]
           [(any power-function?)
-           (~compose-naively g h composer applier)]
-          [else (~compose-by-merging g h composer applier)]))
+           (call (~compose-naively composer applier))]
+          [else (call (~compose-by-merging composer applier))]))
 
 (define (compose #:compose-with [composer usual-composition]
                  #:apply-with [applier empty-left-curried-arguments]
@@ -190,7 +190,8 @@
           [else (call
                  (apply compose
                         #:compose-with composer
-                        #:apply-with applier))]))
+                        #:apply-with applier
+                        _))]))
 
 (define f make-function)
 

@@ -34,7 +34,7 @@
 (define-switch (~min-arity-value arity)
   [number? arity]
   [arity-at-least? (call arity-at-least-value)]
-  [list? (call (.. (apply min) (map ~min-arity-value)))]
+  [list? (call (.. (apply min _) (map ~min-arity-value _)))]
   [else (raise-argument-error 'min-arity
                               "normalized-arity?"
                               arity)])
@@ -55,7 +55,7 @@
                      ;; application scheme is not yet fulfilled. We consult
                      ;; the application scheme on what to do here
                      (λ01 (exn)
-                          [(curry scheme-can-continue? applier) f]
+                          [(scheme-can-continue? applier _) f]
                           [else (call raise)])]
                     [exn:fail:contract:arity?
                      (λ (exn)
