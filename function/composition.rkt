@@ -87,20 +87,20 @@
   (switch (g)
           [(and function?
                 (.. ~empty-application? function-applier))
-           (switch (g)
-                   [atomic-function? (call atomic-function-f)]
-                   [(and composed-function?
-                         (.. singleton?
-                             composed-function-components)
-                         (.. (eq? composer)
-                             base-composed-function-composer))
-                    (call (.. first composed-function-components))]
-                   [(and power-function?
-                         (.. (= 1) power-function-n)
-                         (.. (eq? composer)
-                             base-composed-function-composer))
-                    (call power-function-f)]
-                   [else g])]
+           (connect
+            [atomic-function? (call atomic-function-f)]
+            [(and composed-function?
+                  (.. singleton?
+                      composed-function-components)
+                  (.. (eq? composer)
+                      base-composed-function-composer))
+             (call (.. first composed-function-components))]
+            [(and power-function?
+                  (.. (= 1) power-function-n)
+                  (.. (eq? composer)
+                      base-composed-function-composer))
+             (call power-function-f)]
+            [else g])]
           [else g]))
 
 (define-predicate (~empty-application? applier)
@@ -110,13 +110,13 @@
   (on (g h)
       (or (all (and base-composed-function?
                     (.. (all (eq? composer))
-                        (% base-composed-function-composer))))
+                        (>< base-composed-function-composer))))
           (and (any base-composed-function?)
                (any (not base-composed-function?))
-               (.. (eq? composer)
-                   base-composed-function-composer
-                   (find base-composed-function? _)
-                   list))
+               (~>> list
+                    (find base-composed-function?)
+                    base-composed-function-composer
+                    (eq? composer)))
           (all atomic-function?)
           (none function?))))
 
@@ -143,10 +143,10 @@
   ;; this function assumes g and h are rich function types
   (switch (g h)
           [(or (.. (any (not ~empty-application?))
-                   (% function-applier))
+                   (>< function-applier))
                (not (~compatible-composition? composer)))
            (call (~compose-naively composer applier))]
-          [(.. equal? (% ~function-members))
+          [(.. equal? (>< ~function-members))
            (call (~compose-as-powers composer applier))]
           [(any power-function?)
            (call (~compose-naively composer applier))]

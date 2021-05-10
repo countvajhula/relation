@@ -37,15 +37,15 @@
   (switch (g)
           [(and function?
                 (.. ~empty-application? function-applier))
-           (switch (g)
-                   [atomic-function? (call atomic-function-f)]
-                   [(and composed-function?
-                         (.. singleton?
-                             composed-function-components))
-                    (call (.. first composed-function-components))]
-                   [(and power-function? (.. (= 1) power-function-n))
-                    (call power-function-f)]
-                   [else g])]
+           (connect
+            [atomic-function? (call atomic-function-f)]
+            [(and composed-function?
+                  (.. singleton?
+                      composed-function-components))
+             (call (.. first composed-function-components))]
+            [(and power-function? (.. (= 1) power-function-n))
+             (call power-function-f)]
+            [else g])]
           [else g]))
 
 (define (check-naive-composition g0 g1 g)

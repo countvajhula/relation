@@ -34,7 +34,7 @@
 (define-switch (~min-arity-value arity)
   [number? arity]
   [arity-at-least? (call arity-at-least-value)]
-  [list? (call (.. (apply min _) (map ~min-arity-value _)))]
+  [list? (call (~>> (map ~min-arity-value) (apply min)))]
   [else (raise-argument-error 'min-arity
                               "normalized-arity?"
                               arity)])
