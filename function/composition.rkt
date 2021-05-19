@@ -10,7 +10,7 @@
                   (compose b:compose))
          arguments
          contract/social
-         syntax/on)
+         ionic)
 
 (require "types.rkt"
          "../private/util.rkt")

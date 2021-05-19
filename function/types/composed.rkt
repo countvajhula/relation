@@ -21,7 +21,7 @@
                   reverse
                   repeat)
          arguments
-         syntax/on)
+         ionic)
 
 (require "procedure.rkt"
          "application-scheme.rkt"

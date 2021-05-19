@@ -6,7 +6,7 @@
          racket/match
          (only-in data/collection
                   gen:collection)
-         syntax/on)
+         ionic)
 
 (require "procedure.rkt"
          "application-scheme.rkt"

@@ -17,7 +17,7 @@
                   (conjoin f:conjoin))
          arguments
          relation
-         syntax/on
+         ionic
          "private/util.rkt")
 
 (define-predicate (~empty-application? applier)

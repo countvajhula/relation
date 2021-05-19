@@ -5,7 +5,7 @@
          racket/set
          (only-in racket/function curry)
          arguments
-         syntax/on)
+         ionic)
 
 (require relation/logic
          (only-in relation/equivalence
