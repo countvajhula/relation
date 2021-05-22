@@ -15,6 +15,7 @@ help:
 	@echo "test-with-errortrace - Run tests with error tracing"
 	@echo "errortrace - Alias for test-with-errortrace"
 	@echo "cover - Run test coverage checker and view report"
+	@echo "cover-coveralls - Run test coverage and upload to Coveralls"
 	@echo "coverage-check - Run test coverage checker"
 	@echo "coverage-report - View test coverage report"
 	@echo "docs - View docs in a browser"
@@ -132,6 +133,9 @@ coverage-report:
 
 cover: coverage-check coverage-report
 
+cover-coveralls:
+	raco cover -b -n dev -n algebraic.rkt -n transform.rkt -f coveralls -p $(PACKAGE-NAME)
+
 docs:
 	raco docs $(PACKAGE-NAME)
 
@@ -167,4 +171,4 @@ profile-composition:
 
 profile: profile-logic profile-equivalence profile-order profile-function profile-type profile-composition
 
-.PHONY:	help install remove build build-docs build-all check-deps clean test test-logic test-equivalence test-order test-function test-type test-composition errortrace-logic errortrace-equivalence errortrace-order errortrace-function errortrace-type errortrace-composition test-with-errortrace errortrace docs profile-logic profile-equivalence profile-order profile-function profile-type profile-composition profile cover coverage-check coverage-report
+.PHONY:	help install remove build build-docs build-all check-deps clean test test-logic test-equivalence test-order test-function test-type test-composition errortrace-logic errortrace-equivalence errortrace-order errortrace-function errortrace-type errortrace-composition test-with-errortrace errortrace docs profile-logic profile-equivalence profile-order profile-function profile-type profile-composition profile cover coverage-check coverage-report cover-coveralls
