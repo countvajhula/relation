@@ -53,8 +53,8 @@
           [else (atomic-function applier g)]))
 
 (define-switch (~function-members g)
-  [atomic-function? (call (.. list atomic-function-f))]
-  [power-function? (call (.. list power-function-f))]
+  [atomic-function? (call (~> atomic-function-f list))]
+  [power-function? (call (~> power-function-f list))]
   [composed-function? (call composed-function-components)]
   [else (call list)])
 
@@ -65,31 +65,31 @@
   ;; and power function if the exponent is 1
   (switch (g)
           [(and function?
-                (.. ~empty-application? function-applier))
+                (~> function-applier ~empty-application?))
            (connect
             [atomic-function? (call atomic-function-f)]
             [(and composed-function?
-                  (.. singleton?
-                      composed-function-components)
-                  (.. (eq? composer)
-                      base-composed-function-composer))
-             (call (.. first composed-function-components))]
+                  (~> composed-function-components
+                      singleton?)
+                  (~> base-composed-function-composer
+                      (eq? composer)))
+             (call (~> composed-function-components first))]
             [(and power-function?
-                  (.. (= 1) power-function-n)
-                  (.. (eq? composer)
-                      base-composed-function-composer))
+                  (~> power-function-n (= 1))
+                  (~> base-composed-function-composer
+                      (eq? composer)))
              (call power-function-f)]
             [else g])]
           [else g]))
 
 (define-predicate (~empty-application? applier)
-  (.. (equal? empty-arguments) flat-arguments))
+  (~> flat-arguments (equal? empty-arguments)))
 
 (define (~compatible-composition? g h composer)
   (on (g h)
       (or (all (and base-composed-function?
-                    (.. (all (eq? composer))
-                        (>< base-composed-function-composer))))
+                    (~> (>< base-composed-function-composer)
+                        (all (eq? composer)))))
           (and (any base-composed-function?)
                (any (not base-composed-function?))
                (~>> list
@@ -136,7 +136,7 @@
   (switch (gs)
           [empty? (function-null #:compose-with composer
                                  #:apply-with applier)]
-          [(.. empty? rest) (call first)]
+          [(~> rest empty?) (call first)]
           [else
            (let ([gs (reverse (map (curryr ->function applier) gs))])
              (foldl (curryr function-compose composer applier)
