@@ -21,10 +21,13 @@
          contract/social)
 
 (require "types.rkt"
-         "composition.rkt")
+         "composition.rkt"
+         "intf.rkt")
 
 (provide call
          (contract-out
+          [negate (function/c procedure? function?)]
+          [!! (function/c procedure? function?)]
           [unthunk (binary-variadic-function/c procedure? any/c procedure?)]
           [flip$ functional/c]
           [flip* functional/c]
@@ -46,6 +49,11 @@
   (make-keyword-procedure
    (lambda (ks vs f . xs)
      (keyword-apply f ks vs xs))))
+
+(define (negate g)
+  (f not g))
+
+(define !! negate)
 
 (define (unthunk f . args)
   (f:thunk*

@@ -16,33 +16,12 @@
          "../private/util.rkt")
 
 (provide (contract-out
-          [compose (variadic-function/c procedure? function?)]
-          [conjoin (variadic-function/c procedure? function?)]
-          [&& (variadic-function/c procedure? function?)]
-          [disjoin (variadic-function/c procedure? function?)]
-          [|| (variadic-function/c procedure? function?)]
-          [negate (function/c procedure? function?)]
-          [!! (function/c procedure? function?)]
-          [make-function (->* ()
-                              (#:compose-with monoid?
-                               #:apply-with application-scheme?)
-                              #:rest (listof procedure?)
-                              function?)]
-          [f (->* ()
-                  (#:compose-with monoid?
-                   #:apply-with application-scheme?)
-                  #:rest (listof procedure?)
-                  function?)]
-          [make-threading-function (->* ()
-                                        (#:compose-with monoid?
-                                         #:apply-with application-scheme?)
-                                        #:rest (listof procedure?)
-                                        function?)]
-          [f> (->* ()
-                   (#:compose-with monoid?
-                    #:apply-with application-scheme?)
-                   #:rest (listof procedure?)
-                   function?)]
+          [compose-functions (-> monoid? application-scheme? procedure? ... procedure?)]
+          [compose (variadic-function/c procedure? procedure?)]
+          [conjoin (variadic-function/c procedure? procedure?)]
+          [&& (variadic-function/c procedure? procedure?)]
+          [disjoin (variadic-function/c procedure? procedure?)]
+          [|| (variadic-function/c procedure? procedure?)]
           [function-null (->* ()
                               (#:compose-with monoid?
                                #:apply-with application-scheme?)
@@ -142,19 +121,18 @@
 (define (function-compose g h composer applier)
   ;; this function assumes g and h are rich function types
   (switch (g h)
-          [(or (.. (any (not ~empty-application?))
-                   (>< function-applier))
+          [(or (~> (>< function-applier)
+                   (any (not ~empty-application?)))
                (not (~compatible-composition? composer)))
            (call (~compose-naively composer applier))]
-          [(.. equal? (>< ~function-members))
+          [(~> (>< ~function-members) equal?)
            (call (~compose-as-powers composer applier))]
           [(any power-function?)
            (call (~compose-naively composer applier))]
           [else (call (~compose-by-merging composer applier))]))
 
-(define (compose #:compose-with [composer usual-composition]
-                 #:apply-with [applier empty-left-curried-arguments]
-                 . gs)
+;; TODO: avoid passing around the applier in these interfaces?
+(define (compose-functions composer applier . gs)
   (switch (gs)
           [empty? (function-null #:compose-with composer
                                  #:apply-with applier)]
@@ -165,45 +143,26 @@
                     (first gs)
                     (rest gs)))]))
 
+(define (compose . fs)
+  (apply compose-functions
+         usual-composition
+         empty-left-curried-arguments ; maybe use that of leading function
+         fs))
+
 (define (conjoin . fs)
-  (apply make-composed-function
-         #:compose-with conjoin-composition
+  (apply compose-functions
+         conjoin-composition
+         empty-left-curried-arguments ; maybe use that of leading function
          fs))
 
 (define (disjoin . fs)
-  (apply make-composed-function
-         #:compose-with disjoin-composition
+  (apply compose-functions
+         disjoin-composition
+         empty-left-curried-arguments ; maybe use that of leading function
          fs))
-
-(define (negate g)
-  (f not g))
 
 (define && conjoin)
 (define || disjoin)
-(define !! negate)
-
-(define (make-function #:compose-with [composer usual-composition]
-                       #:apply-with [applier empty-left-curried-arguments]
-                       . fs)
-  (switch (fs)
-          [singleton? (atomic-function applier (unwrap fs))]
-          [else (call
-                 (apply compose
-                        #:compose-with composer
-                        #:apply-with applier
-                        _))]))
-
-(define f make-function)
-
-(define (make-threading-function #:compose-with [composer usual-composition]
-                                 #:apply-with [applier empty-left-curried-arguments]
-                                 . fs)
-  (apply f
-         #:compose-with composer
-         #:apply-with applier
-         (reverse fs)))
-
-(define f> make-threading-function)
 
 (define (function-null #:compose-with [composer usual-composition]
                        #:apply-with [applier empty-left-curried-arguments])

@@ -10,6 +10,7 @@
 
 (require relation/function/types
          relation/function/composition
+         relation/function/intf
          "util.rkt")
 
 (provide lambda/function
