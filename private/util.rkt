@@ -60,7 +60,7 @@
   ;; cheap check to see if a list is of length 1,
   ;; instead of traversing to compute the length
   (and (not empty?)
-       (.. empty? rest)))
+       (~> rest empty?)))
 
 (define (arguments-cons v args)
   (make-arguments (cons v (arguments-positional args))

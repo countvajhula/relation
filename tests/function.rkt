@@ -21,13 +21,13 @@
          "private/util.rkt")
 
 (define-predicate (~empty-application? applier)
-  (.. (equal? empty-arguments) flat-arguments))
+  (~> flat-arguments (equal? empty-arguments)))
 
 (define-predicate (singleton? seq)
   ;; cheap check to see if a list is of length 1,
   ;; instead of traversing to compute the length
   (and (not empty?)
-       (.. empty? rest)))
+       (~> rest empty?)))
 
 (define (~maybe-unwrap g)
   ;; if the application is empty
@@ -36,14 +36,14 @@
   ;; and power function if the exponent is 1
   (switch (g)
           [(and function?
-                (.. ~empty-application? function-applier))
+                (~> function-applier ~empty-application?))
            (connect
             [atomic-function? (call atomic-function-f)]
             [(and composed-function?
-                  (.. singleton?
-                      composed-function-components))
-             (call (.. first composed-function-components))]
-            [(and power-function? (.. (= 1) power-function-n))
+                  (~> composed-function-components
+                      singleton?))
+             (call (~> composed-function-components first))]
+            [(and power-function? (~> power-function-n (= 1)))
              (call power-function-f)]
             [else g])]
           [else g]))
