@@ -11,7 +11,8 @@
          (prefix-in b: racket/base)
          contract/social
          (except-in data/maybe maybe/c)
-         typed-stack)
+         typed-stack
+         ionic)
 
 (require "../../private/util.rkt")
 
@@ -20,6 +21,7 @@
          recoverable-apply-error
          recoverable-apply-error?
          (contract-out
+          [empty-application? (predicate/c)]
           [application-scheme? (predicate/c)]
           [struct base-application-scheme ((chirality symbol?))]
           [struct curried-arguments
@@ -84,6 +86,9 @@
                  #f)
                (define (chirality this)
                  'left)]))
+
+(define-predicate (empty-application? applier)
+  (~> flat-arguments (equal? empty-arguments)))
 
 (struct base-application-scheme (chirality)
   #:transparent)

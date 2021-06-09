@@ -65,7 +65,7 @@
   ;; and power function if the exponent is 1
   (switch (g)
           [(and function?
-                (~> function-applier ~empty-application?))
+                (~> function-applier empty-application?))
            (connect
             [atomic-function? (call atomic-function-f)]
             [(and composed-function?
@@ -81,9 +81,6 @@
              (call power-function-f)]
             [else g])]
           [else g]))
-
-(define-predicate (~empty-application? applier)
-  (~> flat-arguments (equal? empty-arguments)))
 
 (define (~compatible-composition? g h composer)
   (on (g h)
@@ -122,7 +119,7 @@
   ;; this function assumes g and h are rich function types
   (switch (g h)
           [(or (~> (>< function-applier)
-                   (any (not ~empty-application?)))
+                   (any (not empty-application?)))
                (not (~compatible-composition? composer)))
            (call (~compose-naively composer applier))]
           [(~> (>< ~function-members) equal?)

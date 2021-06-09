@@ -20,9 +20,6 @@
          ionic
          "private/util.rkt")
 
-(define-predicate (~empty-application? applier)
-  (~> flat-arguments (equal? empty-arguments)))
-
 (define-predicate (singleton? seq)
   ;; cheap check to see if a list is of length 1,
   ;; instead of traversing to compute the length
@@ -36,7 +33,7 @@
   ;; and power function if the exponent is 1
   (switch (g)
           [(and function?
-                (~> function-applier ~empty-application?))
+                (~> function-applier empty-application?))
            (connect
             [atomic-function? (call atomic-function-f)]
             [(and composed-function?
