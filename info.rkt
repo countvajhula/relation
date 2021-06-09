@@ -29,7 +29,6 @@
                      "at-exp-lib"))
 (define scribblings '(("scribblings/relation.scrbl" (multi-page))))
 (define compile-omit-paths '("dev" "tests" "coverage"))
-(define test-omit-paths '("private"))
 (define test-include-paths '("tests"))
 (define clean '("compiled" "doc" "doc/relation" "tests/compiled"))
 (define pkg-desc "Generic interfaces and convenient utilities for relations")
