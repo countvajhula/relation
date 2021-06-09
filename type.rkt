@@ -24,7 +24,7 @@
                   for-each
                   collection?
                   conj
-                  conj*)
+                  extend)
          contract/social
          (only-in relation/composition
                   ID
@@ -74,7 +74,7 @@
     [(form element)
      (conj form element)]
     [(form . elements)
-     (apply conj* form elements)]))
+     (extend form elements)]))
 
 (define (: . args)
   (match args
