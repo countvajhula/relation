@@ -46,7 +46,7 @@ See also: @other-doc['(lib "sugar/scribblings/sugar.scrbl")].
           any/c]
   )]{
 
- @racket[make] is a generic constructor that creates a value of the same type as @racket[form] out of the provided @racket[elements] and @racket[form] itself. This utility relies upon the @racket[gen:collection] interface for the means to create an instance of the desired type. @seclink["define-struct" #:doc '(lib "scribblings/guide/guide.scrbl")]{Custom types} must therefore specify an implementation of @racket[gen:collection] in order to support construction via @racket[make].
+ @racket[make] is a generic constructor that creates a value of the same type as @racket[form] out of the provided @racket[elements] and @racket[form] itself. This utility relies upon the @racket[gen:collection] interface for the means to create an instance of the desired type. @seclink["define-struct" #:doc '(lib "scribblings/guide/guide.scrbl")]{Custom types} must therefore implement @racket[gen:collection] in order to support construction via @racket[make].
 
  @racket[:] is a convenience wrapper around @racket[make] with a more familiar interface, mirroring the @racket[cons] list constructor in terms of argument order and the constructed result, and handling additional common cases outside the purview of @racket[make]. In particular, if @racket[form] is not a @tech[#:doc '(lib "scribblings/data/collection/collections.scrbl")]{generic collection}, then the @racket[elements] are simply @racket[cons]'d together (if there are two of them) or collected into a @racket[list] (if there are more).
 
