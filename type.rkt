@@ -195,6 +195,9 @@
         [(list? v) (~> v
                        list->vector
                        ->vector)]
+        [(sequence? v) (~> v
+                           ->list
+                           ->vector)]
         [(struct? v) (~> v
                          struct->vector
                          (vector-drop 1)

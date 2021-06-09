@@ -8,9 +8,15 @@
          racket/math
          racket/stream
          racket/sequence
+         racket/generic
          (only-in racket/function
                   identity
                   thunk)
+         (only-in data/collection
+                  gen:sequence
+                  empty?
+                  first
+                  rest)
          "private/util.rkt")
 
 (define tests
@@ -112,6 +118,20 @@
                               (struct amount (dollars cents) #:transparent)
                               (amount 5 95))))
                  #(5 95))
+   (check-equal? (->vector ((λ ()
+                              (struct test-seq (seq) #:transparent
+                                #:methods gen:sequence
+                                [(define/generic -empty? empty?)
+                                 (define/generic -first first)
+                                 (define/generic -rest rest)
+                                 (define (empty? this)
+                                   (-empty? (test-seq-seq this)))
+                                 (define (first this)
+                                   (-first (test-seq-seq this)))
+                                 (define (rest this)
+                                   (-rest (test-seq-seq this)))])
+                              (test-seq (list 1 2 3)))))
+                 #(1 2 3))
    (check-equal? (->vector "abc") #(#\a #\b #\c))
    (check-equal? (->vector ID) #())
    (check-exn exn:fail?
