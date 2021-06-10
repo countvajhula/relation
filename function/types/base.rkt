@@ -17,6 +17,16 @@
 (provide (contract-out
           [struct function ((applier application-scheme?))]))
 
+;; when a rich function is called,
+;; -> pass-args -> procedure-apply
+;; we want to make it so that this instead
+;; relies exclusively on calling into an application scheme
+;; method, e.g. "apply-function", for which the base function
+;; type provides a default implementation
+;; is the application scheme a rich function? seems like it
+;; shouldn't be -- it should be a wrapping type in general
+;; although the base rich type reifies the base case for
+;; the application scheme definition
 (struct function (applier)
   #:transparent
 

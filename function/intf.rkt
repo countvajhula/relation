@@ -2,6 +2,7 @@
 
 (require (except-in racket/contract/base
                     predicate/c)
+         arguments
          ionic)
 
 (require "types.rkt"
@@ -37,10 +38,10 @@
   (switch (fs)
           [singleton? (atomic-function applier (unwrap fs))]
           [else
-           (call (apply compose-functions
-                        composer
-                        applier
-                        _))]))
+           (let ([g (apply compose-functions
+                           composer
+                           fs)])
+             g)]))
 
 (define f make-function)
 

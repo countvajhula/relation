@@ -16,7 +16,7 @@
          "../private/util.rkt")
 
 (provide (contract-out
-          [compose-functions (-> monoid? application-scheme? procedure? ... procedure?)]
+          [compose-functions (-> monoid? procedure? ... procedure?)]
           [compose (variadic-function/c procedure? procedure?)]
           [conjoin (variadic-function/c procedure? procedure?)]
           [&& (variadic-function/c procedure? procedure?)]
@@ -27,7 +27,7 @@
                                #:apply-with application-scheme?)
                               composed-function?)]))
 
-(define (compose-powers g h composer applier)
+(define (compose-powers g h composer)
   ;; either or both could be function powers. in that case, the powers
   ;; need to be added; otherwise just incremented - actually just
   ;; map a priori to function-powers that would bbe set to 1, like a
@@ -35,22 +35,20 @@
   (let ([n (power-function-n g)]
         [m (power-function-n h)]
         [f (power-function-f h)])
-    (make-power-function #:apply-with applier
-                         #:compose-with composer
+    (make-power-function #:compose-with composer
                          f
                          (+ m n))))
 
-(define (->power-function g composer applier)
+(define (->power-function g composer)
   (switch (g)
           [power-function? g]
           [else (make-power-function (~maybe-unwrap g composer) 1
-                                     #:compose-with composer
-                                     #:apply-with applier)]))
+                                     #:compose-with composer)]))
 
-(define (->function g applier)
+(define (->function g)
   (switch (g)
           [function? g]
-          [else (atomic-function applier g)]))
+          [else (make-atomic-function g)]))
 
 (define-switch (~function-members g)
   [atomic-function? (call (~> atomic-function-f list))]
@@ -96,66 +94,59 @@
           (all atomic-function?)
           (none function?))))
 
-(define (~compose-as-powers g h composer applier)
-  (compose-powers (->power-function g composer applier)
-                  (->power-function h composer applier)
-                  composer
-                  applier))
+(define (~compose-as-powers g h composer)
+  (compose-powers (->power-function g composer)
+                  (->power-function h composer)
+                  composer))
 
-(define (~compose-naively g h composer applier)
+(define (~compose-naively g h composer)
   (make-composed-function #:compose-with composer
-                          #:apply-with applier
                           (~maybe-unwrap g composer)
                           (~maybe-unwrap h composer)))
 
-(define (~compose-by-merging g h composer applier)
+(define (~compose-by-merging g h composer)
   (apply make-composed-function ; compose at same level
-         #:apply-with applier
          #:compose-with composer
          (append (~function-members g)
                  (~function-members h))))
 
-(define (function-compose g h composer applier)
+(define (function-compose g h composer)
   ;; this function assumes g and h are rich function types
   (switch (g h)
           [(or (~> (>< function-applier)
                    (any (not empty-application?)))
                (not (~compatible-composition? composer)))
-           (call (~compose-naively composer applier))]
+           (call (~compose-naively composer))]
           [(~> (>< ~function-members) equal?)
-           (call (~compose-as-powers composer applier))]
+           (call (~compose-as-powers composer))]
           [(any power-function?)
-           (call (~compose-naively composer applier))]
-          [else (call (~compose-by-merging composer applier))]))
+           (call (~compose-naively composer))]
+          [else (call (~compose-by-merging composer))]))
 
 ;; TODO: avoid passing around the applier in these interfaces?
-(define (compose-functions composer applier . gs)
+(define (compose-functions composer . gs)
   (switch (gs)
-          [empty? (function-null #:compose-with composer
-                                 #:apply-with applier)]
+          [empty? (function-null #:compose-with composer)]
           [(~> rest empty?) (call first)]
           [else
-           (let ([gs (reverse (map (curryr ->function applier) gs))])
-             (foldl (curryr function-compose composer applier)
+           (let ([gs (reverse (map ->function gs))])
+             (foldl (curryr function-compose composer)
                     (first gs)
                     (rest gs)))]))
 
 (define (compose . fs)
   (apply compose-functions
          usual-composition
-         empty-left-curried-arguments ; maybe use that of leading function
          fs))
 
 (define (conjoin . fs)
   (apply compose-functions
          conjoin-composition
-         empty-left-curried-arguments ; maybe use that of leading function
          fs))
 
 (define (disjoin . fs)
   (apply compose-functions
          disjoin-composition
-         empty-left-curried-arguments ; maybe use that of leading function
          fs))
 
 (define && conjoin)

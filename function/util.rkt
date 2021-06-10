@@ -107,6 +107,50 @@
                             invocation-args
                             chirality))))
 
+;; HERE: the application scheme can essentially be dealt with as
+;; a bolted-on aspect of the implementation - that is, independently
+;; of composition and other aspects.
+;;
+;; these entry points should be the only way the applier is set
+;; since they accept precisely the function on which the application
+;; scheme is to be modulated
+;; the core constructor interface should not deal with application
+;; schemes -- well, maybe it's OK but the main thing is that we can
+;; only modulate the applier at construction time. If at any other
+;; time, it needs to wrap the underlying function (if the applier
+;; is empty, we could in principle replace it, but this might
+;; require an additional generic method, which may be too much
+;; baggage on the procedure interface. In sum, we can assume that
+;; the applier is only modulated at construction time, in all cases)
+;;
+;; Note that an application scheme is a fundamentally non-hierarchical
+;; notion - it simply applies a function to arguments at the top level.
+;; -> It's possible that AS should be treated as an independent thing
+;; from function altogether, rather than as an attribute of it.
+;; One benefit at the moment is being able to render arguments within
+;; the function rendering at the appropriate place, which would now
+;; need to render externally.
+;; Well, no, maybe the right thing here is to invert the delegation,
+;; so that it is not a function that has an application scheme but,
+;; rather, an application scheme that has a function. This could
+;; simplify the application scheme and evaluation interfaces a lot,
+;; I think, for instance, we could probably eliminate scheme-can-continue?
+;; and maybe even chirality can become an attribute of specific
+;; schemes that need a notion of chirality
+;; and we could still retain the print represenation at the applier
+;; level since it is aware of the function
+;;
+;; In order to retain composition semantics, every "application scheme"
+;; would need to be a function, too. A specialized rich type perhaps
+;; (avoiding gen:application-scheme) or just a (subtype of) an
+;; atomic-function that implements gen:application-scheme.
+;; Again, the key, simple idea to capture is that an application scheme
+;; is simply _a function that calls another function_.
+;; It may be that this is simply yet another application scheme (e.g.
+;; in the case of currying).
+;; So maybe we define application scheme recursively as either
+;;  - a ground function
+;;  - a function that calls an application scheme
 (define/arguments (curry args)
   (let* ([f (first (arguments-positional args))]
          [pos (rest (arguments-positional args))]
