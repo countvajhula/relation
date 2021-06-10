@@ -349,7 +349,7 @@
      (check-equal? ((compose add1 sub1) 3) 3)
      (check-equal? ((compose (f add1) (f sub1)) 3) 3)
      (check-equal? ((compose (f add1) (curry + 2)) 3) 6))
-   (test-case
+   (test-suite
        "heterogeneous composition"
      (test-case "non-empty application always composes naively"
        (define test-spec
