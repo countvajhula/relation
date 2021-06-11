@@ -158,6 +158,8 @@
          [invocation-args (make-arguments pos kw)])
     (~curry 'left f invocation-args)))
 
+;; these can just be (curried-arguments f args null (hash))
+;; and (curried-arguments f null args (hash))
 (define/arguments (curryr args)
   (let* ([f (first (arguments-positional args))]
          [pos (rest (arguments-positional args))]

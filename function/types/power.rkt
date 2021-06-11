@@ -43,13 +43,7 @@
    (define (arity self)
      (-arity (power-function-f self)))
    (define (procedure-apply self args)
-     (-procedure-apply (power (power-function-f self) (power-function-n self)) args))
-   (define (pass-args self args chirality)
-     (struct-copy power-function self
-                  [applier #:parent function
-                           (pass (function-applier self)
-                                 args
-                                 chirality)]))]
+     (-procedure-apply (power (power-function-f self) (power-function-n self)) args))]
 
   #:methods gen:collection
   [(define (conj self elem)

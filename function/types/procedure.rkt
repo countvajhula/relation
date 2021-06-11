@@ -8,8 +8,7 @@
          (prefix-in b: racket/base)
          arguments)
 
-(require "util.rkt"
-         "application-scheme.rkt")
+(require "util.rkt")
 
 (provide gen:procedure
          procedure/c
@@ -22,20 +21,14 @@
                              normalized-arity?)]
           [procedure-apply (-> procedure?
                                arguments?
-                               any)]
-          [pass-args (-> procedure?
-                         arguments?
-                         symbol?
-                         procedure?)]))
+                               any)]))
 
 (define-generics procedure
   (keywords procedure)
   (arity procedure)
   (procedure-apply procedure args)
-  (pass-args procedure args chirality)
   #:defaults
   ([b:procedure?
     (define keywords procedure-keywords)
     (define arity procedure-arity)
-    (define pass-args (arg 0))
     (define procedure-apply apply/arguments)]))
