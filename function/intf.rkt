@@ -12,31 +12,28 @@
 (provide
  (contract-out
   [make-function (->* ()
-                      (#:compose-with monoid?
-                       #:apply-with application-scheme?)
+                      (#:compose-with monoid?)
                       #:rest (listof procedure?)
                       function?)]
   [f (->* ()
-          (#:compose-with monoid?
-           #:apply-with application-scheme?)
+          (#:compose-with monoid?)
           #:rest (listof procedure?)
           function?)]
   [make-threading-function (->* ()
-                                (#:compose-with monoid?
-                                 #:apply-with application-scheme?)
+                                (#:compose-with monoid?)
                                 #:rest (listof procedure?)
                                 function?)]
   [f> (->* ()
-           (#:compose-with monoid?
-            #:apply-with application-scheme?)
+           (#:compose-with monoid?)
            #:rest (listof procedure?)
            function?)]))
 
+;; TODO: we might want to indicate application scheme via the
+;; interfaces in this file, as before
 (define (make-function #:compose-with [composer usual-composition]
-                       #:apply-with [applier empty-left-curried-arguments]
                        . fs)
   (switch (fs)
-          [singleton? (atomic-function applier (unwrap fs))]
+          [singleton? (atomic-function (unwrap fs))]
           [else
            (let ([g (apply compose-functions
                            composer
@@ -46,11 +43,9 @@
 (define f make-function)
 
 (define (make-threading-function #:compose-with [composer usual-composition]
-                                 #:apply-with [applier empty-left-curried-arguments]
                                  . fs)
   (apply f
          #:compose-with composer
-         #:apply-with applier
          (reverse fs)))
 
 (define f> make-threading-function)

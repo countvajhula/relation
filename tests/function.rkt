@@ -230,7 +230,7 @@
        (check-equal? ((curryr str-append-3 "there") "hello" " ") "hello there")
        (check-equal? (((curryr str-append-3 "there") " ") "hello") "hello there")
        (check-equal? ((curryr str-append-3 " " "there") "hello") "hello there")
-       (check-equal? (length (arguments-positional (function-flat-arguments (((curryr str-append-3 "there") " "))))) 2 "invoking with incomplete args")
+       (check-equal? (length (arguments-positional (flat-arguments (((curryr str-append-3 "there") " "))))) 2 "invoking with incomplete args")
        (check-equal? ((function-cons ->bytes (make-composed-function (curry str-append-3 "hello" " "))) "there") #"hello there")
        (check-exn exn:fail:contract:arity? (thunk ((curry str-append-3 "hello" "there") "blah" "blah")) "invoking with too many args")
        (check-exn exn:fail:contract:arity? (thunk ((curry str-append-3 "hello" "there" "blah") "blah")) "invoking with too many args")
@@ -337,9 +337,10 @@
      (check-equal? ((function-cons add1 (function-null)) 3) 4)
      (check-equal? ((function-cons positive? (function-cons integer? (function-null #:compose-with (monoid f:conjoin (const #t))))) 5) #t))
    (test-case
-       "function-flat-arguments"
-     (check-equal? (function-flat-arguments (curry + 1 2 3)) (make-arguments (list 1 2 3) (hash)))
-     (check-equal? (function-flat-arguments (curry = #:key string-upcase "apple")) (make-arguments (list "apple") (hash '#:key string-upcase))))
+       "flat-arguments"
+     (check-equal? (flat-arguments (curry + 1 2 3)) (make-arguments (list 1 2 3) (hash)))
+     (check-equal? (flat-arguments (curry = #:key string-upcase "apple")) (make-arguments (list "apple") (hash '#:key string-upcase)))
+     (check-equal? (flat-arguments (app + 3 _)) (make-arguments (list 3) (hash))))
    (test-case
        "apply/steps"
      (check-equal? (->list (apply/steps (f add1 sub1 add1) (list 3))) (list 4 3 4))

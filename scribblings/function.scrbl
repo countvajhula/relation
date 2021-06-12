@@ -149,19 +149,6 @@ This module provides general-purpose utilities to support programming in the @hy
   ]
 }
 
-@defproc[(function-flat-arguments [g function?])
-         arguments?]{
-
- Returns an @racketlink[arguments]{arguments} structure representing the arguments that parameterize (i.e. have already been passed to) the function @racket[g].
-
-@examples[
-    #:eval eval-for-docs
-    (function-flat-arguments (curry + 1 2 3))
-    (function-flat-arguments (curry = #:key string-upcase "apple"))
-    (function-flat-arguments (curry (curryr (curry string-append "hello") "friend") "there"))
-  ]
-}
-
 @defproc[(apply/steps [g function?]
                       [v any/c] ... [lst list?]
                       [#:<kw> kw-arg any/c] ...)
@@ -695,6 +682,15 @@ This module defines an interface, @racket[gen:procedure], to encode the idea of 
           arguments?]{
 
  Produce a flat @tech[#:doc '(lib "arguments/main.scrbl") #:key "arguments-struct"]{arguments structure} representing the arguments that will be passed in a single invocation of the underlying function. The application scheme may compile the arguments in whatever manner it sees fit; the produced arguments structure represents the result of its operation.
+
+@examples[
+    #:eval eval-for-docs
+    (flat-arguments (curry + 1 2 3))
+    (flat-arguments (curry = #:key string-upcase "apple"))
+    (flat-arguments (curry (curryr (curry string-append "hello") "friend") "there"))
+    (flat-arguments (app + 3 _))
+  ]
+
  }
 
  @defproc[(scheme-can-continue? [application-scheme application-scheme?]

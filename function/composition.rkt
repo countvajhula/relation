@@ -8,7 +8,6 @@
                   curryr)
          (only-in racket/base
                   (compose b:compose))
-         arguments
          contract/social
          ionic)
 
@@ -23,8 +22,7 @@
           [disjoin (variadic-function/c procedure? procedure?)]
           [|| (variadic-function/c procedure? procedure?)]
           [function-null (->* ()
-                              (#:compose-with monoid?
-                               #:apply-with application-scheme?)
+                              (#:compose-with monoid?)
                               composed-function?)]))
 
 (define (compose-powers g h composer)
@@ -63,7 +61,8 @@
   ;; and power function if the exponent is 1
   (switch (g)
           [(and function?
-                (~> function-applier empty-application?))
+                application-scheme?
+                empty-application?)
            (connect
             [atomic-function? (call atomic-function-f)]
             [(and composed-function?
@@ -113,7 +112,7 @@
 (define (function-compose g h composer)
   ;; this function assumes g and h are rich function types
   (switch (g h)
-          [(or (~> (>< function-applier)
+          [(or (~> (allow application-scheme?)
                    (any (not empty-application?)))
                (not (~compatible-composition? composer)))
            (call (~compose-naively composer))]
@@ -152,7 +151,5 @@
 (define && conjoin)
 (define || disjoin)
 
-(define (function-null #:compose-with [composer usual-composition]
-                       #:apply-with [applier empty-left-curried-arguments])
-  (make-composed-function #:compose-with composer
-                          #:apply-with applier))
+(define (function-null #:compose-with [composer usual-composition])
+  (make-composed-function #:compose-with composer))

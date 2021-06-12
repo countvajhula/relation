@@ -11,6 +11,8 @@
           [struct atomic-function ((f procedure?))]
           [make-atomic-function (-> procedure? atomic-function?)]))
 
+;; don't need atomic anymore since built-in type should implement
+;; the necessary interfaces
 (struct atomic-function function (f)
   #:transparent
 

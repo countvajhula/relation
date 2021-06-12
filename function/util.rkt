@@ -90,23 +90,6 @@
            [(list v) (g v)]
            [(list v vs ...) ((loop vs) v)])))))
 
-(define (~curry chirality func invocation-args)
-  (if (and (function? func)
-           (curried-arguments? (function-applier func)))
-      ;; application scheme is compatible so just apply the
-      ;; new args to the existing scheme
-      (pass-args func
-                 invocation-args
-                 chirality)
-      ;; wrap the existing function with one that will be curried
-      (f func
-         ;; passed-in chirality overrides the attribute
-         ;; so it doesn't matter that we're using 'left' here
-         ;; since it's empty
-         #:apply-with (pass empty-left-curried-arguments
-                            invocation-args
-                            chirality))))
-
 ;; HERE: the application scheme can essentially be dealt with as
 ;; a bolted-on aspect of the implementation - that is, independently
 ;; of composition and other aspects.
@@ -156,7 +139,14 @@
          [pos (rest (arguments-positional args))]
          [kw (arguments-keyword args)]
          [invocation-args (make-arguments pos kw)])
-    (~curry 'left f invocation-args)))
+    (if (curried-arguments? f)
+        (if (eq? (curried-arguments-chirality f)
+                 'left)
+            (pass f invocation-args)
+            (pass (struct-copy curried-arguments f
+                               [chirality 'right])
+                  invocation-args))
+        (make-curried-arguments f 'left invocation-args))))
 
 ;; these can just be (curried-arguments f args null (hash))
 ;; and (curried-arguments f null args (hash))
@@ -165,7 +155,14 @@
          [pos (rest (arguments-positional args))]
          [kw (arguments-keyword args)]
          [invocation-args (make-arguments pos kw)])
-    (~curry 'right f invocation-args)))
+    (if (curried-arguments? f)
+        (if (eq? (curried-arguments-chirality f)
+                 'right)
+            (pass f invocation-args)
+            (pass (struct-copy curried-arguments f
+                               [chirality 'left])
+                  invocation-args))
+        (make-curried-arguments f 'right invocation-args))))
 
 (define/arguments (partial args)
   (let* ([func (first (arguments-positional args))]

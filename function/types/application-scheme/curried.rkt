@@ -7,6 +7,7 @@
          racket/set
          arguments
          relation/logic
+         (prefix-in b: racket/base)
          (only-in relation/equivalence
                   in?)
          ionic)
@@ -23,7 +24,11 @@
              (chirality symbol?)
              (left list?)
              (right list?)
-             (kw hash?))]))
+             (kw hash?))]
+          [make-curried-arguments (-> b:procedure?
+                                      symbol?
+                                      arguments?
+                                      curried-arguments?)]))
 
 (define-switch (~min-arity-value arity)
   [number? arity]
@@ -149,3 +154,10 @@
 (define (curried-arguments-positional args)
   (append (curried-arguments-left args)
           (curried-arguments-right args)))
+
+(define (make-curried-arguments f chirality args)
+  (let ([pos (arguments-positional args)]
+        [kw (arguments-keyword args)])
+    (if (eq? 'left chirality)
+        (curried-arguments f 'left pos null kw)
+        (curried-arguments f 'right null pos kw))))

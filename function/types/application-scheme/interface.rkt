@@ -33,19 +33,15 @@
   ;; would simply be raised to the caller
   (pass application-scheme args)
 
+  ;; (object-function application-scheme)
+
   ;; flat-arguments compiles all previously supplied arguments
   ;; into a "flat" arguments structure that represents the
   ;; arguments for the invocation of the underlying function
-  (flat-arguments application-scheme)
+  (flat-arguments application-scheme))
 
-  ;; TODO: can we eliminate pass?
-  ;; right-chiral (partial) arguments?
-
-  #:defaults
-  ([arguments? (define (pass this args)
-                 (arguments-merge this args))
-               (define (flat-arguments this)
-                 this)]))
+;; TODO: can we eliminate pass?
+;; right-chiral (partial) arguments?
 
 (define-predicate (empty-application? applier)
   (~> flat-arguments (equal? empty-arguments)))
