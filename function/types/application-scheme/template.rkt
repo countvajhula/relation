@@ -10,7 +10,7 @@
          (except-in data/maybe maybe/c)
          typed-stack)
 
-(require "application-scheme.rkt"
+(require "interface.rkt"
          "../interface.rkt"
          "../base.rkt"
          "../../../private/util.rkt")

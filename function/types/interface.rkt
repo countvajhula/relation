@@ -8,8 +8,6 @@
          (prefix-in b: racket/base)
          arguments)
 
-(require "util.rkt")
-
 (provide gen:procedure
          procedure/c
          (contract-out
