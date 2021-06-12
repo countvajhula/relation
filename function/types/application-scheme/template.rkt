@@ -11,7 +11,7 @@
          typed-stack)
 
 (require "application-scheme.rkt"
-         "../procedure.rkt"
+         "../interface.rkt"
          "../base.rkt"
          "../../../private/util.rkt")
 

@@ -8,7 +8,7 @@
                   gen:collection)
          ionic)
 
-(require "procedure.rkt"
+(require "interface.rkt"
          "base.rkt"
          "composed.rkt")
 

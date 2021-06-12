@@ -7,7 +7,7 @@
                   conj)
          contract/social)
 
-(require relation/function/types/procedure
+(require relation/function/types/interface
          relation/function/types/base
          relation/function/types/atomic
          relation/function/types/composed
@@ -16,7 +16,7 @@
          (except-in relation/function/types/util
                     !!))
 
-(provide (all-from-out relation/function/types/procedure
+(provide (all-from-out relation/function/types/interface
                        relation/function/types/base
                        relation/function/types/atomic
                        relation/function/types/composed

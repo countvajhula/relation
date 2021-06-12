@@ -12,7 +12,7 @@
          ionic)
 
 (require "application-scheme.rkt"
-         "../procedure.rkt"
+         "../interface.rkt"
          "../base.rkt"
          "../util.rkt"
          "../../../private/util.rkt")

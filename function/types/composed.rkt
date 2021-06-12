@@ -24,7 +24,7 @@
          arguments
          ionic)
 
-(require "procedure.rkt"
+(require "interface.rkt"
          "base.rkt"
          "util.rkt")
 

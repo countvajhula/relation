@@ -10,7 +10,7 @@
 (require relation/logic
          (only-in relation/equivalence
                   in?)
-         "procedure.rkt"
+         "interface.rkt"
          "util.rkt")
 
 (provide (contract-out

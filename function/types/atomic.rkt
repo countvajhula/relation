@@ -4,7 +4,7 @@
          racket/generic
          arguments)
 
-(require "procedure.rkt"
+(require "interface.rkt"
          "base.rkt")
 
 (provide (contract-out
