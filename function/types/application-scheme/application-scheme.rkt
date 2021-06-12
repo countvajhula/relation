@@ -1,27 +1,11 @@
 #lang racket/base
 
-(require (prefix-in f: racket/function)
-         (except-in racket/contract/base
+(require (except-in racket/contract/base
                     predicate/c)
          racket/generic
-         racket/match
-         racket/hash
-         racket/format
-         racket/set
          arguments
-         (prefix-in b: racket/base)
          contract/social
-         (except-in data/maybe maybe/c)
-         typed-stack
-         relation/logic
-         (only-in relation/equivalence
-                  in?)
          ionic)
-
-(require "../procedure.rkt"
-         "../base.rkt"
-         "../util.rkt"
-         "../../../private/util.rkt")
 
 (provide gen:application-scheme
          application-scheme/c

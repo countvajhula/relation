@@ -9,7 +9,6 @@
          ionic)
 
 (require "procedure.rkt"
-         "application-scheme.rkt"
          "base.rkt"
          "composed.rkt")
 
@@ -17,19 +16,16 @@
 (lazy-require [relation/composition (power)])
 
 (provide (contract-out
-          [struct power-function ((applier application-scheme?)
-                                  (composer monoid?)
+          [struct power-function ((composer monoid?)
                                   (f procedure?)
                                   (n number?))]
           [make-power-function (->* (procedure? number?)
-                                    (#:apply-with application-scheme?
-                                     #:compose-with monoid?)
+                                    (#:compose-with monoid?)
                                     power-function?)]))
 
 (define (make-power-function g n
-                             #:apply-with [applier empty-left-curried-arguments]
                              #:compose-with [composer usual-composition])
-  (power-function applier composer g n))
+  (power-function composer g n))
 
 (struct power-function base-composed-function (f n)
   #:transparent
@@ -52,8 +48,7 @@
               (struct-copy power-function self
                            [n (add1 (power-function-n self))])]
              [else
-              (composed-function (function-applier self)
-                                 (base-composed-function-composer self)
+              (composed-function (base-composed-function-composer self)
                                  (list elem self))]))]
 
   #:methods gen:custom-write
@@ -63,13 +58,11 @@
          [(#t) write]
          [(#f) display]
          [else (λ (p port) (print p port mode))]))
-     (let* ([applier (function-applier self)]
-            [composer (base-composed-function-composer self)]
+     (let* ([composer (base-composed-function-composer self)]
             [f (power-function-f self)]
             [n (power-function-n self)]
             [representation
              (list 'λ
-                   applier
                    (list (match composer
                            [(== usual-composition) '..]
                            [(== conjoin-composition) '&&]

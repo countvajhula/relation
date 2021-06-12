@@ -5,27 +5,25 @@
          arguments)
 
 (require "procedure.rkt"
-         "application-scheme.rkt"
          "base.rkt")
 
 (provide (contract-out
           [struct atomic-function ((f procedure?))]
-          [make-atomic-function (->* (procedure?)
-                                     (#:apply-with application-scheme?)
-                                     atomic-function?)]))
+          [make-atomic-function (-> procedure? atomic-function?)]))
 
 (struct atomic-function function (f)
   #:transparent
 
   #:methods gen:procedure
-  [(define/generic -keywords keywords)
+  [(define/generic -procedure-apply procedure-apply)
+   (define/generic -keywords keywords)
    (define/generic -arity arity)
    (define (keywords self)
      (-keywords (atomic-function-f self)))
    (define (arity self)
      (-arity (atomic-function-f self)))
    (define (procedure-apply self args)
-     (apply/arguments (atomic-function-f self) args))]
+     (-procedure-apply (atomic-function-f self) args))]
 
   #:methods gen:custom-write
   [(define (write-proc self port mode)
@@ -40,5 +38,6 @@
                    f)])
        (recur representation port)))])
 
+;; don't need this anymore
 (define (make-atomic-function g)
   (atomic-function g))
