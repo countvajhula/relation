@@ -43,6 +43,7 @@
 
 ;; TODO: maybe rename to curried-application
 ;; or curried-function
+;; TODO: check function arity in pass and reject if incompatible
 (struct curried-arguments function (f chirality left right kw)
   #:transparent
 
