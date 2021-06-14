@@ -181,7 +181,8 @@
             [else (call (make-partial-arguments 'left invocation-args))])))
 
 (define/arguments (partial/template args)
-  (let* ([func (first (arguments-positional args))]
+  (let* ([f (first (arguments-positional args))]
          [pos (rest (arguments-positional args))]
-         [kw (arguments-keyword args)])
-    (f func #:apply-with (template-arguments 'left pos kw))))
+         [kw (arguments-keyword args)]
+         [invocation-args (make-arguments pos kw)])
+    (make-template-arguments f invocation-args)))

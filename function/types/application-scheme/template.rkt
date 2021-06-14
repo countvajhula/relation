@@ -19,7 +19,10 @@
           [struct template-arguments
             ((f procedure?)
              (pos list?)
-             (kw hash?))]))
+             (kw hash?))]
+          [make-template-arguments (-> b:procedure?
+                                       arguments?
+                                       template-arguments?)]))
 
 (define (~populate-positional-template pos args)
   (define n-expected-args
@@ -122,3 +125,8 @@
                                            (λ (k v)
                                              (list k (from-just '_ v))))))
               port)))])
+
+(define (make-template-arguments f args)
+  (let ([pos (arguments-positional args)]
+        [kw (arguments-keyword args)])
+    (template-arguments f pos kw)))
