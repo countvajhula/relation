@@ -18,7 +18,8 @@
          (only-in data/functor
                   (map f:map))
          arguments
-         contract/social)
+         contract/social
+         ionic)
 
 (require "types.rkt"
          "composition.rkt"
@@ -139,37 +140,45 @@
          [pos (rest (arguments-positional args))]
          [kw (arguments-keyword args)]
          [invocation-args (make-arguments pos kw)])
-    (if (curried-arguments? f)
-        (if (eq? (curried-arguments-chirality f)
-                 'left)
-            (pass f invocation-args)
-            (pass (struct-copy curried-arguments f
-                               [chirality 'right])
-                  invocation-args))
-        (make-curried-arguments f 'left invocation-args))))
+    (switch (f)
+            [curried-arguments?
+             (connect [(~> curried-arguments-chirality
+                           (eq? 'left))
+                       (call (pass invocation-args))]
+                      [else (pass (struct-copy curried-arguments f
+                                               [chirality 'right])
+                                  invocation-args)])]
+            [else (call (make-curried-arguments 'left invocation-args))])))
 
-;; these can just be (curried-arguments f args null (hash))
-;; and (curried-arguments f null args (hash))
 (define/arguments (curryr args)
   (let* ([f (first (arguments-positional args))]
          [pos (rest (arguments-positional args))]
          [kw (arguments-keyword args)]
          [invocation-args (make-arguments pos kw)])
-    (if (curried-arguments? f)
-        (if (eq? (curried-arguments-chirality f)
-                 'right)
-            (pass f invocation-args)
-            (pass (struct-copy curried-arguments f
-                               [chirality 'left])
-                  invocation-args))
-        (make-curried-arguments f 'right invocation-args))))
+    (switch (f)
+            [curried-arguments?
+             (connect [(~> curried-arguments-chirality
+                           (eq? 'right))
+                       (call (pass invocation-args))]
+                      [else (pass (struct-copy curried-arguments f
+                                               [chirality 'left])
+                                  invocation-args)])]
+            [else (call (make-curried-arguments 'right invocation-args))])))
 
 (define/arguments (partial args)
-  (let* ([func (first (arguments-positional args))]
+  (let* ([f (first (arguments-positional args))]
          [pos (rest (arguments-positional args))]
          [kw (arguments-keyword args)]
          [invocation-args (make-arguments pos kw)])
-    (f func #:apply-with invocation-args)))
+    (switch (f)
+            [partial-arguments?
+             (connect [(~> partial-arguments-chirality
+                           (eq? 'left))
+                       (call (pass invocation-args))]
+                      [else (pass (struct-copy partial-arguments f
+                                               [chirality 'right])
+                                  invocation-args)])]
+            [else (call (make-partial-arguments 'left invocation-args))])))
 
 (define/arguments (partial/template args)
   (let* ([func (first (arguments-positional args))]
