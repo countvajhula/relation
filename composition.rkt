@@ -304,6 +304,9 @@
             "Nothing here!"))
    (define (reverse seq)
      seq)]
+  #:methods gen:countable
+  [(define length (const 0))
+   (define known-finite? (const #t))]
   #:methods gen:appendable
   [(define (append appendable other)
      other)

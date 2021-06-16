@@ -272,6 +272,8 @@
    (check-equal? (+ ID 3) 3)
    (check-equal? (+ #(1 2 3) ID) #(1 2 3))
    (check-equal? (+ ID #(1 2 3)) #(1 2 3))
+   (check-true (known-finite? ID))
+   (check-equal? (length ID) 0)
    (check-equal? (reverse ID) ID)
    ;; reify
    (check-equal? (reify 5 "") 5)
