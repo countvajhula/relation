@@ -1,13 +1,18 @@
 #lang racket/base
 
 (require racket/list
-         relation/logic)
+         racket/match
+         arguments
+         ionic)
 
 (provide check-pairwise
          exists
          for-all
+         find
          kwhash->altlist
-         join-list)
+         join-list
+         singleton?
+         arguments-cons)
 
 (module+ test
   (require rackunit))
@@ -34,6 +39,12 @@
       (and (apply pred (map first seqs))
            (apply for-all pred (map rest seqs)))))
 
+(define (find pred lst)
+  (match lst
+    ['() #f]
+    [(cons v vs) (or (and (pred v) v)
+                     (find pred vs))]))
+
 (define (kwhash->altlist v)
   (foldr (λ (a b)
            (list* (car a) (cdr a) b))
@@ -44,6 +55,16 @@
 
 (define (join-list lst)
   (apply append lst))
+
+(define-predicate (singleton? seq)
+  ;; cheap check to see if a list is of length 1,
+  ;; instead of traversing to compute the length
+  (and (not empty?)
+       (~> rest empty?)))
+
+(define (arguments-cons v args)
+  (make-arguments (cons v (arguments-positional args))
+                  (arguments-keyword args)))
 
 (module+ test
   (test-case

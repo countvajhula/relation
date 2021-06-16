@@ -164,7 +164,7 @@
                  (if (eq? other ID)
                      appendable
                      (if (function? other)
-                         (function-cons appendable other)
+                         (r:compose appendable other)
                          (b:compose appendable other))))
                (define (appendable-identity appendable)
                  values)]
@@ -172,9 +172,9 @@
                (define (append appendable other)
                  (if (eq? other ID)
                      appendable
-                     ((.. make-immutable-hash
-                          sequence->list
-                          d:append)
+                     ((b:compose make-immutable-hash
+                                 sequence->list
+                                 d:append)
                       appendable other)))
                (define (appendable-identity appendable)
                  (hash))]
@@ -275,9 +275,9 @@
                     (define (add addable other)
                       (if (eq? other ID)
                           addable
-                          ((.. sequence->vector
-                               (curry map
-                                      generic-add))
+                          ((b:compose sequence->vector
+                                      (curry map
+                                             generic-add))
                            addable other)))
                     (define (addable-identity addable)
                       (sequence->vector

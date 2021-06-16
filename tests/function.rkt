@@ -5,6 +5,7 @@
          racket/stream
          racket/bool
          racket/math
+         racket/match
          (except-in data/collection
                     foldl
                     foldl/steps
@@ -16,7 +17,95 @@
                   (conjoin f:conjoin))
          arguments
          relation
+         ionic
          "private/util.rkt")
+
+(define-predicate (singleton? seq)
+  ;; cheap check to see if a list is of length 1,
+  ;; instead of traversing to compute the length
+  (and (not empty?)
+       (~> rest empty?)))
+
+(define (~maybe-unwrap g)
+  ;; if the application is empty
+  ;; unwrap atomic function
+  ;; composed function if it's a singleton
+  ;; and power function if the exponent is 1
+  (switch (g)
+          [(and function?
+                (~> function-applier empty-application?))
+           (connect
+            [atomic-function? (call atomic-function-f)]
+            [(and composed-function?
+                  (~> composed-function-components
+                      singleton?))
+             (call (~> composed-function-components first))]
+            [(and power-function? (~> power-function-n (= 1)))
+             (call power-function-f)]
+            [else g])]
+          [else g]))
+
+(define (check-naive-composition g0 g1 g)
+  (check-equal? (first g) g0)
+  (check-equal? (second g) g1)
+  (check-equal? (base-composed-function-composer g) usual-composition)
+  (check-equal? (function-applier g) empty-left-curried-arguments "uses the default"))
+
+(define (check-naive-unwrapped-composition g0 g1 g)
+  (check-equal? (first g)
+                (~maybe-unwrap g0))
+  (check-equal? (second g)
+                (~maybe-unwrap g1))
+  (check-equal? (base-composed-function-composer g) usual-composition)
+  (check-equal? (function-applier g) empty-left-curried-arguments "uses the default"))
+
+(define (check-partially-unwrapped-composition g0 g1 g)
+  ;; only unwraps the compatible part
+  (switch (g0)
+          [(and base-composed-function?
+                (with-key base-composed-function-composer
+                  (eq? (base-composed-function-composer g))))
+           (check-equal? (~function-members g0) (take (length g0) g))]
+          [else (check-equal? (first g) g0)])
+  (switch (g1)
+          [(and base-composed-function?
+                (with-key base-composed-function-composer
+                  (eq? (base-composed-function-composer g))))
+           (check-equal? (->list (reverse (~function-members g1))) (->list (take (length g1) (reverse g))))]
+          [else (check-equal? (second g) g1)])
+  (check-equal? (base-composed-function-composer g) usual-composition)
+  (check-equal? (function-applier g) empty-left-curried-arguments "uses the default"))
+
+(define-switch (~function-members g)
+  [atomic-function? (call (.. list atomic-function-f))]
+  [composed-function? (call composed-function-components)]
+  [else (call list)])
+
+(define-switch (~underlying-function v)
+  [power-function? (call power-function-f)]
+  [atomic-function? (call atomic-function-f)]
+  [(and composed-function?
+        (.. singleton?
+            composed-function-components))
+   (call (.. first composed-function-components))]
+  [else v])
+
+(define (check-merged-composition g0 g1 g)
+  ;; note that power is not unwrapped
+  (check-equal? (composed-function-components g)
+                (append (~function-members g0)
+                        (~function-members g1)))
+  (check-equal? (base-composed-function-composer g) usual-composition)
+  (check-equal? (function-applier g) empty-left-curried-arguments "uses the default"))
+
+(define (check-power-composition g0 g1 g)
+  (check-true (power-function? g))
+  (check-equal? (~underlying-function g) (~underlying-function g0))
+  (check-equal? (power-function-n g)
+                (+ (if (power-function? g0) (power-function-n g0) 1)
+                   (if (power-function? g1) (power-function-n g1) 1)))
+  (check-equal? (base-composed-function-composer g) usual-composition)
+  (check-equal? (function-applier g) empty-left-curried-arguments "uses the default"))
 
 (define tests
   (test-suite
@@ -101,9 +190,26 @@
      (check-equal? ((lift add1) (just 3)) (just 4)))
    (test-case
        "pack"
-     (check-equal? (pack add1 1 2 3) (list 2 3 4))
-     (check-equal? (pack ->string 1) (list "1"))
-     (check-equal? (pack ->string) (list)))
+     (check-equal? (pack (curry apply +) 1 2 3) 6)
+     (check-equal? (pack length "hello" 23 'banana) 3))
+   (test-case
+       "pack-map"
+     (check-equal? (pack-map add1 1 2 3) (list 2 3 4))
+     (check-equal? (pack-map ->string 1) (list "1"))
+     (check-equal? (pack-map ->string) (list)))
+   (test-case
+       "map-values"
+     (let-values ([(a b c) (map-values add1 1 2 3)])
+       (check-equal? (list a b c) (list 2 3 4))))
+   (test-case
+       "filter-values"
+     (let-values ([(a b) (filter-values positive? 1 -2 3)])
+       (check-equal? (list a b) (list 1 3))))
+   (test-case
+       "unwrap"
+     (check-equal? (unwrap (list 5)) 5)
+     (let-values ([(a b) (unwrap (list 2 3))])
+       (check-equal? (list a b) (list 2 3))))
    (test-case
        "make-function"
      (check-equal? ((make-function add1 add1 +) 3 2) 7)
@@ -115,46 +221,50 @@
      (check-equal? ((f) 1) 1)
      (check-equal? ((conjoin)) #t)
      (check-equal? ((disjoin)) #f))
-   (let ([str-append-3 (procedure-reduce-arity string-append 3)])
-     (check-equal? ((curry str-append-3 "hello") " " "there") "hello there")
-     (check-equal? (((curry str-append-3 "hello") " ") "there") "hello there")
-     (check-equal? ((curry str-append-3 "hello" " ") "there") "hello there")
-     (check-equal? ((curryr str-append-3 "there") "hello" " ") "hello there")
-     (check-equal? (((curryr str-append-3 "there") " ") "hello") "hello there")
-     (check-equal? ((curryr str-append-3 " " "there") "hello") "hello there")
-     (check-equal? (length (arguments-positional (function-flat-arguments (((curryr str-append-3 "there") " "))))) 2 "invoking with incomplete args")
-     (check-equal? ((function-cons ->bytes (curry str-append-3 "hello" " ")) "there") #"hello there")
-     (check-exn exn:fail:contract:arity? (thunk ((curry str-append-3 "hello" "there") "blah" "blah")) "invoking with too many args")
-     (check-exn exn:fail:contract:arity? (thunk ((curry str-append-3 "hello" "there" "blah") "blah")) "invoking with too many args")
-     (check-exn exn:fail:contract:arity? (thunk ((curry str-append-3 "hello") "there" "blah" "blah")) "invoking with too many args")
-     (check-exn exn:fail:contract:arity? (thunk ((curry str-append-3 "hello" "there" "blah" "blah"))))
-     (check-exn exn:fail:contract:arity? (thunk ((curry str-append-3 "hello" "there" "blah" "blah")))) "invoking with too many args")
-   (let ([compare (λ/f (x y #:key [key #f])
-                       (= #:key key x y))])
-     (check-exn exn:fail:contract? (thunk (compare 5 "5" #:key number->string))
-                "all arguments are provided but there is a problem in an argument"))
-   (check-equal? ((curry .. "3") "4") "34")
-   (check-equal? ((curry .. "3" "4")) "34")
-   (check-equal? ((curryr .. "3") "4") "43")
-   (check-equal? ((curryr .. "3" "4")) "34")
-   (check-equal? ((curry (f ..) "3") "4") "34")
-   (check-equal? ((curry (f ..) "3" "4")) "34")
-   (check-equal? ((curryr (f ..) "3") "4") "43")
-   (check-equal? ((curryr (f ..) "3" "4")) "34")
-   (check-equal? ((curry (curryr .. "3") "4")) "43")
-   (check-equal? ((curryr (curryr .. "3") "4")) "43")
-   (check-equal? ((curry (curry .. "3") "4")) "34")
-   (check-equal? ((curryr (curry .. "3") "4") "5") "354")
-   (check-equal? ((curry (curryr .. "3") "4") "5") "453")
-   (check-equal? ((curry (curry (curry string-append "1") "2") "3") "4") "1234")
-   (check-equal? ((curry (curry (curryr string-append "1") "2") "3") "4") "2341")
-   (check-equal? ((curry (curryr (curry string-append "1") "2") "3") "4") "1342")
-   (check-equal? ((curry (curryr (curryr string-append "1") "2") "3") "4") "3421")
-   (check-equal? ((curryr (curry (curry string-append "1") "2") "3") "4") "1243")
-   (check-equal? ((curryr (curry (curryr string-append "1") "2") "3") "4") "2431")
-   (check-equal? ((curryr (curryr (curry string-append "1") "2") "3") "4") "1432")
-   (check-equal? ((curryr (curryr (curryr string-append "1") "2") "3") "4") "4321")
-   (check-equal? ((curryr (curry power 2) *) 3) 8)
+   (test-case
+       "currying"
+     (let ([str-append-3 (procedure-reduce-arity string-append 3)])
+       (check-equal? ((curry str-append-3 "hello") " " "there") "hello there")
+       (check-equal? (((curry str-append-3 "hello") " ") "there") "hello there")
+       (check-equal? ((curry str-append-3 "hello" " ") "there") "hello there")
+       (check-equal? ((curryr str-append-3 "there") "hello" " ") "hello there")
+       (check-equal? (((curryr str-append-3 "there") " ") "hello") "hello there")
+       (check-equal? ((curryr str-append-3 " " "there") "hello") "hello there")
+       (check-equal? (length (arguments-positional (function-flat-arguments (((curryr str-append-3 "there") " "))))) 2 "invoking with incomplete args")
+       (check-equal? ((function-cons ->bytes (make-composed-function (curry str-append-3 "hello" " "))) "there") #"hello there")
+       (check-exn exn:fail:contract:arity? (thunk ((curry str-append-3 "hello" "there") "blah" "blah")) "invoking with too many args")
+       (check-exn exn:fail:contract:arity? (thunk ((curry str-append-3 "hello" "there" "blah") "blah")) "invoking with too many args")
+       (check-exn exn:fail:contract:arity? (thunk ((curry str-append-3 "hello") "there" "blah" "blah")) "invoking with too many args")
+       (check-exn exn:fail:contract:arity? (thunk ((curry str-append-3 "hello" "there" "blah" "blah"))))
+       (check-exn exn:fail:contract:arity? (thunk ((curry str-append-3 "hello" "there" "blah" "blah"))) "invoking with too many args"))
+     (let ([compare (λ/f (x y #:key [key #f])
+                         (= #:key key x y))])
+       (check-exn exn:fail:contract? (thunk (compare 5 "5" #:key number->string))
+                  "all arguments are provided but there is a problem in an argument"))
+     (check-equal? ((curry .. "3") "4") "34")
+     (check-equal? ((curry .. "3" "4")) "34")
+     (check-equal? ((curryr .. "3") "4") "43")
+     (check-equal? ((curryr .. "3" "4")) "34"))
+   (test-case
+       "left and right currying used together"
+     (check-equal? ((curry (f ..) "3") "4") "34")
+     (check-equal? ((curry (f ..) "3" "4")) "34")
+     (check-equal? ((curryr (f ..) "3") "4") "43")
+     (check-equal? ((curryr (f ..) "3" "4")) "34")
+     (check-equal? ((curry (curryr .. "3") "4")) "43")
+     (check-equal? ((curryr (curryr .. "3") "4")) "43")
+     (check-equal? ((curry (curry .. "3") "4")) "34")
+     (check-equal? ((curryr (curry .. "3") "4") "5") "354")
+     (check-equal? ((curry (curryr .. "3") "4") "5") "453")
+     (check-equal? ((curry (curry (curry string-append "1") "2") "3") "4") "1234")
+     (check-equal? ((curry (curry (curryr string-append "1") "2") "3") "4") "2341")
+     (check-equal? ((curry (curryr (curry string-append "1") "2") "3") "4") "1342")
+     (check-equal? ((curry (curryr (curryr string-append "1") "2") "3") "4") "3421")
+     (check-equal? ((curryr (curry (curry string-append "1") "2") "3") "4") "1243")
+     (check-equal? ((curryr (curry (curryr string-append "1") "2") "3") "4") "2431")
+     (check-equal? ((curryr (curryr (curry string-append "1") "2") "3") "4") "1432")
+     (check-equal? ((curryr (curryr (curryr string-append "1") "2") "3") "4") "4321")
+     (check-equal? ((curryr (curry power 2) *) 3) 8))
    (test-case
        "Currying in the presence of keyword arguments"
      (define in? (curryr member?))
@@ -199,6 +309,7 @@
      (check-equal? ((app + _ 2) 1) (+ 1 2))
      (check-equal? ((app + _ 2 _) 1 3) (+ 1 2 3))
      (check-exn exn:fail:contract? (thunk ((app +) 1)) "extra args")
+     (check-exn exn:fail:contract? (thunk ((app + _) 1 2)) "extra args")
      (check-exn exn:fail:contract? (thunk ((app + _))) "not enough args")
      (define string-append-3 (procedure-reduce-arity string-append 3))
      (check-equal? ((app string-append-3 _ "-" _) "a" "b") (string-append-3 "a" "-" "b"))
@@ -207,7 +318,9 @@
      (check-equal? ((app = #:key string-upcase "hi" _) "HI") (= #:key string-upcase "hi" "HI"))
      (check-exn exn:fail:contract? (thunk ((app = #:key string-upcase "hi" _) #:key string-downcase "HI")) "overriding template not allowed")
      (check-equal? ((app = #:key _ _ "hi") #:key string-upcase "HI") (= #:key string-upcase "hi" "HI"))
-     (check-exn exn:fail:contract? (thunk ((app = #:key _ _ "hi") "HI")) "missing keyword arg in template"))
+     (check-exn exn:fail:contract? (thunk ((app = #:key _ _ "hi") "HI")) "missing keyword arg in template")
+     (check-equal? ((f string-append #:apply-with (template-arguments 'left (list nothing (just "-") nothing) (hash))) "a" "b") "a-b" "left-chiral template")
+     (check-equal? ((f string-append #:apply-with (template-arguments 'right (list nothing (just "-") nothing) (hash))) "a" "b") "b-a") "right-chiral template")
    (test-case
        "application scheme composition"
      (check-equal? ((curry (app string-append _ "-" _) "a") "b") "a-b")
@@ -218,67 +331,304 @@
      (check-exn exn:fail:contract? (thunk ((curry (app string-append _ "-" _) "a") "b" "c")))
      (check-equal? ((partial (app string-append _ "-" _) "a") "b") "a-b")
      (check-exn exn:fail:contract? (thunk (((partial (app string-append _ "-" _)) "a") "b")) "partial application does not curry"))
-   (check-equal? ((function-cons add1 (f sub1)) 3) 3)
-   (check-equal? ((function-cons add1 (function-null)) 3) 4)
-   (check-equal? ((function-cons positive? (function-cons integer? (function-null #:compose-with (monoid f:conjoin (const #t))))) 5) #t)
-   (check-equal? (function-flat-arguments (curry + 1 2 3)) (make-arguments (list 1 2 3) (hash)))
-   (check-equal? (function-flat-arguments (curry = #:key string-upcase "apple")) (make-arguments (list "apple") (hash '#:key string-upcase)))
-   (check-equal? (->list (apply/steps (f add1 sub1 add1) (list 3))) (list 4 3 4))
-   (check-equal? (->list (apply/steps (f ->string sub1 fold) #:into 2 + (list (list 1 2 3 4)))) (list 12 11 "11"))
-   (check-equal? ((compose add1 sub1) 3) 3)
-   (check-equal? ((compose (f add1) (f sub1)) 3) 3)
-   (check-equal? ((compose (f add1) (curry + 2)) 3) 6)
-   (check-true ((conjoin positive? integer?) 5))
-   (check-false ((conjoin positive? integer?) -5))
-   (check-false ((conjoin bytes<? bytes=?) #"apple" #"banana"))
-   (check-true ((disjoin positive? integer?) 5))
-   (check-true ((disjoin positive? integer?) -5))
-   (check-true ((disjoin positive? integer?) 5.3))
-   (check-false ((disjoin positive? integer?) -5.3))
-   (check-true ((disjoin bytes<? bytes=?) #"apple" #"banana"))
-   ;; custom composition
-   (check-true ((f #:compose-with (monoid (λ (f g)
-                                            (λ (x)
-                                              (xor (f x)
-                                                   (g x))))
-                                          (const #f))
-                   positive?
-                   integer?
-                   (curryr > -3))
-                5))
-   (check-false ((f #:compose-with (monoid (λ (f g)
-                                             (λ (x)
-                                               (xor (f x)
-                                                    (g x))))
-                                           (const #f))
-                    positive?
-                    integer?
-                    (curryr > -3))
-                 -1))
-   (check-true ((f #:compose-with (monoid (λ (f g)
-                                            (λ (x)
-                                              (xor (f x)
-                                                   (g x))))
-                                          (const #f))
-                   positive?
-                   integer?
-                   (curryr > -3))
-                -1.4))
-   (check-false ((f #:compose-with (monoid (λ (f g)
-                                             (λ (x)
-                                               (xor (f x)
-                                                    (g x))))
-                                           (const #f))
-                    positive?
-                    integer?
-                    (curryr > -3))
-                 -3.4))
-   (check-false ((negate positive?) 5))
-   (check-true ((negate positive?) -5))
-   (check-true ((negate negative?) 5))
-   (check-false ((negate negative?) -5))
-   (check-true ((negate positive?) 0))
-   (check-true ((negate negative?) 0))))
+   (test-case
+       "elementary constructors"
+     (check-equal? ((function-cons add1 (make-composed-function sub1)) 3) 3)
+     (check-equal? ((function-cons add1 (function-null)) 3) 4)
+     (check-equal? ((function-cons positive? (function-cons integer? (function-null #:compose-with (monoid f:conjoin (const #t))))) 5) #t))
+   (test-case
+       "function-flat-arguments"
+     (check-equal? (function-flat-arguments (curry + 1 2 3)) (make-arguments (list 1 2 3) (hash)))
+     (check-equal? (function-flat-arguments (curry = #:key string-upcase "apple")) (make-arguments (list "apple") (hash '#:key string-upcase))))
+   (test-case
+       "apply/steps"
+     (check-equal? (->list (apply/steps (f add1 sub1 add1) (list 3))) (list 4 3 4))
+     (check-equal? (->list (apply/steps (f ->string sub1 fold) #:into 2 + (list (list 1 2 3 4)))) (list 12 11 "11")))
+   (test-case
+       "compose"
+     (check-equal? ((compose add1 sub1) 3) 3)
+     (check-equal? ((compose (f add1) (f sub1)) 3) 3)
+     (check-equal? ((compose (f add1) (curry + 2)) 3) 6))
+   (test-suite
+       "heterogeneous composition"
+     (test-case "non-empty application always composes naively"
+       (define test-spec
+         (list
+          (list add1
+                (make-atomic-function + #:apply-with (arguments 1))
+                check-naive-composition)
+          (list add1
+                (make-composed-function sub1 + #:apply-with (arguments 1))
+                check-naive-composition)
+          (list add1
+                (make-power-function add1 3 #:apply-with (arguments 1))
+                check-naive-composition)
+          (list (make-atomic-function
+                 + #:apply-with (pass empty-right-curried-arguments
+                                      (arguments 1)
+                                      'right))
+                (make-atomic-function +)
+                check-naive-unwrapped-composition)
+          (list (make-atomic-function +)
+                (make-atomic-function + #:apply-with (pass empty-right-curried-arguments
+                                                           (arguments 1)
+                                                           'right))
+                check-naive-unwrapped-composition)
+          (list (make-composed-function add1 +)
+                (make-atomic-function + #:apply-with (pass empty-right-curried-arguments
+                                                           (arguments 1)
+                                                           'right))
+                check-naive-composition)
+          (list (make-atomic-function +)
+                (make-composed-function add1 +
+                                        #:apply-with (pass empty-right-curried-arguments
+                                                           (arguments 1)
+                                                           'right))
+                check-naive-unwrapped-composition)
+          (list (make-composed-function add1 +)
+                (make-composed-function add1 +
+                                        #:apply-with (pass empty-right-curried-arguments
+                                                           (arguments 1)
+                                                           'right))
+                check-naive-composition)
+          (list (make-composed-function sub1 +
+                                        #:apply-with (pass empty-right-curried-arguments
+                                                           (arguments 1)
+                                                           'right))
+                (make-composed-function add1 +)
+                check-naive-composition)
+          (list (make-composed-function sub1 +
+                                        #:apply-with (pass empty-right-curried-arguments
+                                                           (arguments 1)
+                                                           'right))
+                (make-power-function add1 3)
+                check-naive-composition)
+          (list (make-power-function add1 3)
+                (make-composed-function add1
+                                        #:apply-with (pass empty-right-curried-arguments
+                                                           (arguments 1)
+                                                           'right))
+                check-naive-composition)
+          (list (make-power-function add1 3)
+                (make-power-function add1 2
+                                     #:apply-with (pass empty-right-curried-arguments
+                                                        (arguments 1)
+                                                        'right))
+                check-naive-composition)
+          (list (make-power-function add1 3)
+                (make-atomic-function add1
+                                      #:apply-with (pass empty-right-curried-arguments
+                                                         (arguments 1)
+                                                         'right))
+                check-naive-composition)
+          (list (make-power-function add1 3
+                                     #:apply-with (pass empty-right-curried-arguments
+                                                        (arguments 1)
+                                                        'right))
+                (make-atomic-function add1
+                                      #:apply-with (pass empty-right-curried-arguments
+                                                         (arguments 1)
+                                                         'right))
+                check-naive-composition)))
+
+       (for-each (λ (spec)
+                   (match spec
+                     [(list g0 g1 check-fn)
+                      (check-fn g0 g1 (compose g0 g1))]))
+                 test-spec))
+     (test-case "primitive procedures compose naively or as powers"
+       (define test-spec
+         (list
+          (list add1
+                sub1
+                check-naive-composition)
+          (list add1
+                +
+                check-naive-composition)
+          (list add1
+                add1
+                check-power-composition)))
+
+       (for-each (λ (spec)
+                   (match spec
+                     [(list g0 g1 check-fn)
+                      (check-fn g0 g1 (compose g0 g1))]))
+                 test-spec))
+     (test-case "rich type composed with primitive procedure"
+       (define test-spec
+         (list
+          (list add1
+                (make-atomic-function sub1)
+                check-naive-unwrapped-composition)
+          (list (make-atomic-function sub1)
+                add1
+                check-naive-unwrapped-composition)
+          (list add1
+                (make-composed-function sub1 add1)
+                check-merged-composition)
+          (list (make-composed-function sub1 add1)
+                add1
+                check-merged-composition)
+          (list add1
+                (make-power-function add1 2)
+                check-power-composition)
+          (list (make-power-function add1 2)
+                add1
+                check-power-composition)))
+
+       (for-each (λ (spec)
+                   (match spec
+                     [(list g0 g1 check-fn)
+                      (check-fn g0 g1 (compose g0 g1))]))
+                 test-spec))
+     (test-case "composing atomic functions"
+       (define test-spec
+         (list
+          (list (make-atomic-function add1)
+                (make-atomic-function sub1)
+                check-merged-composition)
+          (list (make-atomic-function add1)
+                (make-atomic-function add1)
+                check-power-composition)
+          (list (make-atomic-function add1)
+                (make-composed-function sub1)
+                check-merged-composition)
+          (list (make-atomic-function add1)
+                (make-composed-function add1)
+                check-power-composition)
+          (list (make-atomic-function add1)
+                (make-power-function sub1 2)
+                check-naive-unwrapped-composition)
+          (list (make-atomic-function add1)
+                (make-power-function add1 2)
+                check-power-composition)))
+
+       (for-each (λ (spec)
+                   (match spec
+                     [(list g0 g1 check-fn)
+                      (check-fn g0 g1 (compose g0 g1))]))
+                 test-spec))
+     (test-case "composing compatible compositions"
+       (define test-spec
+         (list
+          (list (make-composed-function add1)
+                (make-composed-function sub1)
+                check-merged-composition)
+          (list (make-composed-function add1)
+                (make-composed-function add1)
+                check-power-composition)
+          (list (make-composed-function add1)
+                (make-power-function sub1 2)
+                check-merged-composition)
+          (list (make-power-function sub1 2)
+                (make-composed-function add1)
+                check-merged-composition)
+          (list (make-composed-function add1)
+                (make-power-function add1 2)
+                check-power-composition)
+          (list (make-power-function add1 2)
+                (make-composed-function add1)
+                check-power-composition)
+          (list (make-power-function add1 2)
+                (make-power-function add1 1)
+                check-power-composition)
+          (list (make-power-function sub1 2)
+                (make-power-function add1 1)
+                check-naive-unwrapped-composition)))
+
+       (for-each (λ (spec)
+                   (match spec
+                     [(list g0 g1 check-fn)
+                      (check-fn g0 g1 (compose g0 g1))]))
+                 test-spec))
+     (test-case "incompatible higher-level composition"
+       (define test-spec
+         (list
+          (list (make-composed-function add1 #:compose-with conjoin-composition)
+                (make-composed-function sub1)
+                check-partially-unwrapped-composition)
+          (list (make-composed-function add1 #:compose-with conjoin-composition)
+                (make-composed-function add1)
+                check-partially-unwrapped-composition)))
+
+       (for-each (λ (spec)
+                   (match spec
+                     [(list g0 g1 check-fn)
+                      (check-fn g0 g1 (compose g0 g1))]))
+                 test-spec))
+     (test-case "incompatible same-level composition"
+       (define test-spec
+         (list
+          (list (make-composed-function add1 #:compose-with conjoin-composition)
+                (make-composed-function sub1 #:compose-with disjoin-composition)
+                check-naive-composition)
+          (list (make-composed-function add1 #:compose-with conjoin-composition)
+                (make-composed-function add1 #:compose-with disjoin-composition)
+                check-naive-composition)))
+
+       (for-each (λ (spec)
+                   (match spec
+                     [(list g0 g1 check-fn)
+                      (check-fn g0 g1 (compose g0 g1))]))
+                 test-spec)))
+   (test-case
+       "conjoin"
+     (check-true ((conjoin positive? integer?) 5))
+     (check-false ((conjoin positive? integer?) -5))
+     (check-false ((conjoin bytes<? bytes=?) #"apple" #"banana")))
+   (test-case
+       "disjoin"
+     (check-true ((disjoin positive? integer?) 5))
+     (check-true ((disjoin positive? integer?) -5))
+     (check-true ((disjoin positive? integer?) 5.3))
+     (check-false ((disjoin positive? integer?) -5.3))
+     (check-true ((disjoin bytes<? bytes=?) #"apple" #"banana")))
+   (test-case
+       "custom composition"
+     (check-true ((f #:compose-with (monoid (λ (f g)
+                                              (λ (x)
+                                                (xor (f x)
+                                                     (g x))))
+                                            (const #f))
+                     positive?
+                     integer?
+                     (curryr > -3))
+                  5))
+     (check-false ((f #:compose-with (monoid (λ (f g)
+                                               (λ (x)
+                                                 (xor (f x)
+                                                      (g x))))
+                                             (const #f))
+                      positive?
+                      integer?
+                      (curryr > -3))
+                   -1))
+     (check-true ((f #:compose-with (monoid (λ (f g)
+                                              (λ (x)
+                                                (xor (f x)
+                                                     (g x))))
+                                            (const #f))
+                     positive?
+                     integer?
+                     (curryr > -3))
+                  -1.4))
+     (check-false ((f #:compose-with (monoid (λ (f g)
+                                               (λ (x)
+                                                 (xor (f x)
+                                                      (g x))))
+                                             (const #f))
+                      positive?
+                      integer?
+                      (curryr > -3))
+                   -3.4)))
+   (test-case
+       "negate"
+     (check-false ((negate positive?) 5))
+     (check-true ((negate positive?) -5))
+     (check-true ((negate negative?) 5))
+     (check-false ((negate negative?) -5))
+     (check-true ((negate positive?) 0))
+     (check-true ((negate negative?) 0)))))
 
 (module+ test
   (just-do
