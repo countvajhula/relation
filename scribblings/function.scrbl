@@ -109,7 +109,7 @@ This module provides general-purpose utilities to support programming in the @hy
 
  The first thing to note is that the printed representation is almost itself valid code to reproduce the function it represents. A prominent maxim of programming in the functional style is to write complex functions in terms of small, simple functions that can be composed together. The transparency of this representation is intended to support this habit, by enabling the makeup of such functions, whether simple or complex, to be easily scrutinized and manipulated. Specific clues encoded in the representation are as follows:
  @codeblock{(λ (args _) ...)}
- In general, the arguments portion of the representation indicates the @tech{application scheme}. Here, it indicates that the function is @emph{left-curried} (the default), while @codeblock{(λ (_ args) ...)} indicates that it is @emph{right-curried} (the @racket[_] indicates where fresh arguments will be placed in relation to the existing arguments). If arguments have been supplied on both sides, either via currying or a @racketlink[template-arguments]{template}, the @racket[_] will indicate the argument position(s) between the already-supplied arguments.
+ In general, the arguments portion of the representation indicates the @tech{application scheme}. Here, it indicates that the function is @emph{left-curried} (the default), while @codeblock{(λ (_ args) ...)} indicates that it is @emph{right-curried} (the @racket[_] indicates where fresh arguments will be placed in relation to the existing arguments). If arguments have been supplied on both sides, either via currying or a @racketlink[template-function]{template}, the @racket[_] will indicate the argument position(s) between the already-supplied arguments.
  @codeblock{(.. fn ...)} indicates that the method of composition is the usual one, i.e. @racket[compose],
  @codeblock{(&& fn ...)} means the method of composition is @racket[conjoin],
  @codeblock{(|| fn ...)} means @racket[disjoin], and
@@ -634,7 +634,7 @@ This module defines an interface, @racket[gen:procedure], to encode the idea of 
 
  The default application scheme is partial application with currying. Other schemes provided include partial application without currying, and template-based partial application (resembling the scheme in @other-doc['(lib "fancy-app/main.scrbl")]).
 
- Application schemes compose naturally, so that, for example, a function could expect arguments to match a @racketlink[template-arguments]{template}, and could receive those arguments incrementally via @racketlink[curried-function]{curried partial application}. The examples below illustrate this.
+ Application schemes compose naturally, so that, for example, a function could expect arguments to match a @racketlink[template-function]{template}, and could receive those arguments incrementally via @racketlink[curried-function]{curried partial application}. The examples below illustrate this.
 
 @defthing[gen:application-scheme any/c]{
 
@@ -664,8 +664,8 @@ This module defines an interface, @racket[gen:procedure], to encode the idea of 
     (application-scheme? (arguments 1 2 3 #:key number->string))
     (application-scheme? empty-left-curried-arguments)
     (application-scheme? (curried-function 'left (list 1 2 3) (list 4 5) (hash '#:key number->string)))
-    (application-scheme? (template-arguments 'left (list) (hash)))
-    (application-scheme? (template-arguments 'left (list nothing (just 3)) (hash '#:key (just number->string) '#:kw nothing)))
+    (application-scheme? (template-function 'left (list) (hash)))
+    (application-scheme? (template-function 'left (list nothing (just 3)) (hash '#:key (just number->string) '#:kw nothing)))
   ]
 
  To define custom application schemes, the following methods need to be implemented.
@@ -736,10 +736,10 @@ This module defines an interface, @racket[gen:procedure], to encode the idea of 
    ]
 }
 
-@defstruct[template-arguments ([chirality (one-of/c 'left 'right)]
-                               [pos list?]
-                               [kw hash?])
-                               #:omit-constructor]{
+@defstruct[template-function ([chirality (one-of/c 'left 'right)]
+                              [pos list?]
+                              [kw hash?])
+                             #:omit-constructor]{
  An @tech{application scheme} encoding a template expressing the expected arguments -- whether positional or keyword -- to a function. This is a subtype of @racket[base-application-scheme] and therefore exhibits a @racket[chirality]. The values of positional or keyword arguments are expected to be @tech[#:doc '(lib "scribblings/data/functional.scrbl")]{optional values}. Typically, template-based partial application would be used via the @racket[app] macro, so that there is no need to muck about with optional values in normal usage.
 
  @itemlist[

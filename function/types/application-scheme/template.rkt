@@ -16,13 +16,13 @@
          "../../../private/util.rkt")
 
 (provide (contract-out
-          [struct template-arguments
+          [struct template-function
             ((f procedure?)
              (pos list?)
              (kw hash?))]
-          [make-template-arguments (-> b:procedure?
-                                       arguments?
-                                       template-arguments?)]))
+          [make-template-function (-> b:procedure?
+                                      arguments?
+                                      template-function?)]))
 
 (define (~populate-positional-template pos args)
   (define n-expected-args
@@ -76,40 +76,40 @@
                                        (current-continuation-marks))))))
   filled-in-kw-template)
 
-(struct template-arguments function (f pos kw)
+(struct template-function function (f pos kw)
   #:transparent
 
   #:methods gen:application-scheme
   [(define (pass this invocation-args)
-     (let ([pos (template-arguments-pos this)]
-           [kw (template-arguments-kw this)]
+     (let ([pos (template-function-pos this)]
+           [kw (template-function-kw this)]
            [pos-invocation (arguments-positional invocation-args)]
            [kw-invocation (arguments-keyword invocation-args)])
        (define filled-in-pos-template
          (~populate-positional-template pos pos-invocation))
        (define filled-in-kw-template
          (~populate-keyword-template kw kw-invocation))
-       (template-arguments (template-arguments-f this)
+       (template-function (template-function-f this)
                            filled-in-pos-template
                            filled-in-kw-template)))
 
    (define (flat-arguments this)
-     (make-arguments (filter-just (template-arguments-pos this))
-                     (template-arguments-kw this)))]
+     (make-arguments (filter-just (template-function-pos this))
+                     (template-function-kw this)))]
 
   #:methods gen:procedure
   [(define/generic -procedure-apply procedure-apply)
    (define/generic -arity arity)
    (define/generic -keywords keywords)
    (define (procedure-apply this invocation-args)
-     (let* ([f (template-arguments-f this)]
+     (let* ([f (template-function-f this)]
             [updated-application (pass this invocation-args)]
             [args (flat-arguments updated-application)])
        (-procedure-apply f args)))
    (define (arity this)
-     (-arity (template-arguments-f this)))
+     (-arity (template-function-f this)))
    (define (keywords this)
-     (-keywords (template-arguments-f this)))]
+     (-keywords (template-function-f this)))]
 
   #:methods gen:custom-write
   [(define (write-proc self port mode)
@@ -118,15 +118,15 @@
          [(#t) write]
          [(#f) display]
          [else (λ (p port) (print p port mode))]))
-     (let ([pos (template-arguments-pos self)]
-           [kw (template-arguments-kw self)])
+     (let ([pos (template-function-pos self)]
+           [kw (template-function-kw self)])
        (recur (append (map (f:curry from-just '_) pos)
                       (join-list (hash-map kw
                                            (λ (k v)
                                              (list k (from-just '_ v))))))
               port)))])
 
-(define (make-template-arguments f args)
+(define (make-template-function f args)
   (let ([pos (arguments-positional args)]
         [kw (arguments-keyword args)])
-    (template-arguments f pos kw)))
+    (template-function f pos kw)))

@@ -141,4 +141,4 @@
          [pos (rest (arguments-positional args))]
          [kw (arguments-keyword args)]
          [invocation-args (make-arguments pos kw)])
-    (make-template-arguments f invocation-args)))
+    (make-template-function f invocation-args)))
