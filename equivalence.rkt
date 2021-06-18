@@ -21,6 +21,7 @@
                   first
                   rest
                   in
+                  sequence?
                   sequenceof
                   (map d:map))
          describe

@@ -17,6 +17,7 @@
                   first
                   rest
                   nth
+                  sequence?
                   sequence->list
                   reverse
                   repeat)

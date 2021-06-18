@@ -8,7 +8,8 @@
          (only-in racket/function
                   curry)
          (only-in data/collection
-                  (apply d:apply))
+                  (apply d:apply)
+                  sequence?)
          (for-syntax racket/base)
          mischief/shorthand
          contract/social)

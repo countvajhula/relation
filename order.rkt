@@ -8,7 +8,8 @@
          racket/function
          racket/list
          (only-in data/collection
-                  sequence->list)
+                  sequence->list
+                  sequence?)
          contract/social
          (only-in relation/equivalence (= r:=))
          (only-in relation/function

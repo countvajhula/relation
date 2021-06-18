@@ -33,7 +33,7 @@
           [flip* functional/c]
           [lift functional/c]
           [pack (binary-variadic-function/c procedure? any/c any/c)]
-          [pack-map (binary-variadic-function/c procedure? any/c sequence?)]
+          [pack-map (binary-variadic-function/c procedure? any/c list?)]
           [map-values (-> procedure? any/c ... any)]
           [filter-values (-> procedure? any/c ... any)]
           [uncurry (functional/c)]
