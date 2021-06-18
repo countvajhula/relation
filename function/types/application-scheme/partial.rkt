@@ -14,16 +14,16 @@
          "../../../private/util.rkt")
 
 (provide (contract-out
-          [struct partial-arguments
+          [struct partial-function
             ((f procedure?)
              (chirality symbol?)
              (left list?)
              (right list?)
              (kw hash?))]
-          [make-partial-arguments (-> b:procedure?
-                                      arguments?
-                                      symbol?
-                                      partial-arguments?)]))
+          [make-partial-function (-> b:procedure?
+                                     arguments?
+                                     symbol?
+                                     partial-function?)]))
 
 (define-switch (~min-arity-value arity)
   [number? arity]
@@ -36,7 +36,7 @@
 (define (~min-arity f)
   (~min-arity-value (arity f)))
 
-(struct partial-arguments function (f chirality left right kw)
+(struct partial-function function (f chirality left right kw)
   #:transparent
 
   #:methods gen:application-scheme
@@ -44,42 +44,42 @@
      ;; incorporate fresh arguments into the partial application,
      ;; retaining existing arg positions and appending the fresh ones
      ;; at the positions implied by the chirality
-     (let ([f (partial-arguments-f this)]
-           [chirality (partial-arguments-chirality this)])
+     (let ([f (partial-function-f this)]
+           [chirality (partial-function-chirality this)])
        (let ([left-args (if (eq? chirality 'left)
-                            (append (partial-arguments-left this)
+                            (append (partial-function-left this)
                                     (arguments-positional args))
-                            (partial-arguments-left this))]
+                            (partial-function-left this))]
              [right-args (if (eq? chirality 'right)
                              ;; note order reversed for right args
                              (append (arguments-positional args)
-                                     (partial-arguments-right this))
-                             (partial-arguments-right this))])
-         (partial-arguments f
-                            chirality
-                            left-args
-                            right-args
-                            (hash-union (partial-arguments-kw this)
-                                        (arguments-keyword args))))))
+                                     (partial-function-right this))
+                             (partial-function-right this))])
+         (partial-function f
+                           chirality
+                           left-args
+                           right-args
+                           (hash-union (partial-function-kw this)
+                                       (arguments-keyword args))))))
    (define (flat-arguments this)
-     (make-arguments (partial-arguments-positional this)
-                     (partial-arguments-kw this)))]
+     (make-arguments (partial-function-positional this)
+                     (partial-function-kw this)))]
 
   #:methods gen:procedure
   [(define/generic -procedure-apply procedure-apply)
    (define/generic -arity arity)
    (define/generic -keywords keywords)
    (define (procedure-apply this invocation-args)
-     (let* ([f (partial-arguments-f this)]
+     (let* ([f (partial-function-f this)]
             [updated-application (pass this invocation-args)]
             [args (flat-arguments updated-application)])
        (-procedure-apply f args)))
    (define (arity this)
      ;; TODO: subtract args already supplied
-     (-arity (partial-arguments-f this)))
+     (-arity (partial-function-f this)))
    (define (keywords this)
      ;; TODO: subtract args already supplied
-     (-keywords (partial-arguments-f this)))]
+     (-keywords (partial-function-f this)))]
 
   #:methods gen:custom-write
   [(define (write-proc self port mode)
@@ -88,9 +88,9 @@
          [(#t) write]
          [(#f) display]
          [else (λ (p port) (print p port mode))]))
-     (let ([left (partial-arguments-left self)]
-           [right (partial-arguments-right self)]
-           [kw (partial-arguments-kw self)])
+     (let ([left (partial-function-left self)]
+           [right (partial-function-right self)]
+           [kw (partial-function-kw self)])
        (cond [(null? right)
               (recur (append left (list '_)) port)]
              [(null? left)
@@ -101,13 +101,13 @@
                                   (kwhash->altlist kw))
                           port)])))])
 
-(define (partial-arguments-positional args)
-  (append (partial-arguments-left args)
-          (partial-arguments-right args)))
+(define (partial-function-positional args)
+  (append (partial-function-left args)
+          (partial-function-right args)))
 
-(define (make-partial-arguments f args chirality)
+(define (make-partial-function f args chirality)
   (let ([pos (arguments-positional args)]
         [kw (arguments-keyword args)])
     (if (eq? 'left chirality)
-        (partial-arguments f 'left pos null kw)
-        (partial-arguments f 'right null pos kw))))
+        (partial-function f 'left pos null kw)
+        (partial-function f 'right null pos kw))))

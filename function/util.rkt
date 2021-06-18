@@ -127,14 +127,14 @@
          [kw (arguments-keyword args)]
          [invocation-args (make-arguments pos kw)])
     (switch (f)
-            [partial-arguments?
-             (connect [(~> partial-arguments-chirality
+            [partial-function?
+             (connect [(~> partial-function-chirality
                            (eq? 'left))
                        (call ((esc pass) invocation-args))]
-                      [else (pass (struct-copy partial-arguments f
+                      [else (pass (struct-copy partial-function f
                                                [chirality 'right])
                                   invocation-args)])]
-            [else (call (make-partial-arguments invocation-args 'left))])))
+            [else (call (make-partial-function invocation-args 'left))])))
 
 (define/arguments (partial/template args)
   (let* ([f (first (arguments-positional args))]

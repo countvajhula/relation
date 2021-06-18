@@ -349,15 +349,15 @@
        (define test-spec
          (list
           (list add1
-                (make-partial-arguments + (arguments 1) 'left)
+                (make-partial-function + (arguments 1) 'left)
                 check-naive-composition)
           (list add1
-                (make-partial-arguments (make-composed-function sub1 +)
+                (make-partial-function (make-composed-function sub1 +)
                                         (arguments 1)
                                         'left)
                 check-naive-composition)
           (list add1
-                (make-partial-arguments (make-power-function add1 3)
+                (make-partial-function (make-power-function add1 3)
                                         (arguments 1)
                                         'left)
                 check-naive-composition)
