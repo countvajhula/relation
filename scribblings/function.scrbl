@@ -634,7 +634,7 @@ This module defines an interface, @racket[gen:procedure], to encode the idea of 
 
  The default application scheme is partial application with currying. Other schemes provided include partial application without currying, and template-based partial application (resembling the scheme in @other-doc['(lib "fancy-app/main.scrbl")]).
 
- Application schemes compose naturally, so that, for example, a function could expect arguments to match a @racketlink[template-arguments]{template}, and could receive those arguments incrementally via @racketlink[curried-arguments]{curried partial application}. The examples below illustrate this.
+ Application schemes compose naturally, so that, for example, a function could expect arguments to match a @racketlink[template-arguments]{template}, and could receive those arguments incrementally via @racketlink[curried-function]{curried partial application}. The examples below illustrate this.
 
 @defthing[gen:application-scheme any/c]{
 
@@ -663,7 +663,7 @@ This module defines an interface, @racket[gen:procedure], to encode the idea of 
     (application-scheme? empty-arguments)
     (application-scheme? (arguments 1 2 3 #:key number->string))
     (application-scheme? empty-left-curried-arguments)
-    (application-scheme? (curried-arguments 'left (list 1 2 3) (list 4 5) (hash '#:key number->string)))
+    (application-scheme? (curried-function 'left (list 1 2 3) (list 4 5) (hash '#:key number->string)))
     (application-scheme? (template-arguments 'left (list) (hash)))
     (application-scheme? (template-arguments 'left (list nothing (just 3)) (hash '#:key (just number->string) '#:kw nothing)))
   ]
@@ -718,12 +718,12 @@ This module defines an interface, @racket[gen:procedure], to encode the idea of 
 }
 
 @deftogether[(
-@defstruct[curried-arguments ([chirality (one-of/c 'left 'right)]
+@defstruct[curried-function ([chirality (one-of/c 'left 'right)]
                               [left list?]
                               [right list?]
                               [kw hash?])
                              #:omit-constructor]
-@defthing[empty-left-curried-arguments curried-arguments?]
+@defthing[empty-left-curried-arguments curried-function?]
  )]{
  An @tech{application scheme} representing the arguments that parametrize (i.e. have already been supplied to) a function. This includes all arguments that have been supplied by either left- or right-currying. This is a subtype of @racket[base-application-scheme] and therefore exhibits a @racket[chirality].
 

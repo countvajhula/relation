@@ -97,14 +97,14 @@
          [kw (arguments-keyword args)]
          [invocation-args (make-arguments pos kw)])
     (switch (f)
-            [curried-arguments?
-             (connect [(~> curried-arguments-chirality
+            [curried-function?
+             (connect [(~> curried-function-chirality
                            (eq? 'left))
                        (call ((esc pass) invocation-args))]
-                      [else (pass (struct-copy curried-arguments f
+                      [else (pass (struct-copy curried-function f
                                                [chirality 'left])
                                   invocation-args)])]
-            [else (call (make-curried-arguments invocation-args 'left))])))
+            [else (call (make-curried-function invocation-args 'left))])))
 
 (define/arguments (curryr args)
   (let* ([f (first (arguments-positional args))]
@@ -112,14 +112,14 @@
          [kw (arguments-keyword args)]
          [invocation-args (make-arguments pos kw)])
     (switch (f)
-            [curried-arguments?
-             (connect [(~> curried-arguments-chirality
+            [curried-function?
+             (connect [(~> curried-function-chirality
                            (eq? 'right))
                        (call ((esc pass) invocation-args))]
-                      [else (pass (struct-copy curried-arguments f
+                      [else (pass (struct-copy curried-function f
                                                [chirality 'right])
                                   invocation-args)])]
-            [else (call (make-curried-arguments invocation-args 'right))])))
+            [else (call (make-curried-function invocation-args 'right))])))
 
 (define/arguments (partial args)
   (let* ([f (first (arguments-positional args))]

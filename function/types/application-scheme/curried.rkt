@@ -19,16 +19,16 @@
          "../../../private/util.rkt")
 
 (provide (contract-out
-          [struct curried-arguments
+          [struct curried-function
             ((f procedure?)
              (chirality symbol?)
              (left list?)
              (right list?)
              (kw hash?))]
-          [make-curried-arguments (-> b:procedure?
-                                      arguments?
-                                      symbol?
-                                      curried-arguments?)]))
+          [make-curried-function (-> b:procedure?
+                                     arguments?
+                                     symbol?
+                                     curried-function?)]))
 
 (define-switch (~min-arity-value arity)
   [number? arity]
@@ -44,7 +44,7 @@
 ;; TODO: maybe rename to curried-application
 ;; or curried-function
 ;; TODO: check function arity in pass and reject if incompatible
-(struct curried-arguments function (f chirality left right kw)
+(struct curried-function function (f chirality left right kw)
   #:transparent
 
   #:methods gen:application-scheme
@@ -52,26 +52,26 @@
      ;; incorporate fresh arguments into the partial application,
      ;; retaining existing arg positions and appending the fresh ones
      ;; at the positions implied by the chirality
-     (let ([f (curried-arguments-f this)]
-           [chirality (curried-arguments-chirality this)])
+     (let ([f (curried-function-f this)]
+           [chirality (curried-function-chirality this)])
        (let ([left-args (if (eq? chirality 'left)
-                            (append (curried-arguments-left this)
+                            (append (curried-function-left this)
                                     (arguments-positional args))
-                            (curried-arguments-left this))]
+                            (curried-function-left this))]
              [right-args (if (eq? chirality 'right)
                              ;; note order reversed for right args
                              (append (arguments-positional args)
-                                     (curried-arguments-right this))
-                             (curried-arguments-right this))])
-         (curried-arguments f
-                            chirality
-                            left-args
-                            right-args
-                            (hash-union (curried-arguments-kw this)
-                                        (arguments-keyword args))))))
+                                     (curried-function-right this))
+                             (curried-function-right this))])
+         (curried-function f
+                           chirality
+                           left-args
+                           right-args
+                           (hash-union (curried-function-kw this)
+                                       (arguments-keyword args))))))
    (define (flat-arguments this)
-     (make-arguments (curried-arguments-positional this)
-                     (curried-arguments-kw this)))]
+     (make-arguments (curried-function-positional this)
+                     (curried-function-kw this)))]
 
   ;; do we want to fail at the pass level? or if we bypass pass
   ;; altogether, it would simply flat-arguments and see what happens
@@ -83,7 +83,7 @@
    (define (procedure-apply this invocation-args)
      ;; attempt to eval the function. If it fails, return a new
      ;; function with a modified applier
-     (let* ([f (curried-arguments-f this)]
+     (let* ([f (curried-function-f this)]
             [updated-application (pass this invocation-args)]
             [min-arity (~min-arity updated-application)]
             [args (flat-arguments updated-application)]
@@ -128,10 +128,10 @@
          (-procedure-apply f args))))
    (define (arity this)
      ;; TODO: subtract args already supplied
-     (-arity (curried-arguments-f this)))
+     (-arity (curried-function-f this)))
    (define (keywords this)
      ;; TODO: subtract args already supplied
-     (-keywords (curried-arguments-f this)))]
+     (-keywords (curried-function-f this)))]
 
   #:methods gen:custom-write
   [(define (write-proc self port mode)
@@ -140,9 +140,9 @@
          [(#t) write]
          [(#f) display]
          [else (λ (p port) (print p port mode))]))
-     (let ([left (curried-arguments-left self)]
-           [right (curried-arguments-right self)]
-           [kw (curried-arguments-kw self)])
+     (let ([left (curried-function-left self)]
+           [right (curried-function-right self)]
+           [kw (curried-function-kw self)])
        (cond [(null? right)
               (recur (append left (list '_)) port)]
              [(null? left)
@@ -153,13 +153,13 @@
                                   (kwhash->altlist kw))
                           port)])))])
 
-(define (curried-arguments-positional args)
-  (append (curried-arguments-left args)
-          (curried-arguments-right args)))
+(define (curried-function-positional args)
+  (append (curried-function-left args)
+          (curried-function-right args)))
 
-(define (make-curried-arguments f args chirality)
+(define (make-curried-function f args chirality)
   (let ([pos (arguments-positional args)]
         [kw (arguments-keyword args)])
     (if (eq? 'left chirality)
-        (curried-arguments f 'left pos null kw)
-        (curried-arguments f 'right null pos kw))))
+        (curried-function f 'left pos null kw)
+        (curried-function f 'right null pos kw))))
