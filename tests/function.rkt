@@ -33,7 +33,8 @@
   ;; and power function if the exponent is 1
   (switch (g)
           [(and function?
-                (~> function-applier empty-application?))
+                (or (not application-scheme?)
+                    empty-application?))
            (connect
             [atomic-function? (call atomic-function-f)]
             [(and composed-function?
@@ -48,16 +49,14 @@
 (define (check-naive-composition g0 g1 g)
   (check-equal? (first g) g0)
   (check-equal? (second g) g1)
-  (check-equal? (base-composed-function-composer g) usual-composition)
-  (check-equal? (function-applier g) empty-left-curried-arguments "uses the default"))
+  (check-equal? (base-composed-function-composer g) usual-composition))
 
 (define (check-naive-unwrapped-composition g0 g1 g)
   (check-equal? (first g)
                 (~maybe-unwrap g0))
   (check-equal? (second g)
                 (~maybe-unwrap g1))
-  (check-equal? (base-composed-function-composer g) usual-composition)
-  (check-equal? (function-applier g) empty-left-curried-arguments "uses the default"))
+  (check-equal? (base-composed-function-composer g) usual-composition))
 
 (define (check-partially-unwrapped-composition g0 g1 g)
   ;; only unwraps the compatible part
@@ -73,8 +72,7 @@
                   (eq? (base-composed-function-composer g))))
            (check-equal? (->list (reverse (~function-members g1))) (->list (take (length g1) (reverse g))))]
           [else (check-equal? (second g) g1)])
-  (check-equal? (base-composed-function-composer g) usual-composition)
-  (check-equal? (function-applier g) empty-left-curried-arguments "uses the default"))
+  (check-equal? (base-composed-function-composer g) usual-composition))
 
 (define-switch (~function-members g)
   [atomic-function? (call (.. list atomic-function-f))]
@@ -95,8 +93,7 @@
   (check-equal? (composed-function-components g)
                 (append (~function-members g0)
                         (~function-members g1)))
-  (check-equal? (base-composed-function-composer g) usual-composition)
-  (check-equal? (function-applier g) empty-left-curried-arguments "uses the default"))
+  (check-equal? (base-composed-function-composer g) usual-composition))
 
 (define (check-power-composition g0 g1 g)
   (check-true (power-function? g))
@@ -104,8 +101,7 @@
   (check-equal? (power-function-n g)
                 (+ (if (power-function? g0) (power-function-n g0) 1)
                    (if (power-function? g1) (power-function-n g1) 1)))
-  (check-equal? (base-composed-function-composer g) usual-composition)
-  (check-equal? (function-applier g) empty-left-curried-arguments "uses the default"))
+  (check-equal? (base-composed-function-composer g) usual-composition))
 
 (define tests
   (test-suite
@@ -290,16 +286,14 @@
      (check-equal? ((uncurry (curry string-append-3)) "a" "b" "c") "abc")
      (check-equal? (((uncurry (curry string-append-3)) "a") "b" "c") "abc"))
    (test-case
-       "Function with arguments application scheme"
-     (check-equal? ((f #:apply-with empty-arguments +) 1 2 3) 6)
-     (define string-append-3 (procedure-reduce-arity string-append 3))
-     (check-equal? ((f #:apply-with empty-arguments string-append-3) "a" "b" "c") "abc")
-     (check-exn exn:fail:contract:arity? (thunk ((f #:apply-with empty-arguments string-append-3) "a" "b"))))
-   (test-case
        "partial"
      (check-true (function? (partial + 1 2 3)))
      (check-equal? ((partial + 1 2 3)) 6)
-     (check-equal? ((partial + 1 2 3) 4) 10))
+     (check-equal? ((partial + 1 2 3) 4) 10)
+     (check-equal? ((partial +) 1 2 3) 6)
+     (define string-append-3 (procedure-reduce-arity string-append 3))
+     (check-equal? ((partial string-append-3) "a" "b" "c") "abc")
+     (check-exn exn:fail:contract:arity? (thunk ((partial string-append-3) "a" "b"))))
    (test-case
        "partial/template"
      (check-true ((partial/template = #:key (just string-upcase) (just "hi") nothing) "HI"))
@@ -319,8 +313,7 @@
      (check-exn exn:fail:contract? (thunk ((app = #:key string-upcase "hi" _) #:key string-downcase "HI")) "overriding template not allowed")
      (check-equal? ((app = #:key _ _ "hi") #:key string-upcase "HI") (= #:key string-upcase "hi" "HI"))
      (check-exn exn:fail:contract? (thunk ((app = #:key _ _ "hi") "HI")) "missing keyword arg in template")
-     (check-equal? ((f string-append #:apply-with (template-arguments 'left (list nothing (just "-") nothing) (hash))) "a" "b") "a-b" "left-chiral template")
-     (check-equal? ((f string-append #:apply-with (template-arguments 'right (list nothing (just "-") nothing) (hash))) "a" "b") "b-a") "right-chiral template")
+     (check-equal? ((template-arguments string-append (list nothing (just "-") nothing) (hash)) "a" "b") "a-b"))
    (test-case
        "application scheme composition"
      (check-equal? ((curry (app string-append _ "-" _) "a") "b") "a-b")
@@ -356,80 +349,74 @@
        (define test-spec
          (list
           (list add1
-                (make-atomic-function + #:apply-with (arguments 1))
+                (make-partial-arguments + (arguments 1) 'left)
                 check-naive-composition)
           (list add1
-                (make-composed-function sub1 + #:apply-with (arguments 1))
+                (make-partial-arguments (make-composed-function sub1 +)
+                                        (arguments 1)
+                                        'left)
                 check-naive-composition)
           (list add1
-                (make-power-function add1 3 #:apply-with (arguments 1))
+                (make-partial-arguments (make-power-function add1 3)
+                                        (arguments 1)
+                                        'left)
                 check-naive-composition)
-          (list (make-atomic-function
-                 + #:apply-with (pass empty-right-curried-arguments
-                                      (arguments 1)
-                                      'right))
+          (list (make-curried-arguments (make-atomic-function +)
+                                        (arguments 1)
+                                        'right)
                 (make-atomic-function +)
                 check-naive-unwrapped-composition)
           (list (make-atomic-function +)
-                (make-atomic-function + #:apply-with (pass empty-right-curried-arguments
-                                                           (arguments 1)
-                                                           'right))
+                (make-curried-arguments (make-atomic-function +)
+                                        (arguments 1)
+                                        'right)
                 check-naive-unwrapped-composition)
           (list (make-composed-function add1 +)
-                (make-atomic-function + #:apply-with (pass empty-right-curried-arguments
-                                                           (arguments 1)
-                                                           'right))
+                (make-curried-arguments (make-atomic-function +)
+                                        (arguments 1)
+                                        'right)
                 check-naive-composition)
           (list (make-atomic-function +)
-                (make-composed-function add1 +
-                                        #:apply-with (pass empty-right-curried-arguments
-                                                           (arguments 1)
-                                                           'right))
+                (make-curried-arguments (make-composed-function add1 +)
+                                        (arguments 1)
+                                        'right)
                 check-naive-unwrapped-composition)
           (list (make-composed-function add1 +)
-                (make-composed-function add1 +
-                                        #:apply-with (pass empty-right-curried-arguments
-                                                           (arguments 1)
-                                                           'right))
+                (make-curried-arguments (make-composed-function add1 +)
+                                        (arguments 1)
+                                        'right)
                 check-naive-composition)
-          (list (make-composed-function sub1 +
-                                        #:apply-with (pass empty-right-curried-arguments
-                                                           (arguments 1)
-                                                           'right))
+          (list (make-curried-arguments (make-composed-function sub1 +)
+                                        (arguments 1)
+                                        'right)
                 (make-composed-function add1 +)
                 check-naive-composition)
-          (list (make-composed-function sub1 +
-                                        #:apply-with (pass empty-right-curried-arguments
-                                                           (arguments 1)
-                                                           'right))
+          (list (make-curried-arguments (make-composed-function sub1 +)
+                                        (arguments 1)
+                                        'right)
                 (make-power-function add1 3)
                 check-naive-composition)
           (list (make-power-function add1 3)
-                (make-composed-function add1
-                                        #:apply-with (pass empty-right-curried-arguments
-                                                           (arguments 1)
-                                                           'right))
+                (make-curried-arguments (make-composed-function add1)
+                                        (arguments 1)
+                                        'right)
                 check-naive-composition)
           (list (make-power-function add1 3)
-                (make-power-function add1 2
-                                     #:apply-with (pass empty-right-curried-arguments
-                                                        (arguments 1)
-                                                        'right))
+                (make-curried-arguments (make-power-function add1 2)
+                                        (arguments 1)
+                                        'right)
                 check-naive-composition)
           (list (make-power-function add1 3)
-                (make-atomic-function add1
-                                      #:apply-with (pass empty-right-curried-arguments
-                                                         (arguments 1)
-                                                         'right))
+                (make-curried-arguments (make-atomic-function add1)
+                                        (arguments 1)
+                                        'right)
                 check-naive-composition)
-          (list (make-power-function add1 3
-                                     #:apply-with (pass empty-right-curried-arguments
-                                                        (arguments 1)
-                                                        'right))
-                (make-atomic-function add1
-                                      #:apply-with (pass empty-right-curried-arguments
-                                                         (arguments 1)
-                                                         'right))
+          (list (make-curried-arguments (make-power-function add1 3)
+                                        (arguments 1)
+                                        'right)
+                (make-curried-arguments (make-atomic-function add1)
+                                        (arguments 1)
+                                        'right)
                 check-naive-composition)))
 
        (for-each (λ (spec)

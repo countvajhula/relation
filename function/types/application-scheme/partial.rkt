@@ -4,18 +4,13 @@
                     predicate/c)
          racket/generic
          racket/hash
-         racket/set
          arguments
-         relation/logic
          (prefix-in b: racket/base)
-         (only-in relation/equivalence
-                  in?)
          ionic)
 
 (require "interface.rkt"
          "../interface.rkt"
          "../base.rkt"
-         "../util.rkt"
          "../../../private/util.rkt")
 
 (provide (contract-out
@@ -26,8 +21,8 @@
              (right list?)
              (kw hash?))]
           [make-partial-arguments (-> b:procedure?
-                                      symbol?
                                       arguments?
+                                      symbol?
                                       partial-arguments?)]))
 
 (define-switch (~min-arity-value arity)
@@ -110,7 +105,7 @@
   (append (partial-arguments-left args)
           (partial-arguments-right args)))
 
-(define (make-partial-arguments f chirality args)
+(define (make-partial-arguments f args chirality)
   (let ([pos (arguments-positional args)]
         [kw (arguments-keyword args)])
     (if (eq? 'left chirality)

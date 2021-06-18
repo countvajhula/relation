@@ -26,8 +26,8 @@
              (right list?)
              (kw hash?))]
           [make-curried-arguments (-> b:procedure?
-                                      symbol?
                                       arguments?
+                                      symbol?
                                       curried-arguments?)]))
 
 (define-switch (~min-arity-value arity)
@@ -85,6 +85,7 @@
      ;; function with a modified applier
      (let* ([f (curried-arguments-f this)]
             [updated-application (pass this invocation-args)]
+            [min-arity (~min-arity updated-application)]
             [args (flat-arguments updated-application)]
             [pos-args (arguments-positional args)]
             [kw-args (arguments-keyword args)])
@@ -97,7 +98,7 @@
                        [exn:fail:contract:arity?
                         (λ (exn)
                           (if (> (length pos-args)
-                                 (~min-arity f)) ; should this be updated-application?
+                                 min-arity)
                               (raise exn)
                               updated-application))]
                        [exn:fail:contract?
@@ -108,12 +109,12 @@
                         ;; additionally, also handle invalid keyword arg here
                         (λ (exn)
                           (let-values ([(req-kw opt-kw)
-                                        (keywords f)])
+                                        (-keywords updated-application)])
                             (if (or (hash-empty? kw-args)
                                     ;; the arity error is masked in the presence of keyword
                                     ;; args so we check for it again here
                                     (> (length pos-args)
-                                       (~min-arity f))
+                                       min-arity)
                                     ;; any unexpected keywords?
                                     (any?
                                      (map (!! (in? (append req-kw opt-kw)))
@@ -121,7 +122,7 @@
                                     ;; all required arguments received?
                                     (and (subset? req-kw (hash-keys kw-args))
                                          (>= (length pos-args)
-                                             (~min-arity f))))
+                                             min-arity)))
                                 (raise exn)
                                 updated-application)))])
          (-procedure-apply f args))))
@@ -156,7 +157,7 @@
   (append (curried-arguments-left args)
           (curried-arguments-right args)))
 
-(define (make-curried-arguments f chirality args)
+(define (make-curried-arguments f args chirality)
   (let ([pos (arguments-positional args)]
         [kw (arguments-keyword args)])
     (if (eq? 'left chirality)

@@ -61,8 +61,8 @@
   ;; and power function if the exponent is 1
   (switch (g)
           [(and function?
-                application-scheme?
-                empty-application?)
+                (or (not application-scheme?)
+                    empty-application?))
            (connect
             [atomic-function? (call atomic-function-f)]
             [(and composed-function?
@@ -112,8 +112,9 @@
 (define (function-compose g h composer)
   ;; this function assumes g and h are rich function types
   (switch (g h)
-          [(or (~> (allow application-scheme?)
-                   (any (not empty-application?)))
+          [(or (and (any application-scheme?)
+                    (~> (allow application-scheme?)
+                        (any (not empty-application?))))
                (not (~compatible-composition? composer)))
            (call (~compose-naively composer))]
           [(~> (>< ~function-members) equal?)
@@ -122,7 +123,6 @@
            (call (~compose-naively composer))]
           [else (call (~compose-by-merging composer))]))
 
-;; TODO: avoid passing around the applier in these interfaces?
 (define (compose-functions composer . gs)
   (switch (gs)
           [empty? (function-null #:compose-with composer)]
