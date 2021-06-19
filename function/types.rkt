@@ -7,22 +7,22 @@
                   conj)
          contract/social)
 
-(require relation/function/types/interface
-         relation/function/types/base
-         relation/function/types/atomic
-         relation/function/types/composed
-         relation/function/types/power
-         relation/function/types/application-scheme
-         (except-in relation/function/types/util
+(require relation/function/type/interface
+         relation/function/type/base
+         relation/function/type/atomic
+         relation/function/type/composed
+         relation/function/type/power
+         relation/function/type/application-scheme
+         (except-in relation/function/type/util
                     !!))
 
-(provide (all-from-out relation/function/types/interface
-                       relation/function/types/base
-                       relation/function/types/atomic
-                       relation/function/types/composed
-                       relation/function/types/power
-                       relation/function/types/application-scheme
-                       relation/function/types/util)
+(provide (all-from-out relation/function/type/interface
+                       relation/function/type/base
+                       relation/function/type/atomic
+                       relation/function/type/composed
+                       relation/function/type/power
+                       relation/function/type/application-scheme
+                       relation/function/type/util)
          (contract-out
           [function-cons (binary-constructor/c procedure? base-composed-function?)]))
 
