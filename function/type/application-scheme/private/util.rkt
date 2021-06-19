@@ -1,7 +1,6 @@
 #lang racket/base
 
 (require ionic
-         (only-in racket/function curry)
          (rename-in racket/function
                     [negate !!]
                     [conjoin &&]))
@@ -42,9 +41,9 @@
             ;; case from the list, flatting the list in case we
             ;; are left with a single arity value.
             [list? (call (~>> (map loop)
-                              (esc (curry filter
-                                          (!! (&& integer?
-                                                  negative?))))
+                              (filter
+                               (!! (&& integer?
+                                       negative?)))
                               (if singleton? car _)))]
             [else (call (raise-argument-error 'revise-arity
                                               "normalized-arity?"
