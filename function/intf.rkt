@@ -5,7 +5,7 @@
          arguments
          ionic)
 
-(require "types.rkt"
+(require "type.rkt"
          "composition.rkt"
          "../private/util.rkt")
 

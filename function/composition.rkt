@@ -11,7 +11,7 @@
          contract/social
          ionic)
 
-(require "types.rkt"
+(require "type.rkt"
          "../private/util.rkt")
 
 (provide (contract-out

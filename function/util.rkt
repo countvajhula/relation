@@ -21,7 +21,7 @@
          contract/social
          ionic)
 
-(require "types.rkt"
+(require "type.rkt"
          "composition.rkt"
          "intf.rkt")
 
