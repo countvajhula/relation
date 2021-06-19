@@ -11,7 +11,8 @@
 (require "interface.rkt"
          "../interface.rkt"
          "../base.rkt"
-         "../../../private/util.rkt")
+         "../../../private/util.rkt"
+         "private/util.rkt")
 
 (provide (contract-out
           [struct partial-function
@@ -24,17 +25,6 @@
                                      arguments?
                                      symbol?
                                      partial-function?)]))
-
-(define-switch (~min-arity-value arity)
-  [number? arity]
-  [arity-at-least? (call arity-at-least-value)]
-  [list? (call (~>> (map ~min-arity-value) (apply min)))]
-  [else (raise-argument-error 'min-arity
-                              "normalized-arity?"
-                              arity)])
-
-(define (~min-arity f)
-  (~min-arity-value (arity f)))
 
 (struct partial-function function (f chirality left right kw)
   #:transparent
@@ -75,8 +65,9 @@
             [args (flat-arguments updated-application)])
        (-procedure-apply f args)))
    (define (arity this)
-     ;; TODO: subtract args already supplied
-     (-arity (partial-function-f this)))
+     (let ([naive-arity (-arity (partial-function-f this))]
+           [pos (partial-function-positional this)])
+       (revise-arity naive-arity (length pos))))
    (define (keywords this)
      ;; TODO: subtract args already supplied
      (-keywords (partial-function-f this)))]

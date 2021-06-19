@@ -16,7 +16,8 @@
          "../interface.rkt"
          "../base.rkt"
          "../util.rkt"
-         "../../../private/util.rkt")
+         "../../../private/util.rkt"
+         "private/util.rkt")
 
 (provide (contract-out
           [struct curried-function
@@ -30,19 +31,6 @@
                                      symbol?
                                      curried-function?)]))
 
-(define-switch (~min-arity-value arity)
-  [number? arity]
-  [arity-at-least? (call arity-at-least-value)]
-  [list? (call (~>> (map ~min-arity-value) (apply min)))]
-  [else (raise-argument-error 'min-arity
-                              "normalized-arity?"
-                              arity)])
-
-(define (~min-arity f)
-  (~min-arity-value (arity f)))
-
-;; TODO: maybe rename to curried-application
-;; or curried-function
 ;; TODO: check function arity in pass and reject if incompatible
 (struct curried-function function (f chirality left right kw)
   #:transparent
@@ -85,7 +73,7 @@
      ;; function with a modified applier
      (let* ([f (curried-function-f this)]
             [updated-application (pass this invocation-args)]
-            [min-arity (~min-arity updated-application)]
+            [min-arity (min-arity f)] ; check against the underlying function, to keep it simple
             [args (flat-arguments updated-application)]
             [pos-args (arguments-positional args)]
             [kw-args (arguments-keyword args)])
@@ -127,8 +115,9 @@
                                 updated-application)))])
          (-procedure-apply f args))))
    (define (arity this)
-     ;; TODO: subtract args already supplied
-     (-arity (curried-function-f this)))
+     (let ([naive-arity (-arity (curried-function-f this))]
+           [pos (curried-function-positional this)])
+       (revise-arity naive-arity (length pos))))
    (define (keywords this)
      ;; TODO: subtract args already supplied
      (-keywords (curried-function-f this)))]
