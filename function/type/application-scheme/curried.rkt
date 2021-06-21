@@ -97,7 +97,7 @@
                         ;; additionally, also handle invalid keyword arg here
                         (λ (exn)
                           (let-values ([(req-kw opt-kw)
-                                        (-keywords updated-application)])
+                                        (-keywords f)]) ; check against underlying function
                             (if (or (hash-empty? kw-args)
                                     ;; the arity error is masked in the presence of keyword
                                     ;; args so we check for it again here
@@ -119,8 +119,14 @@
            [pos (curried-function-positional this)])
        (revise-arity naive-arity (length pos))))
    (define (keywords this)
-     ;; TODO: subtract args already supplied
-     (-keywords (curried-function-f this)))]
+     (let-values ([(naive-required-keywords naive-accepted-keywords)
+                   (-keywords (curried-function-f this))])
+       (let ([supplied-kws (hash-keys (curried-function-kw this))])
+         (values (list-subtract naive-required-keywords
+                                supplied-kws)
+                 (and (list? naive-accepted-keywords)
+                      (list-subtract naive-accepted-keywords
+                                     supplied-kws))))))]
 
   #:methods gen:custom-write
   [(define (write-proc self port mode)

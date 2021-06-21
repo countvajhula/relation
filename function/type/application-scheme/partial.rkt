@@ -69,8 +69,14 @@
            [pos (partial-function-positional this)])
        (revise-arity naive-arity (length pos))))
    (define (keywords this)
-     ;; TODO: subtract args already supplied
-     (-keywords (partial-function-f this)))]
+     (let-values ([(naive-required-keywords naive-accepted-keywords)
+                   (-keywords (partial-function-f this))])
+       (let ([supplied-kws (hash-keys (partial-function-kw this))])
+         (values (list-subtract naive-required-keywords
+                                supplied-kws)
+                 (and (list? naive-accepted-keywords)
+                      (list-subtract naive-accepted-keywords
+                                     supplied-kws))))))]
 
   #:methods gen:custom-write
   [(define (write-proc self port mode)
