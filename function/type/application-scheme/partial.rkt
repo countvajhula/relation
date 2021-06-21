@@ -89,9 +89,9 @@
            [right (partial-function-right self)]
            [kw (partial-function-kw self)])
        (cond [(null? right)
-              (recur (append left (list '_)) port)]
+              (recur (append left (list '_) (kwhash->altlist kw)) port)]
              [(null? left)
-              (recur (append (list '_) right) port)]
+              (recur (append (list '_) right (kwhash->altlist kw)) port)]
              [else (recur (append left
                                   (list '_)
                                   right
