@@ -22,8 +22,7 @@
          ionic)
 
 (require "type.rkt"
-         "composition.rkt"
-         "intf.rkt")
+         "composition.rkt")
 
 (provide call
          (contract-out
@@ -52,7 +51,7 @@
      (keyword-apply f ks vs xs))))
 
 (define (negate g)
-  (f not g))
+  (compose not g))
 
 (define !! negate)
 
@@ -84,12 +83,12 @@
   (apply values (filter f args)))
 
 (define (uncurry g)
-  (f (λ args
-       (let loop ([rem-args (reverse args)])
-         (match rem-args
-           ['() (g)]
-           [(list v) (g v)]
-           [(list v vs ...) ((loop vs) v)])))))
+  (λ args
+    (let loop ([rem-args (reverse args)])
+      (match rem-args
+        ['() (g)]
+        [(list v) (g v)]
+        [(list v vs ...) ((loop vs) v)]))))
 
 (define/arguments (curry args)
   (let* ([f (first (arguments-positional args))]

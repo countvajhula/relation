@@ -7,6 +7,7 @@
 
 (require "type.rkt"
          "composition.rkt"
+         "util.rkt"
          "../private/util.rkt")
 
 (provide
@@ -32,13 +33,14 @@
 ;; interfaces in this file, as before
 (define (make-function #:compose-with [composer usual-composition]
                        . fs)
-  (switch (fs)
-          [singleton? (atomic-function (unwrap fs))]
-          [else
-           (let ([g (apply compose-functions
-                           composer
-                           fs)])
-             g)]))
+  (curry
+   (switch (fs)
+           [singleton? (atomic-function (unwrap fs))]
+           [else
+            (let ([g (apply compose-functions
+                            composer
+                            fs)])
+              g)])))
 
 (define f make-function)
 
