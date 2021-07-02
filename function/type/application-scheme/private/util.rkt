@@ -17,8 +17,7 @@
 
 (module+ test
   (require rackunit
-           rackunit/text-ui
-           "../../../../tests/private/util.rkt"))
+           rackunit/text-ui))
 
 (define-switch (~min-arity-value arity)
   [number? arity]
@@ -65,6 +64,16 @@
                 (cons v (list-subtract vs lst2)))])]))
 
 (module+ test
+
+  (define-syntax-rule (do-with-value value code ...)
+    (let ()
+      code
+      ...
+      value))
+
+  (define-syntax-rule (just-do code ...)
+    ;; do and ignore the result
+    (do-with-value (void) code ...))
 
   (define tests
     (test-suite
