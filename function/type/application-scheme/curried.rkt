@@ -10,6 +10,10 @@
          (prefix-in b: racket/base)
          (only-in relation/equivalence
                   in?)
+         (only-in data/collection
+                  gen:collection
+                  gen:sequence
+                  gen:countable)
          ionic)
 
 (require "interface.rkt"
@@ -127,6 +131,32 @@
                  (and (list? naive-accepted-keywords)
                       (list-subtract naive-accepted-keywords
                                      supplied-kws))))))]
+
+  #:methods gen:collection
+  [(define/generic -conj conj)
+   (define (conj self elem)
+     (-conj (curried-function-f self) elem))]
+
+  #:methods gen:sequence
+  [(define/generic -empty? empty?)
+   (define/generic -first first)
+   (define/generic -rest rest)
+   (define/generic -reverse reverse)
+   (define (empty? self)
+     (-empty? (curried-function-f self)))
+   (define (first self)
+     (-first (curried-function-f self)))
+   (define (rest self)
+     (struct-copy curried-function self
+                  [f (-rest (curried-function-f self))]))
+   (define (reverse self)
+     (struct-copy curried-function self
+                  [f (-reverse (curried-function-f self))]))]
+
+  #:methods gen:countable
+  [(define/generic -length length)
+   (define (length self)
+     (-length (curried-function-f self)))]
 
   #:methods gen:custom-write
   [(define (write-proc self port mode)

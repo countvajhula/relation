@@ -4,7 +4,8 @@
                     predicate/c)
          arguments
          (only-in data/collection
-                  conj)
+                  conj
+                  collection?)
          contract/social)
 
 (require relation/function/type/interface
@@ -24,6 +25,6 @@
                        relation/function/type/application-scheme
                        relation/function/type/util)
          (contract-out
-          [function-cons (binary-constructor/c procedure? base-composed-function?)]))
+          [function-cons (binary-constructor/c procedure? collection?)]))
 
 (define function-cons (flip conj))

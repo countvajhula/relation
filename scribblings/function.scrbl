@@ -136,8 +136,7 @@ This module provides general-purpose utilities to support programming in the @hy
 @deftogether[(
   @defproc[(function-cons [v procedure?] [w base-composed-function?])
            base-composed-function?]
-  @defproc[(function-null [#:compose-with composer monoid? (monoid #, @racketlink[b:compose]{@racket[compose]} values)]
-                          [#:apply-with applier application-scheme? empty-left-curried-arguments])
+  @defproc[(function-null [#:compose-with composer monoid? (monoid #, @racketlink[b:compose]{@racket[compose]} values)])
            composed-function?]
   )]{
  Constructors for the @racket[base-composed-function] type analogous to @racket[cons] and @racket[null] for lists. @racket[function-null] also serves as the identity value for composition.
@@ -593,22 +592,18 @@ This module defines an interface, @racket[gen:procedure], to encode the idea of 
 
 @deftogether[(
   @defproc[(make-function [#:compose-with composer monoid? (monoid #, @racketlink[b:compose]{@racket[compose]} values)]
-                          [#:apply-with applier application-scheme? empty-left-curried-arguments]
                           [g procedure?]
                           ...)
            function?]
   @defproc[(f [#:compose-with composer monoid? (monoid #, @racketlink[b:compose]{@racket[compose]} values)]
-              [#:apply-with applier application-scheme? empty-left-curried-arguments]
               [g procedure?]
               ...)
            function?]
   @defproc[(make-threading-function [#:compose-with composer monoid? (monoid #, @racketlink[b:compose]{@racket[compose]} values)]
-                                    [#:apply-with applier application-scheme? empty-left-curried-arguments]
                                     [g procedure?]
                                     ...)
            function?]
   @defproc[(f> [#:compose-with composer monoid? (monoid #, @racketlink[b:compose]{@racket[compose]} values)]
-               [#:apply-with applier application-scheme? empty-left-curried-arguments]
                [g procedure?]
                ...)
            function?]
@@ -660,12 +655,9 @@ This module defines an interface, @racket[gen:procedure], to encode the idea of 
 
 @examples[
     #:eval eval-for-docs
-    (application-scheme? empty-arguments)
-    (application-scheme? (arguments 1 2 3 #:key number->string))
-    (application-scheme? empty-left-curried-arguments)
-    (application-scheme? (curried-function 'left (list 1 2 3) (list 4 5) (hash '#:key number->string)))
-    (application-scheme? (template-function 'left (list) (hash)))
-    (application-scheme? (template-function 'left (list nothing (just 3)) (hash '#:key (just number->string) '#:kw nothing)))
+    (application-scheme? (curried-function append 'left (list 1 2 3) (list 4 5) (hash '#:key number->string)))
+    (application-scheme? (template-function string-append (list) (hash)))
+    (application-scheme? (template-function = (list nothing (just 3)) (hash '#:key (just number->string) '#:kw nothing)))
   ]
 
  To define custom application schemes, the following methods need to be implemented.
@@ -717,32 +709,32 @@ This module defines an interface, @racket[gen:procedure], to encode the idea of 
    ]
 }
 
-@deftogether[(
-@defstruct[curried-function ([chirality (one-of/c 'left 'right)]
-                              [left list?]
-                              [right list?]
-                              [kw hash?])
-                             #:omit-constructor]
-@defthing[empty-left-curried-arguments curried-function?]
- )]{
+@defstruct[curried-function ([f procedure?]
+                             [chirality (one-of/c 'left 'right)]
+                             [left list?]
+                             [right list?]
+                             [kw hash?])
+                             #:omit-constructor]{
+
  An @tech{application scheme} representing the arguments that parametrize (i.e. have already been supplied to) a function. This includes all arguments that have been supplied by either left- or right-currying. This is a subtype of @racket[base-application-scheme] and therefore exhibits a @racket[chirality].
 
- @racket[empty-left-curried-arguments] represents an empty set of curried arguments, often used as the initial application scheme in a curried function that may accumulate arguments over time.
-
  @itemlist[
+    @item{@racket[f] - The function to be applied.}
     @item{@racket[left] - The positional arguments that parametrize this function on the left (e.g. passed in by left-currying).}
     @item{@racket[right] - The positional arguments that parametrize this function on the right (e.g. passed in by right-currying).}
     @item{@racket[kw] - The keyword arguments that parametrize this function.}
    ]
 }
 
-@defstruct[template-function ([chirality (one-of/c 'left 'right)]
+@defstruct[template-function ([f procedure?]
+                              [chirality (one-of/c 'left 'right)]
                               [pos list?]
                               [kw hash?])
                              #:omit-constructor]{
  An @tech{application scheme} encoding a template expressing the expected arguments -- whether positional or keyword -- to a function. This is a subtype of @racket[base-application-scheme] and therefore exhibits a @racket[chirality]. The values of positional or keyword arguments are expected to be @tech[#:doc '(lib "scribblings/data/functional.scrbl")]{optional values}. Typically, template-based partial application would be used via the @racket[app] macro, so that there is no need to muck about with optional values in normal usage.
 
  @itemlist[
+    @item{@racket[f] - The function to be applied.}
     @item{@racket[pos] - The positional arguments that parametrize this function, which may be actual values or blanks expected to be filled at invocation time.}
     @item{@racket[kw] - The keyword arguments that parametrize this function, which may be actual values or blanks expected to be filled at invocation time.}
    ]
