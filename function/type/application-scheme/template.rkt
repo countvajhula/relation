@@ -95,7 +95,9 @@
 
    (define (flat-arguments this)
      (make-arguments (filter-just (template-function-pos this))
-                     (template-function-kw this)))]
+                     (template-function-kw this)))
+   (define (unwrap-application this)
+     (template-function-f this))]
 
   #:methods gen:procedure
   [(define/generic -procedure-apply procedure-apply)

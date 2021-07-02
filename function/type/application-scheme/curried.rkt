@@ -63,7 +63,9 @@
                                        (arguments-keyword args))))))
    (define (flat-arguments this)
      (make-arguments (curried-function-positional this)
-                     (curried-function-kw this)))]
+                     (curried-function-kw this)))
+   (define (unwrap-application this)
+     (curried-function-f this))]
 
   ;; do we want to fail at the pass level? or if we bypass pass
   ;; altogether, it would simply flat-arguments and see what happens

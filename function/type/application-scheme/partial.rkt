@@ -53,7 +53,9 @@
                                        (arguments-keyword args))))))
    (define (flat-arguments this)
      (make-arguments (partial-function-positional this)
-                     (partial-function-kw this)))]
+                     (partial-function-kw this)))
+   (define (unwrap-application this)
+     (partial-function-f this))]
 
   #:methods gen:procedure
   [(define/generic -procedure-apply procedure-apply)

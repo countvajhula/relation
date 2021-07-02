@@ -18,7 +18,9 @@
                     arguments?
                     application-scheme?)]
           [flat-arguments (function/c application-scheme?
-                                      arguments?)]))
+                                      arguments?)]
+          [unwrap-application (function/c application-scheme?
+                                          procedure?)]))
 
 ;; TODO: ideally add tests for method implementations in each
 ;; application-scheme in a test submodule
@@ -33,12 +35,13 @@
   ;; would simply be raised to the caller
   (pass application-scheme args)
 
-  ;; (object-function application-scheme)
-
   ;; flat-arguments compiles all previously supplied arguments
   ;; into a "flat" arguments structure that represents the
   ;; arguments for the invocation of the underlying function
-  (flat-arguments application-scheme))
+  (flat-arguments application-scheme)
+
+  ;; yields the function being applied
+  (unwrap-application application-scheme))
 
 ;; TODO: can we eliminate pass?
 ;; right-chiral (partial) arguments?
