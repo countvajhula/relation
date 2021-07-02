@@ -82,8 +82,8 @@
 (define (~compatible-composition? g h composer)
   (on (g h)
       (or (all (and base-composed-function?
-                    (~> (>< base-composed-function-composer)
-                        (all (eq? composer)))))
+                    (~> base-composed-function-composer
+                        (eq? composer))))
           (and (any base-composed-function?)
                (any (not base-composed-function?))
                (~>> list
