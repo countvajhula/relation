@@ -16,13 +16,9 @@
 (provide (contract-out
           [struct function ()]))
 
+;; can probably eliminate this entirely instead of retaining
+;; it as an abstract base type - formerly it was needed mainly
+;; to provide application semantics, which are now provided
+;; by the gen:procedure interface itself via #:derive-property
 (struct function ()
-  #:transparent
-
-  #:property prop:procedure
-  (lambda/arguments
-   packed-args
-   (let* ([self (first (arguments-positional packed-args))]
-          [args (make-arguments (rest (arguments-positional packed-args))
-                                (arguments-keyword packed-args))])
-     (procedure-apply self args))))
+  #:transparent)

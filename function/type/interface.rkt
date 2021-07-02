@@ -2,6 +2,7 @@
 
 (require racket/generic
          racket/function
+         racket/list
          (except-in racket/contract/base
                     predicate/c)
          contract/social
@@ -25,6 +26,15 @@
   (keywords procedure)
   (arity procedure)
   (procedure-apply procedure args)
+
+  #:derive-property prop:procedure
+  (lambda/arguments
+   packed-args
+   (let* ([self (first (arguments-positional packed-args))]
+          [args (make-arguments (rest (arguments-positional packed-args))
+                                (arguments-keyword packed-args))])
+     (procedure-apply self args)))
+
   #:defaults
   ([b:procedure?
     (define keywords procedure-keywords)
