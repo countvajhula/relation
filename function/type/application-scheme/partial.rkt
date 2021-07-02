@@ -4,6 +4,7 @@
                     predicate/c)
          racket/generic
          racket/hash
+         racket/list
          arguments
          (prefix-in b: racket/base)
          ionic)
@@ -61,6 +62,7 @@
   [(define/generic -procedure-apply procedure-apply)
    (define/generic -arity arity)
    (define/generic -keywords keywords)
+   (define/generic -render-function render-function)
    (define (procedure-apply this invocation-args)
      (let* ([f (partial-function-f this)]
             [updated-application (pass this invocation-args)]
@@ -78,27 +80,31 @@
                                 supplied-kws)
                  (and (list? naive-accepted-keywords)
                       (list-subtract naive-accepted-keywords
-                                     supplied-kws))))))]
-
-  #:methods gen:custom-write
-  [(define (write-proc self port mode)
-     (define recur
-       (case mode
-         [(#t) write]
-         [(#f) display]
-         [else (λ (p port) (print p port mode))]))
-     (let ([left (partial-function-left self)]
-           [right (partial-function-right self)]
-           [kw (partial-function-kw self)])
-       (cond [(null? right)
-              (recur (append left (list '_) (kwhash->altlist kw)) port)]
-             [(null? left)
-              (recur (append (list '_) right (kwhash->altlist kw)) port)]
-             [else (recur (append left
-                                  (list '_)
-                                  right
-                                  (kwhash->altlist kw))
-                          port)])))])
+                                     supplied-kws))))))
+   (define (render-function this)
+     (let* ([f (partial-function-f this)]
+            [left (partial-function-left this)]
+            [right (partial-function-right this)]
+            [kw (partial-function-kw this)]
+            [inner-representation (-render-function f)]
+            [marker-position (and (list? inner-representation)
+                                  (index-of inner-representation 'λ))]
+            [args (cond [(null? right)
+                         (append left (list '_) (kwhash->altlist kw))]
+                        [(null? left)
+                         (append (list '_) right (kwhash->altlist kw))]
+                        [else (append left
+                                      (list '_)
+                                      right
+                                      (kwhash->altlist kw))])])
+       (if (or (application-scheme? f)
+               (not (list? inner-representation))
+               (not marker-position)) ; unfamiliar function representation
+           `(,inner-representation ,@args)
+           (let-values ([(before after)
+                         (split-at inner-representation
+                                   (add1 marker-position))])
+             `(,@before ,args ,@after)))))])
 
 (define (partial-function-positional args)
   (append (partial-function-left args)

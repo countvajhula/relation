@@ -5,6 +5,7 @@
          racket/generic
          racket/hash
          racket/set
+         racket/list
          arguments
          relation/logic
          (prefix-in b: racket/base)
@@ -74,6 +75,7 @@
   [(define/generic -procedure-apply procedure-apply)
    (define/generic -arity arity)
    (define/generic -keywords keywords)
+   (define/generic -render-function render-function)
    (define (procedure-apply this invocation-args)
      ;; attempt to eval the function. If it fails, return a new
      ;; function with a modified applier
@@ -132,7 +134,31 @@
                                 supplied-kws)
                  (and (list? naive-accepted-keywords)
                       (list-subtract naive-accepted-keywords
-                                     supplied-kws))))))]
+                                     supplied-kws))))))
+   (define (render-function this)
+     (let* ([f (curried-function-f this)]
+            [left (curried-function-left this)]
+            [right (curried-function-right this)]
+            [kw (curried-function-kw this)]
+            [inner-representation (-render-function f)]
+            [marker-position (and (list? inner-representation)
+                                  (index-of inner-representation 'λ))]
+            [args (cond [(null? right)
+                         (append left (list '_) (kwhash->altlist kw))]
+                        [(null? left)
+                         (append (list '_) right (kwhash->altlist kw))]
+                        [else (append left
+                                      (list '_)
+                                      right
+                                      (kwhash->altlist kw))])])
+       (if (or (application-scheme? f)
+               (not (list? inner-representation))
+               (not marker-position)) ; unfamiliar function representation
+           `(,inner-representation ,@args)
+           (let-values ([(before after)
+                         (split-at inner-representation
+                                   (add1 marker-position))])
+             `(,@before ,args ,@after)))))]
 
   #:methods gen:collection
   [(define/generic -conj conj)
@@ -158,27 +184,7 @@
   #:methods gen:countable
   [(define/generic -length length)
    (define (length self)
-     (-length (curried-function-f self)))]
-
-  #:methods gen:custom-write
-  [(define (write-proc self port mode)
-     (define recur
-       (case mode
-         [(#t) write]
-         [(#f) display]
-         [else (λ (p port) (print p port mode))]))
-     (let ([left (curried-function-left self)]
-           [right (curried-function-right self)]
-           [kw (curried-function-kw self)])
-       (cond [(null? right)
-              (recur (append left (list '_) (kwhash->altlist kw)) port)]
-             [(null? left)
-              (recur (append (list '_) right (kwhash->altlist kw)) port)]
-             [else (recur (append left
-                                  (list '_)
-                                  right
-                                  (kwhash->altlist kw))
-                          port)])))])
+     (-length (curried-function-f self)))])
 
 (define (curried-function-positional args)
   (append (curried-function-left args)

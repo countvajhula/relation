@@ -5,6 +5,7 @@
                     predicate/c)
          racket/generic
          racket/format
+         racket/list
          arguments
          (prefix-in b: racket/base)
          (except-in data/maybe maybe/c)
@@ -103,6 +104,7 @@
   [(define/generic -procedure-apply procedure-apply)
    (define/generic -arity arity)
    (define/generic -keywords keywords)
+   (define/generic -render-function render-function)
    (define (procedure-apply this invocation-args)
      (let* ([f (template-function-f this)]
             [updated-application (pass this invocation-args)]
@@ -111,22 +113,26 @@
    (define (arity this)
      (-arity (template-function-f this)))
    (define (keywords this)
-     (-keywords (template-function-f this)))]
-
-  #:methods gen:custom-write
-  [(define (write-proc self port mode)
-     (define recur
-       (case mode
-         [(#t) write]
-         [(#f) display]
-         [else (λ (p port) (print p port mode))]))
-     (let ([pos (template-function-pos self)]
-           [kw (template-function-kw self)])
-       (recur (append (map (f:curry from-just '_) pos)
-                      (join-list (hash-map kw
-                                           (λ (k v)
-                                             (list k (from-just '_ v))))))
-              port)))])
+     (-keywords (template-function-f this)))
+   (define (render-function this)
+     (let* ([f (template-function-f this)]
+            [pos (template-function-pos this)]
+            [kw (template-function-kw this)]
+            [inner-representation (-render-function f)]
+            [marker-position (and (list? inner-representation)
+                                  (index-of inner-representation 'λ))]
+            [args (append (map (f:curry from-just '_) pos)
+                          (join-list (hash-map kw
+                                               (λ (k v)
+                                                 (list k (from-just '_ v))))))])
+       (if (or (application-scheme? f)
+               (not (list? inner-representation))
+               (not marker-position)) ; unfamiliar function representation
+           `(,inner-representation ,@args)
+           (let-values ([(before after)
+                         (split-at inner-representation
+                                   (add1 marker-position))])
+             `(,@before ,args ,@after)))))])
 
 (define (make-template-function f args)
   (let ([pos (arguments-positional args)]
