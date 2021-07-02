@@ -20,12 +20,16 @@
                              normalized-arity?)]
           [procedure-apply (-> procedure?
                                arguments?
-                               any)]))
+                               any)]
+          [render-function (-> procedure?
+                               (or/c list?
+                                     procedure?))]))
 
 (define-generics procedure
   (keywords procedure)
   (arity procedure)
   (procedure-apply procedure args)
+  (render-function procedure)
 
   #:derive-property prop:procedure
   (lambda/arguments
@@ -35,8 +39,12 @@
                                 (arguments-keyword packed-args))])
      (procedure-apply self args)))
 
+  #:fallbacks
+  [(define render-function identity)]
+
   #:defaults
   ([b:procedure?
     (define keywords procedure-keywords)
     (define arity procedure-arity)
-    (define procedure-apply apply/arguments)]))
+    (define procedure-apply apply/arguments)
+    (define render-function identity)]))

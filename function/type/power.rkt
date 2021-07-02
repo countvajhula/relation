@@ -39,7 +39,20 @@
    (define (arity self)
      (-arity (power-function-f self)))
    (define (procedure-apply self args)
-     (-procedure-apply (power (power-function-f self) (power-function-n self)) args))]
+     (-procedure-apply (power (power-function-f self) (power-function-n self)) args))
+   (define (render-function self)
+     (let ([composer (base-composed-function-composer self)]
+           [f (power-function-f self)]
+           [n (power-function-n self)])
+       (list 'λ
+             (list (match composer
+                     [(== usual-composition) '..]
+                     [(== conjoin-composition) '&&]
+                     [(== disjoin-composition) '||]
+                     [_ '??])
+                   '^
+                   n
+                   f))))]
 
   #:methods gen:collection
   [(define (conj self elem)
@@ -58,17 +71,5 @@
          [(#t) write]
          [(#f) display]
          [else (λ (p port) (print p port mode))]))
-     (let* ([composer (base-composed-function-composer self)]
-            [f (power-function-f self)]
-            [n (power-function-n self)]
-            [representation
-             (list 'λ
-                   (list (match composer
-                           [(== usual-composition) '..]
-                           [(== conjoin-composition) '&&]
-                           [(== disjoin-composition) '||]
-                           [_ '??])
-                         '^
-                         n
-                         f))])
+     (let ([representation (render-function self)])
        (recur representation port)))])

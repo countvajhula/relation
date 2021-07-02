@@ -79,7 +79,17 @@
      (let ([components (composed-function-components self)]
            [composer (base-composed-function-composer self)])
        (-procedure-apply (apply composer components)
-                         args)))]
+                         args)))
+   (define (render-function self)
+     (let ([components (composed-function-components self)]
+           [composer (base-composed-function-composer self)])
+       (list 'λ
+             (list* (match composer
+                      [(== usual-composition) '..]
+                      [(== conjoin-composition) '&&]
+                      [(== disjoin-composition) '||]
+                      [_ '??])
+                    components))))]
 
   #:methods gen:collection
   [(define (conj self elem)
@@ -114,16 +124,7 @@
          [(#t) write]
          [(#f) display]
          [else (λ (p port) (print p port mode))]))
-     (let* ([composer (base-composed-function-composer self)]
-            [components (composed-function-components self)]
-            [representation
-             (list 'λ
-                   (list* (match composer
-                            [(== usual-composition) '..]
-                            [(== conjoin-composition) '&&]
-                            [(== disjoin-composition) '||]
-                            [_ '??])
-                          components))])
+     (let ([representation (render-function self)])
        (recur representation port)))])
 
 (define (make-composed-function #:compose-with [composer usual-composition]

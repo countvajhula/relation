@@ -25,7 +25,9 @@
    (define (arity self)
      (-arity (atomic-function-f self)))
    (define (procedure-apply self args)
-     (-procedure-apply (atomic-function-f self) args))]
+     (-procedure-apply (atomic-function-f self) args))
+   (define (render-function self)
+     (list 'λ (atomic-function-f self)))]
 
   #:methods gen:custom-write
   [(define (write-proc self port mode)
@@ -34,10 +36,7 @@
          [(#t) write]
          [(#f) display]
          [else (λ (p port) (print p port mode))]))
-     (let* ([f (atomic-function-f self)]
-            [representation
-             (list 'λ
-                   f)])
+     (let ([representation (render-function self)])
        (recur representation port)))])
 
 ;; don't need this anymore
