@@ -21,4 +21,14 @@
 ;; to provide application semantics, which are now provided
 ;; by the gen:procedure interface itself via #:derive-property
 (struct function ()
-  #:transparent)
+  #:transparent
+
+  #:methods gen:custom-write
+  [(define (write-proc self port mode)
+     (define recur
+       (case mode
+         [(#t) write]
+         [(#f) display]
+         [else (λ (p port) (print p port mode))]))
+     (let ([representation (render-function self)])
+       (recur representation port)))])

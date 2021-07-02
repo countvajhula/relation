@@ -115,17 +115,7 @@
   #:methods gen:countable
   [(define/generic -length length)
    (define (length self)
-     (-length (composed-function-components self)))]
-
-  #:methods gen:custom-write
-  [(define (write-proc self port mode)
-     (define recur
-       (case mode
-         [(#t) write]
-         [(#f) display]
-         [else (λ (p port) (print p port mode))]))
-     (let ([representation (render-function self)])
-       (recur representation port)))])
+     (-length (composed-function-components self)))])
 
 (define (make-composed-function #:compose-with [composer usual-composition]
                                 . fs)

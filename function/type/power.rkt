@@ -62,14 +62,4 @@
                            [n (add1 (power-function-n self))])]
              [else
               (composed-function (base-composed-function-composer self)
-                                 (list elem self))]))]
-
-  #:methods gen:custom-write
-  [(define (write-proc self port mode)
-     (define recur
-       (case mode
-         [(#t) write]
-         [(#f) display]
-         [else (λ (p port) (print p port mode))]))
-     (let ([representation (render-function self)])
-       (recur representation port)))])
+                                 (list elem self))]))])

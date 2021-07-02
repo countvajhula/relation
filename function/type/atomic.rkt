@@ -27,17 +27,7 @@
    (define (procedure-apply self args)
      (-procedure-apply (atomic-function-f self) args))
    (define (render-function self)
-     (list 'λ (atomic-function-f self)))]
-
-  #:methods gen:custom-write
-  [(define (write-proc self port mode)
-     (define recur
-       (case mode
-         [(#t) write]
-         [(#f) display]
-         [else (λ (p port) (print p port mode))]))
-     (let ([representation (render-function self)])
-       (recur representation port)))])
+     (list 'λ (atomic-function-f self)))])
 
 ;; don't need this anymore
 (define (make-atomic-function g)
