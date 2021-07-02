@@ -86,10 +86,9 @@
                         (eq? composer))))
           (and (any base-composed-function?)
                (any (not base-composed-function?))
-               (~>> list
-                    (find base-composed-function?)
-                    base-composed-function-composer
-                    (eq? composer)))
+               (~> (allow base-composed-function?)
+                   base-composed-function-composer
+                   (eq? composer)))
           (all atomic-function?)
           (none function?))))
 
