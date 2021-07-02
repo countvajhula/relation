@@ -128,7 +128,7 @@
        (if (or (application-scheme? f)
                (not (list? inner-representation))
                (not marker-position)) ; unfamiliar function representation
-           `(,inner-representation ,@args)
+           `(λ ,args ,inner-representation)
            (let-values ([(before after)
                          (split-at inner-representation
                                    (add1 marker-position))])
