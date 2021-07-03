@@ -16,10 +16,12 @@
 (provide (contract-out
           [struct function ()]))
 
-;; can probably eliminate this entirely instead of retaining
-;; it as an abstract base type - formerly it was needed mainly
-;; to provide application semantics, which are now provided
-;; by the gen:procedure interface itself via #:derive-property
+;; formerly this was needed mainly to provide application semantics in
+;; rich function types, which is now provided by the gen:procedure
+;; interface itself via #:derive-property. At the moment it is useful to
+;; retain the common print interface here, but if generic interfaces
+;; allowed a similar way to "derive" other interfaces as it does
+;; properties, we could conceivably eliminate this base type altogether
 (struct function ()
   #:transparent
 
