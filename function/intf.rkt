@@ -35,7 +35,7 @@
                        . fs)
   (curry
    (switch (fs)
-           [singleton? (atomic-function (unwrap fs))]
+           [singleton? (unwrap fs)]
            [else
             (let ([g (apply compose-functions
                             composer

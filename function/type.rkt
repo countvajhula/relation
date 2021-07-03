@@ -10,7 +10,6 @@
 
 (require relation/function/type/interface
          relation/function/type/base
-         relation/function/type/atomic
          relation/function/type/composed
          relation/function/type/power
          relation/function/type/application-scheme
@@ -19,7 +18,6 @@
 
 (provide (all-from-out relation/function/type/interface
                        relation/function/type/base
-                       relation/function/type/atomic
                        relation/function/type/composed
                        relation/function/type/power
                        relation/function/type/application-scheme

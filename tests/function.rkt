@@ -36,7 +36,6 @@
                 (or (not application-scheme?)
                     empty-application?))
            (connect
-            [atomic-function? (call atomic-function-f)]
             [(and composed-function?
                   (~> composed-function-components
                       singleton?))
@@ -75,13 +74,11 @@
   (check-equal? (base-composed-function-composer g) usual-composition))
 
 (define-switch (~function-members g)
-  [atomic-function? (call (.. list atomic-function-f))]
   [composed-function? (call composed-function-components)]
   [else (call list)])
 
 (define-switch (~underlying-function v)
   [power-function? (call power-function-f)]
-  [atomic-function? (call atomic-function-f)]
   [(and composed-function?
         (.. singleton?
             composed-function-components))
@@ -397,22 +394,22 @@
                                        (arguments 1)
                                        'left)
                 check-naive-composition)
-          (list (make-curried-function (make-atomic-function +)
+          (list (make-curried-function +
                                        (arguments 1)
                                        'right)
-                (make-atomic-function +)
+                +
                 check-naive-unwrapped-composition)
-          (list (make-atomic-function +)
-                (make-curried-function (make-atomic-function +)
+          (list +
+                (make-curried-function +
                                        (arguments 1)
                                        'right)
                 check-naive-unwrapped-composition)
           (list (make-composed-function add1 +)
-                (make-curried-function (make-atomic-function +)
+                (make-curried-function +
                                        (arguments 1)
                                        'right)
                 check-naive-composition)
-          (list (make-atomic-function +)
+          (list +
                 (make-curried-function (make-composed-function add1 +)
                                        (arguments 1)
                                        'right)
@@ -443,14 +440,14 @@
                                        'right)
                 check-naive-composition)
           (list (make-power-function add1 3)
-                (make-curried-function (make-atomic-function add1)
+                (make-curried-function add1
                                        (arguments 1)
                                        'right)
                 check-naive-composition)
           (list (make-curried-function (make-power-function add1 3)
                                        (arguments 1)
                                        'right)
-                (make-curried-function (make-atomic-function add1)
+                (make-curried-function add1
                                        (arguments 1)
                                        'right)
                 check-naive-composition)))
@@ -482,9 +479,9 @@
        (define test-spec
          (list
           (list add1
-                (make-atomic-function sub1)
+                sub1
                 check-naive-unwrapped-composition)
-          (list (make-atomic-function sub1)
+          (list sub1
                 add1
                 check-naive-unwrapped-composition)
           (list add1
@@ -508,22 +505,22 @@
      (test-case "composing atomic functions"
        (define test-spec
          (list
-          (list (make-atomic-function add1)
-                (make-atomic-function sub1)
+          (list add1
+                sub1
                 check-merged-composition)
-          (list (make-atomic-function add1)
-                (make-atomic-function add1)
+          (list add1
+                add1
                 check-power-composition)
-          (list (make-atomic-function add1)
+          (list add1
                 (make-composed-function sub1)
                 check-merged-composition)
-          (list (make-atomic-function add1)
+          (list add1
                 (make-composed-function add1)
                 check-power-composition)
-          (list (make-atomic-function add1)
+          (list add1
                 (make-power-function sub1 2)
                 check-naive-unwrapped-composition)
-          (list (make-atomic-function add1)
+          (list add1
                 (make-power-function add1 2)
                 check-power-composition)))
 

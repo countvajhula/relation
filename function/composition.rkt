@@ -43,13 +43,7 @@
           [else (make-power-function (~maybe-unwrap g composer) 1
                                      #:compose-with composer)]))
 
-(define (->function g)
-  (switch (g)
-          [function? g]
-          [else (make-atomic-function g)]))
-
 (define-switch (~function-members g)
-  [atomic-function? (call (~> atomic-function-f list))]
   [power-function? (call (~> power-function-f list))]
   [composed-function? (call composed-function-components)]
   [else (call list)])
@@ -64,7 +58,6 @@
                 (or (not application-scheme?)
                     empty-application?))
            (connect
-            [atomic-function? (call atomic-function-f)]
             [(and composed-function?
                   (~> composed-function-components
                       singleton?)
@@ -89,7 +82,6 @@
                (~> (allow base-composed-function?)
                    base-composed-function-composer
                    (eq? composer)))
-          (all atomic-function?)
           (none function?))))
 
 (define (~compose-as-powers g h composer)
@@ -127,7 +119,7 @@
           [empty? (function-null #:compose-with composer)]
           [(~> rest empty?) (call first)]
           [else
-           (let ([gs (reverse (map ->function gs))])
+           (let ([gs (reverse gs)])
              (foldl (curryr function-compose composer)
                     (first gs)
                     (rest gs)))]))

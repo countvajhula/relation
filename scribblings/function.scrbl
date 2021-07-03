@@ -541,14 +541,6 @@ This module defines an interface, @racket[gen:procedure], to encode the idea of 
 
   If you'd like to define a custom rich function type that leverages application schemes, it must implement @racket[gen:procedure] as well as use @racket[function] as its base type.
 
-@defstruct[atomic-function ([applier application-scheme?]
-                            [f procedure?])
-                           #:omit-constructor]{
-  A type that represents an "atomic" procedure, i.e. one that isn't a composed function. This is a subtype of @racket[function] and therefore includes an application scheme.
-@itemlist[
-@item{@racket[f] - The underlying function wrapped by the instance.}]
-}
-
 @defstruct[base-composed-function ([applier application-scheme?]
                                    [composer monoid?])
                                   #:omit-constructor]{
