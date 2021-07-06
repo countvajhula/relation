@@ -13,25 +13,20 @@
 (provide
  (contract-out
   [make-function (->* ()
-                      (#:compose-with monoid?)
+                      (#:thread? boolean?
+                       #:compose-with monoid?)
                       #:rest (listof procedure?)
                       function?)]
   [f (->* ()
-          (#:compose-with monoid?)
+          (#:thread? boolean?
+           #:compose-with monoid?)
           #:rest (listof procedure?)
-          function?)]
-  [make-threading-function (->* ()
-                                (#:compose-with monoid?)
-                                #:rest (listof procedure?)
-                                function?)]
-  [f> (->* ()
-           (#:compose-with monoid?)
-           #:rest (listof procedure?)
-           function?)]))
+          function?)]))
 
 ;; TODO: we might want to indicate application scheme via the
 ;; interfaces in this file, as before
-(define (make-function #:compose-with [composer usual-composition]
+(define (make-function #:thread? [thread? #f]
+                       #:compose-with [composer usual-composition]
                        . fs)
   (curry
    (switch (fs)
@@ -39,15 +34,12 @@
            [else
             (let ([g (apply compose-functions
                             composer
-                            fs)])
+                            ;; we reverse here for threading because
+                            ;; the basic composition interfaces
+                            ;; expect right-to-left ordering
+                            (if thread?
+                                (reverse fs)
+                                fs))])
               g)])))
 
 (define f make-function)
-
-(define (make-threading-function #:compose-with [composer usual-composition]
-                                 . fs)
-  (apply f
-         #:compose-with composer
-         (reverse fs)))
-
-(define f> make-threading-function)

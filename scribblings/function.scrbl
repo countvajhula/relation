@@ -157,8 +157,8 @@ This module provides general-purpose utilities to support programming in the @hy
 
 @examples[
     #:eval eval-for-docs
-    (->list (apply/steps (f add1 sub1 add1) (list 3)))
-    (->list (apply/steps (f> ->number add1 ->string) (list "1")))
+    (->list (apply/steps (f add1 sub1 sqr) (list 3)))
+    (->list (apply/steps (f #:thread? #t ->number add1 ->string) (list "1")))
   ]
 }
 
@@ -591,16 +591,8 @@ This module defines an interface, @racket[gen:procedure], to encode the idea of 
               [g procedure?]
               ...)
            function?]
-  @defproc[(make-threading-function [#:compose-with composer monoid? (monoid #, @racketlink[b:compose]{@racket[compose]} values)]
-                                    [g procedure?]
-                                    ...)
-           function?]
-  @defproc[(f> [#:compose-with composer monoid? (monoid #, @racketlink[b:compose]{@racket[compose]} values)]
-               [g procedure?]
-               ...)
-           function?]
   )]{
-  A constructor for creating functions from other functions. @racket[f] functions compose right-to-left (the default), while @racket[f>] functions compose left-to-right (like @other-doc['(lib "scribblings/threading.scrbl")]), which some consider more intuitive. @racket[f] is an alias for the more verbose @racket[make-function], and likewise, @racket[f>] is an alias for @racket[make-threading-function].
+  A constructor for creating functions from other functions. The argument @racket[thread?] configures whether the resulting function composes right-to-left (the default) or left-to-right (like @other-doc['(lib "scribblings/threading.scrbl")]). In either case, the print representation of the resulting function always denotes the order of composition from left to right (i.e. corresponding to the threading direction). @racket[f] is an alias for the more verbose @racket[make-function].
 
   @examples[
       #:eval eval-for-docs
@@ -608,7 +600,7 @@ This module defines an interface, @racket[gen:procedure], to encode the idea of 
       (f add1 ->number)
       (f add1 add1 add1)
       ((f ->string add1 ->number) "12")
-      ((f> ->number add1 ->string) "12")
+      ((f #:thread? #t ->number add1 ->string) "12")
       (define (str-append x y z) (string-append x y z))
       ((f str-append) "hello")
       ((((f str-append) "hello") "there") "friend")

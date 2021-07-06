@@ -46,31 +46,31 @@
           [else g]))
 
 (define (check-naive-composition g0 g1 g)
-  (check-equal? (first g) g0)
-  (check-equal? (second g) g1)
+  (check-equal? (first g) g1)
+  (check-equal? (second g) g0)
   (check-equal? (base-composed-function-composer g) usual-composition))
 
 (define (check-naive-unwrapped-composition g0 g1 g)
   (check-equal? (first g)
-                (~maybe-unwrap g0))
-  (check-equal? (second g)
                 (~maybe-unwrap g1))
+  (check-equal? (second g)
+                (~maybe-unwrap g0))
   (check-equal? (base-composed-function-composer g) usual-composition))
 
 (define (check-partially-unwrapped-composition g0 g1 g)
   ;; only unwraps the compatible part
-  (switch (g0)
-          [(and base-composed-function?
-                (with-key base-composed-function-composer
-                  (eq? (base-composed-function-composer g))))
-           (check-equal? (~function-members g0) (take (length g0) g))]
-          [else (check-equal? (first g) g0)])
   (switch (g1)
           [(and base-composed-function?
                 (with-key base-composed-function-composer
                   (eq? (base-composed-function-composer g))))
-           (check-equal? (->list (reverse (~function-members g1))) (->list (take (length g1) (reverse g))))]
-          [else (check-equal? (second g) g1)])
+           (check-equal? (~function-members g1) (->list (take (length g1) g)))]
+          [else (check-equal? (first g) g1)])
+  (switch (g0)
+          [(and base-composed-function?
+                (with-key base-composed-function-composer
+                  (eq? (base-composed-function-composer g))))
+           (check-equal? (->list (reverse (~function-members g0))) (->list (take (length g0) (reverse g))))]
+          [else (check-equal? (second g) g0)])
   (check-equal? (base-composed-function-composer g) usual-composition))
 
 (define-switch (~function-members g)
@@ -88,8 +88,8 @@
 (define (check-merged-composition g0 g1 g)
   ;; note that power is not unwrapped
   (check-equal? (composed-function-components g)
-                (append (~function-members g0)
-                        (~function-members g1)))
+                (append (~function-members g1)
+                        (~function-members g0)))
   (check-equal? (base-composed-function-composer g) usual-composition))
 
 (define (check-power-composition g0 g1 g)
@@ -233,13 +233,21 @@
       (check-true ((negate negative?) 0))))
 
    (test-suite
+    "types"
+    (test-case
+        "composed function"
+      (check-equal? ((make-composed-function add1 sqr) 5) 26)
+      (check-equal? (first (make-composed-function add1 sqr)) sqr)
+      (check-equal? (rest (make-composed-function add1 sqr))
+                    (make-composed-function add1))))
+   (test-suite
     "interface"
     (test-case
         "make-function"
       (check-equal? ((make-function add1 add1 +) 3 2) 7)
       (check-equal? ((make-function +) 3 2) 5)
-      (check-equal? (first (make-function add1 sub1)) add1)
-      (check-equal? (second (make-function add1 sub1)) sub1)
+      (check-equal? (first (make-function add1 sub1)) sub1)
+      (check-equal? (second (make-function add1 sub1)) add1)
       (check-true (empty? (make-function)))
       (check-not-exn (thunk ((f))))
       (check-equal? ((f) 1) 1)
@@ -249,10 +257,11 @@
         "elementary constructors"
       (check-equal? ((function-cons add1 (make-composed-function sub1)) 3) 3)
       (check-equal? ((function-cons add1 (function-null)) 3) 4)
+      (check-equal? ((function-cons ->number (make-composed-function add1 sqr)) "3") 10 "function-cons adds to the leading end of the composed function")
       (check-equal? ((function-cons positive? (function-cons integer? (function-null #:compose-with (monoid f:conjoin (const #t))))) 5) #t))
     (test-case
         "apply/steps"
-      (check-equal? (->list (apply/steps (f add1 sub1 add1) (list 3))) (list 4 3 4))
+      (check-equal? (->list (apply/steps (f add1 sub1 sqr) (list 3))) (list 9 8 9))
       (check-equal? (->list (apply/steps (f ->string sub1 fold) #:into 2 + (list (list 1 2 3 4)))) (list 12 11 "11"))))
 
    (test-suite
@@ -278,7 +287,7 @@
          (check-equal? (((curryr str-append-3 "there") " ") "hello") "hello there")
          (check-equal? ((curryr str-append-3 " " "there") "hello") "hello there")
          (check-equal? (length (arguments-positional (flat-arguments (((curryr str-append-3 "there") " "))))) 2 "invoking with incomplete args")
-         (check-equal? ((function-cons ->bytes (make-composed-function (curry str-append-3 "hello" " "))) "there") #"hello there")
+         (check-equal? ((function-cons (curry str-append-3 "hello" " ") (make-composed-function ->bytes)) "there") #"hello there")
          (check-exn exn:fail:contract:arity? (thunk ((curry str-append-3 "hello" "there") "blah" "blah")) "invoking with too many args")
          (check-exn exn:fail:contract:arity? (thunk ((curry str-append-3 "hello" "there" "blah") "blah")) "invoking with too many args")
          (check-exn exn:fail:contract:arity? (thunk ((curry str-append-3 "hello") "there" "blah" "blah")) "invoking with too many args")

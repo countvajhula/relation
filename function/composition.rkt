@@ -90,18 +90,22 @@
                   composer))
 
 (define (~compose-naively g h composer)
-  (make-composed-function #:compose-with composer
-                          (~maybe-unwrap g composer)
-                          (~maybe-unwrap h composer)))
+  (composed-function composer
+                     (list (~maybe-unwrap g composer)
+                           (~maybe-unwrap h composer))))
 
 (define (~compose-by-merging g h composer)
-  (apply make-composed-function ; compose at same level
-         #:compose-with composer
-         (append (~function-members g)
-                 (~function-members h))))
+  ;; compose at same level
+  (composed-function composer
+                     ;; note that g here is expected to be the function that
+                     ;; is to be applied first in the composed result, and
+                     ;; that the internal representation uses left-to-right
+                     ;; (list) ordering, rather than standard function
+                     ;; composition (right-to-left) ordering.
+                     (append (~function-members g)
+                             (~function-members h))))
 
 (define (function-compose g h composer)
-  ;; this function assumes g and h are rich function types
   (switch (g h)
           [(or (and (any application-scheme?)
                     (~> (allow application-scheme?)
@@ -119,10 +123,9 @@
           [empty? (function-null #:compose-with composer)]
           [(~> rest empty?) (call first)]
           [else
-           (let ([gs (reverse gs)])
-             (foldl (curryr function-compose composer)
-                    (first gs)
-                    (rest gs)))]))
+           (foldl (curryr function-compose composer)
+                  (first gs)
+                  (rest gs))]))
 
 (define (compose . fs)
   (apply compose-functions
@@ -143,4 +146,4 @@
 (define || disjoin)
 
 (define (function-null #:compose-with [composer usual-composition])
-  (make-composed-function #:compose-with composer))
+  (composed-function composer null))

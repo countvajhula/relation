@@ -35,7 +35,8 @@
           [struct composed-function ((composer monoid?)
                                      (components list?))]
           [make-composed-function (->* ()
-                                       (#:compose-with monoid?)
+                                       (#:thread? boolean?
+                                        #:compose-with monoid?)
                                        #:rest (listof procedure?)
                                        composed-function?)]
           [apply/steps (unconstrained-domain-> sequence?)])
@@ -47,7 +48,7 @@
   #:transparent
   #:property prop:procedure
   (λ (self . vs)
-    (foldl (flip (monoid-f self))
+    (foldl (monoid-f self)
            (monoid-id self)
            vs)))
 
@@ -117,10 +118,13 @@
    (define (length self)
      (-length (composed-function-components self)))])
 
-(define (make-composed-function #:compose-with [composer usual-composition]
+(define (make-composed-function #:thread? [thread? #f]
+         #:compose-with [composer usual-composition]
                                 . fs)
   (composed-function composer
-                     fs))
+                     (if thread?
+                         fs
+                         (reverse fs))))
 
 (define/arguments (apply/steps args)
   (let ([f (first (arguments-positional args))]
@@ -130,11 +134,9 @@
                               (arguments-keyword args))])
     (if (empty? f)
         (stream (apply/arguments f args))
-        (let* ([remf (reverse f)]
-               [v (apply/arguments (first remf)
-                                   args)])
+        (let ([v (apply/arguments (first f) args)])
           (stream-cons v
-                       (let loop ([remf (rest remf)]
+                       (let loop ([remf (rest f)]
                                   [v v])
                          (if (empty? remf)
                              empty-stream
