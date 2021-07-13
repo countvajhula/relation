@@ -80,11 +80,11 @@
             [marker-position (and (list? inner-representation)
                                   (index-of inner-representation 'λ))]
             [args (cond [(null? right)
-                         (append left (list '_) (kwhash->altlist kw))]
+                         (append left (list '__) (kwhash->altlist kw))]
                         [(null? left)
-                         (append (list '_) right (kwhash->altlist kw))]
+                         (append (list '__) right (kwhash->altlist kw))]
                         [else (append left
-                                      (list '_)
+                                      (list '__)
                                       right
                                       (kwhash->altlist kw))])])
        (if (or (application-scheme? f)
