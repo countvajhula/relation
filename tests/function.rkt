@@ -239,15 +239,33 @@
       (check-equal? ((make-composed-function add1 sqr) 5) 26)
       (check-equal? (first (make-composed-function add1 sqr)) sqr)
       (check-equal? (rest (make-composed-function add1 sqr))
-                    (make-composed-function add1))))
+                    (make-composed-function add1)))
+    (test-case
+        "curried composed function"
+      (check-equal? ((make-curried-function (make-composed-function add1 sqr)
+                                            empty-arguments
+                                            'left)
+                     5)
+                    26)
+      (check-equal? (first (make-curried-function (make-composed-function add1 sqr)
+                                                  empty-arguments
+                                                  'left))
+                    (make-curried-function sqr empty-arguments 'left))
+      (check-equal? (rest (make-curried-function (make-composed-function add1 sqr)
+                                                 empty-arguments
+                                                 'left))
+                    (make-curried-function (make-composed-function add1)
+                                           empty-arguments
+                                           'left))))
+
    (test-suite
     "interface"
     (test-case
         "make-function"
       (check-equal? ((make-function add1 add1 +) 3 2) 7)
       (check-equal? ((make-function +) 3 2) 5)
-      (check-equal? (first (make-function add1 sub1)) sub1)
-      (check-equal? (second (make-function add1 sub1)) add1)
+      (check-equal? (first (make-function add1 sub1)) (make-function sub1))
+      (check-equal? (second (make-function add1 sub1)) (make-function add1))
       (check-true (empty? (make-function)))
       (check-not-exn (thunk ((f))))
       (check-equal? ((f) 1) 1)
@@ -273,6 +291,10 @@
 
    (test-suite
     "application schemes"
+    (test-case
+        "application schemes preserve underlying interfaces"
+      (check-false (sequence? (curry add1)))
+      (check-true (sequence? (curry (make-composed-function add1 sqr)))))
     (test-case
         "partial"
       (check-true (function? (partial + 1 2 3)))
