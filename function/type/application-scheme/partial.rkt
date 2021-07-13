@@ -7,16 +7,33 @@
          racket/list
          arguments
          (prefix-in b: racket/base)
-         ionic)
+         ionic
+         (only-in data/collection
+                  gen:collection
+                  gen:sequence
+                  gen:countable))
 
 (require "interface.rkt"
          "../interface.rkt"
          "../base.rkt"
+         "../composed.rkt"
          "../../../private/util.rkt"
          "private/util.rkt")
 
 (provide (contract-out
           [struct partial-function
+            ((f procedure?)
+             (chirality symbol?)
+             (left list?)
+             (right list?)
+             (kw hash?))]
+          [struct partial-atomic-function
+            ((f procedure?)
+             (chirality symbol?)
+             (left list?)
+             (right list?)
+             (kw hash?))]
+          [struct partial-composed-function
             ((f procedure?)
              (chirality symbol?)
              (left list?)
@@ -29,34 +46,6 @@
 
 (struct partial-function function (f chirality left right kw)
   #:transparent
-
-  #:methods gen:application-scheme
-  [(define (pass this args)
-     ;; incorporate fresh arguments into the partial application,
-     ;; retaining existing arg positions and appending the fresh ones
-     ;; at the positions implied by the chirality
-     (let ([f (partial-function-f this)]
-           [chirality (partial-function-chirality this)])
-       (let ([left-args (if (eq? chirality 'left)
-                            (append (partial-function-left this)
-                                    (arguments-positional args))
-                            (partial-function-left this))]
-             [right-args (if (eq? chirality 'right)
-                             ;; note order reversed for right args
-                             (append (arguments-positional args)
-                                     (partial-function-right this))
-                             (partial-function-right this))])
-         (partial-function f
-                           chirality
-                           left-args
-                           right-args
-                           (hash-union (partial-function-kw this)
-                                       (arguments-keyword args))))))
-   (define (flat-arguments this)
-     (make-arguments (partial-function-positional this)
-                     (partial-function-kw this)))
-   (define (unwrap-application this)
-     (partial-function-f this))]
 
   #:methods gen:procedure
   [(define/generic -procedure-apply procedure-apply)
@@ -106,13 +95,129 @@
                                    (add1 marker-position))])
              `(,@before ,args ,@after)))))])
 
+(struct partial-atomic-function partial-function ()
+  #:transparent
+
+  #:methods gen:application-scheme
+  [(define (pass this args)
+     ;; incorporate fresh arguments into the partial application,
+     ;; retaining existing arg positions and appending the fresh ones
+     ;; at the positions implied by the chirality
+     (let ([f (partial-function-f this)]
+           [chirality (partial-function-chirality this)])
+       (let ([left-args (if (eq? chirality 'left)
+                            (append (partial-function-left this)
+                                    (arguments-positional args))
+                            (partial-function-left this))]
+             [right-args (if (eq? chirality 'right)
+                             ;; note order reversed for right args
+                             (append (arguments-positional args)
+                                     (partial-function-right this))
+                             (partial-function-right this))])
+         (partial-atomic-function f
+                                  chirality
+                                  left-args
+                                  right-args
+                                  (hash-union (partial-function-kw this)
+                                              (arguments-keyword args))))))
+   (define (flat-arguments this)
+     (make-arguments (partial-function-positional this)
+                     (partial-function-kw this)))
+   (define (unwrap-application this)
+     (partial-function-f this))])
+
+(struct partial-composed-function partial-function ()
+  #:transparent
+
+  #:methods gen:application-scheme
+  [(define (pass this args)
+     ;; incorporate fresh arguments into the partial application,
+     ;; retaining existing arg positions and appending the fresh ones
+     ;; at the positions implied by the chirality
+     (let ([f (partial-function-f this)]
+           [chirality (partial-function-chirality this)])
+       (let ([left-args (if (eq? chirality 'left)
+                            (append (partial-function-left this)
+                                    (arguments-positional args))
+                            (partial-function-left this))]
+             [right-args (if (eq? chirality 'right)
+                             ;; note order reversed for right args
+                             (append (arguments-positional args)
+                                     (partial-function-right this))
+                             (partial-function-right this))])
+         (partial-composed-function f
+                                    chirality
+                                    left-args
+                                    right-args
+                                    (hash-union (partial-function-kw this)
+                                                (arguments-keyword args))))))
+   (define (flat-arguments this)
+     (make-arguments (partial-function-positional this)
+                     (partial-function-kw this)))
+   (define (unwrap-application this)
+     (partial-function-f this))]
+
+  #:methods gen:collection
+  [(define/generic -conj conj)
+   (define (conj self elem)
+     (-conj (partial-function-f self) elem))]
+
+  #:methods gen:sequence
+  [(define/generic -empty? empty?)
+   (define/generic -first first)
+   (define/generic -rest rest)
+   (define/generic -reverse reverse)
+   (define (empty? self)
+     (-empty? (partial-function-f self)))
+   (define (first self)
+     (let ([f (-first (partial-function-f self))])
+       (if (base-composed-function? f)
+           (struct-copy partial-composed-function self
+                        [f #:parent partial-function (-first (partial-function-f self))])
+           (partial-atomic-function f
+                                    (partial-function-chirality self)
+                                    (partial-function-left self)
+                                    (partial-function-right self)
+                                    (partial-function-kw self)))))
+   (define (rest self)
+     (make-partial-function (-rest (partial-function-f self))
+                            empty-arguments
+                            (partial-function-chirality self)))
+   (define (reverse self)
+     (struct-copy partial-composed-function self
+                  [f #:parent partial-function (-reverse (partial-function-f self))]))]
+
+  #:methods gen:countable
+  [(define/generic -length length)
+   (define (length self)
+     (-length (partial-function-f self)))])
+
 (define (partial-function-positional args)
   (append (partial-function-left args)
           (partial-function-right args)))
 
 (define (make-partial-function f args chirality)
   (let ([pos (arguments-positional args)]
-        [kw (arguments-keyword args)])
-    (if (eq? 'left chirality)
-        (partial-function f 'left pos null kw)
-        (partial-function f 'right null pos kw))))
+        [kw (arguments-keyword args)]
+        [f-cons (if (base-composed-function? f)
+                    partial-composed-function
+                    partial-atomic-function)])
+    (switch (f)
+            [partial-function?
+             (connect [(~> partial-function-chirality
+                           (eq? chirality))
+                       (call ((esc pass) args))]
+                      [else (connect
+                             [base-composed-function?
+                              (pass (struct-copy partial-composed-function
+                                                 f
+                                                 [chirality #:parent partial-function chirality])
+                                    args)]
+                             [else
+                              (pass (struct-copy partial-atomic-function
+                                                 f
+                                                 [chirality #:parent partial-function chirality])
+                                    args)])])]
+            [else (if (eq? chirality 'left)
+                      (f-cons f 'left pos null kw)
+                      (f-cons f 'right null pos kw))])))
