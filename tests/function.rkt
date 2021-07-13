@@ -294,7 +294,11 @@
     (test-case
         "application schemes preserve underlying interfaces"
       (check-false (sequence? (curry add1)))
-      (check-true (sequence? (curry (make-composed-function add1 sqr)))))
+      (check-true (sequence? (curry (make-composed-function add1 sqr))))
+      (check-false (sequence? (partial add1)))
+      (check-true (sequence? (partial (make-composed-function add1 sqr))))
+      (check-false (sequence? (app +)))
+      (check-true (sequence? (app (make-composed-function add1 sqr)))))
     (test-case
         "partial"
       (check-true (function? (partial + 1 2 3)))
@@ -388,7 +392,9 @@
       (check-equal? (((curryr (app (app string-append _ "b" _ _) _ "c" _)) "d") "a") "abcd" "nested templates and currying")
       (check-exn exn:fail:contract? (thunk ((curry (app string-append _ "-" _) "a") "b" "c")))
       (check-equal? ((partial (app string-append _ "-" _) "a") "b") "a-b")
-      (check-exn exn:fail:contract? (thunk (((partial (app string-append _ "-" _)) "a") "b")) "partial application does not curry"))
+      (check-exn exn:fail:contract? (thunk (((partial (app string-append _ "-" _)) "a") "b")) "partial application does not curry")
+      (check-false (sequence? (curry (app +))) "composed application schemes preserve rich semantics")
+      (check-true (sequence? (curry (app (make-composed-function add1 +)))) "composed application schemes preserve rich semantics"))
     (test-case
         "flat-arguments"
       (check-equal? (flat-arguments (curry + 1 2 3)) (make-arguments (list 1 2 3) (hash)))
