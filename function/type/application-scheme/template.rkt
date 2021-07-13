@@ -9,15 +9,28 @@
          arguments
          (prefix-in b: racket/base)
          (except-in data/maybe maybe/c)
-         typed-stack)
+         typed-stack
+         (only-in data/collection
+                  gen:collection
+                  gen:sequence
+                  gen:countable))
 
 (require "interface.rkt"
          "../interface.rkt"
          "../base.rkt"
+         "../composed.rkt"
          "../../../private/util.rkt")
 
 (provide (contract-out
           [struct template-function
+            ((f procedure?)
+             (pos list?)
+             (kw hash?))]
+          [struct template-atomic-function
+            ((f procedure?)
+             (pos list?)
+             (kw hash?))]
+          [struct template-composed-function
             ((f procedure?)
              (pos list?)
              (kw hash?))]
@@ -80,26 +93,6 @@
 (struct template-function function (f pos kw)
   #:transparent
 
-  #:methods gen:application-scheme
-  [(define (pass this invocation-args)
-     (let ([pos (template-function-pos this)]
-           [kw (template-function-kw this)]
-           [pos-invocation (arguments-positional invocation-args)]
-           [kw-invocation (arguments-keyword invocation-args)])
-       (define filled-in-pos-template
-         (~populate-positional-template pos pos-invocation))
-       (define filled-in-kw-template
-         (~populate-keyword-template kw kw-invocation))
-       (template-function (template-function-f this)
-                           filled-in-pos-template
-                           filled-in-kw-template)))
-
-   (define (flat-arguments this)
-     (make-arguments (filter-just (template-function-pos this))
-                     (template-function-kw this)))
-   (define (unwrap-application this)
-     (template-function-f this))]
-
   #:methods gen:procedure
   [(define/generic -procedure-apply procedure-apply)
    (define/generic -arity arity)
@@ -134,7 +127,88 @@
                                    (add1 marker-position))])
              `(,@before ,args ,@after)))))])
 
+(struct template-atomic-function template-function ()
+  #:transparent
+
+  #:methods gen:application-scheme
+  [(define (pass this invocation-args)
+     (let ([pos (template-function-pos this)]
+           [kw (template-function-kw this)]
+           [pos-invocation (arguments-positional invocation-args)]
+           [kw-invocation (arguments-keyword invocation-args)])
+       (define filled-in-pos-template
+         (~populate-positional-template pos pos-invocation))
+       (define filled-in-kw-template
+         (~populate-keyword-template kw kw-invocation))
+       (template-atomic-function (template-function-f this)
+                                 filled-in-pos-template
+                                 filled-in-kw-template)))
+
+   (define (flat-arguments this)
+     (make-arguments (filter-just (template-function-pos this))
+                     (template-function-kw this)))
+   (define (unwrap-application this)
+     (template-function-f this))])
+
+(struct template-composed-function template-function ()
+  #:transparent
+
+  #:methods gen:application-scheme
+  [(define (pass this invocation-args)
+     (let ([pos (template-function-pos this)]
+           [kw (template-function-kw this)]
+           [pos-invocation (arguments-positional invocation-args)]
+           [kw-invocation (arguments-keyword invocation-args)])
+       (define filled-in-pos-template
+         (~populate-positional-template pos pos-invocation))
+       (define filled-in-kw-template
+         (~populate-keyword-template kw kw-invocation))
+       (template-composed-function (template-function-f this)
+                                   filled-in-pos-template
+                                   filled-in-kw-template)))
+
+   (define (flat-arguments this)
+     (make-arguments (filter-just (template-function-pos this))
+                     (template-function-kw this)))
+   (define (unwrap-application this)
+     (template-function-f this))]
+
+  #:methods gen:collection
+  [(define/generic -conj conj)
+   (define (conj self elem)
+     (-conj (template-function-f self) elem))]
+
+  #:methods gen:sequence
+  [(define/generic -empty? empty?)
+   (define/generic -first first)
+   (define/generic -rest rest)
+   (define/generic -reverse reverse)
+   (define (empty? self)
+     (-empty? (template-function-f self)))
+   (define (first self)
+     (let ([f (-first (template-function-f self))])
+       (if (base-composed-function? f)
+           (struct-copy template-composed-function self
+                        [f #:parent template-function (-first (template-function-f self))])
+           (template-atomic-function f
+                                     (template-function-pos self)
+                                     (template-function-kw self)))))
+   (define (rest self)
+     (make-template-function (-rest (template-function-f self))
+                             empty-arguments))
+   (define (reverse self)
+     (struct-copy template-composed-function self
+                  [f #:parent template-function (-reverse (template-function-f self))]))]
+
+  #:methods gen:countable
+  [(define/generic -length length)
+   (define (length self)
+     (-length (template-function-f self)))])
+
 (define (make-template-function f args)
   (let ([pos (arguments-positional args)]
         [kw (arguments-keyword args)])
-    (template-function f pos kw)))
+    (if (base-composed-function? f)
+        (template-composed-function f pos kw)
+        (template-atomic-function f pos kw))))
+
