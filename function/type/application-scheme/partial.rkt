@@ -174,7 +174,7 @@
      (let ([f (-first (partial-function-f self))])
        (if (sequence? f)
            (struct-copy partial-composed-function self
-                        [f #:parent partial-function (-first (partial-function-f self))])
+                        [f #:parent partial-function f])
            (partial-atomic-function f
                                     (partial-function-chirality self)
                                     (partial-function-left self)
@@ -193,9 +193,9 @@
    (define (length self)
      (-length (partial-function-f self)))])
 
-(define (partial-function-positional args)
-  (append (partial-function-left args)
-          (partial-function-right args)))
+(define (partial-function-positional f)
+  (append (partial-function-left f)
+          (partial-function-right f)))
 
 (define (make-partial-function f args chirality)
   (let ([pos (arguments-positional args)]

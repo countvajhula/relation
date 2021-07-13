@@ -223,7 +223,7 @@
      (let ([f (-first (curried-function-f self))])
        (if (sequence? f)
            (struct-copy curried-composed-function self
-                        [f #:parent curried-function (-first (curried-function-f self))])
+                        [f #:parent curried-function f])
            (curried-atomic-function f
                                     (curried-function-chirality self)
                                     (curried-function-left self)
@@ -242,9 +242,9 @@
    (define (length self)
      (-length (curried-function-f self)))])
 
-(define (curried-function-positional args)
-  (append (curried-function-left args)
-          (curried-function-right args)))
+(define (curried-function-positional f)
+  (append (curried-function-left f)
+          (curried-function-right f)))
 
 ;; An application scheme (such as currying) could wrap any function, including
 ;; a rich composed type that implements sequence and collection interfaces,

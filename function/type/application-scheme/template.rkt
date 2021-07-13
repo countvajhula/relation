@@ -190,7 +190,7 @@
      (let ([f (-first (template-function-f self))])
        (if (sequence? f)
            (struct-copy template-composed-function self
-                        [f #:parent template-function (-first (template-function-f self))])
+                        [f #:parent template-function f])
            (template-atomic-function f
                                      (template-function-pos self)
                                      (template-function-kw self)))))
