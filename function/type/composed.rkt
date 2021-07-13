@@ -69,12 +69,12 @@
    (define (keywords self)
      (let ([leading-function (switch ((composed-function-components self))
                                      [null? (monoid-id (base-composed-function-composer self))]
-                                     [else (call last)])])
+                                     [else (call first)])])
        (-keywords leading-function)))
    (define (arity self)
      (let ([leading-function (switch ((composed-function-components self))
                                      [null? (monoid-id (base-composed-function-composer self))]
-                                     [else (call last)])])
+                                     [else (call first)])])
        (-arity leading-function)))
    (define (procedure-apply self args)
      (let ([components (composed-function-components self)]

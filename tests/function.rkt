@@ -260,6 +260,13 @@
       (check-equal? ((function-cons ->number (make-composed-function add1 sqr)) "3") 10 "function-cons adds to the leading end of the composed function")
       (check-equal? ((function-cons positive? (function-cons integer? (function-null #:compose-with (monoid f:conjoin (const #t))))) 5) #t))
     (test-case
+        "arity"
+      (define sa3 (procedure-reduce-arity string-append 3))
+      (check-equal? 3 (arity sa3) "built-in functions report arity correctly")
+      (check-equal? 3 (arity (f sa3)))
+      (check-equal? 3 (arity (f string-upcase sa3)) "composed reports leading arity")
+      (check-equal? 3 (arity (f sa3 sa3)) "power reports underlying arity"))
+    (test-case
         "apply/steps"
       (check-equal? (->list (apply/steps (f add1 sub1 sqr) (list 3))) (list 9 8 9))
       (check-equal? (->list (apply/steps (f ->string sub1 fold) #:into 2 + (list (list 1 2 3 4)))) (list 12 11 "11"))))
