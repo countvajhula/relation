@@ -14,7 +14,8 @@
          (only-in data/collection
                   gen:collection
                   gen:sequence
-                  gen:countable)
+                  gen:countable
+                  sequence?)
          ionic)
 
 (require "interface.rkt"
@@ -220,7 +221,7 @@
      (-empty? (curried-function-f self)))
    (define (first self)
      (let ([f (-first (curried-function-f self))])
-       (if (base-composed-function? f)
+       (if (sequence? f)
            (struct-copy curried-composed-function self
                         [f #:parent curried-function (-first (curried-function-f self))])
            (curried-atomic-function f
@@ -280,7 +281,7 @@
 (define (make-curried-function f args chirality)
   (let ([pos (arguments-positional args)]
         [kw (arguments-keyword args)]
-        [f-cons (if (base-composed-function? f)
+        [f-cons (if (sequence? f)
                     curried-composed-function
                     curried-atomic-function)])
     (switch (f)
@@ -289,15 +290,15 @@
                      (eq? chirality))
                  (call ((esc pass) args))]
                 [else (connect
-                       [base-composed-function?
+                       [sequence?
                         (pass (struct-copy curried-composed-function
-                                      f
-                                      [chirality #:parent curried-function chirality])
+                                           f
+                                           [chirality #:parent curried-function chirality])
                               args)]
                        [else
                         (pass (struct-copy curried-atomic-function
-                                      f
-                                      [chirality #:parent curried-function chirality])
+                                           f
+                                           [chirality #:parent curried-function chirality])
                               args)])])]
       [else (if (eq? chirality 'left)
                 (f-cons f 'left pos null kw)

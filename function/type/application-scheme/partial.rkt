@@ -11,7 +11,8 @@
          (only-in data/collection
                   gen:collection
                   gen:sequence
-                  gen:countable))
+                  gen:countable
+                  sequence?))
 
 (require "interface.rkt"
          "../interface.rkt"
@@ -171,7 +172,7 @@
      (-empty? (partial-function-f self)))
    (define (first self)
      (let ([f (-first (partial-function-f self))])
-       (if (base-composed-function? f)
+       (if (sequence? f)
            (struct-copy partial-composed-function self
                         [f #:parent partial-function (-first (partial-function-f self))])
            (partial-atomic-function f
@@ -199,7 +200,7 @@
 (define (make-partial-function f args chirality)
   (let ([pos (arguments-positional args)]
         [kw (arguments-keyword args)]
-        [f-cons (if (base-composed-function? f)
+        [f-cons (if (sequence? f)
                     partial-composed-function
                     partial-atomic-function)])
     (switch (f)
@@ -208,7 +209,7 @@
                            (eq? chirality))
                        (call ((esc pass) args))]
                       [else (connect
-                             [base-composed-function?
+                             [sequence?
                               (pass (struct-copy partial-composed-function
                                                  f
                                                  [chirality #:parent partial-function chirality])

@@ -13,7 +13,8 @@
          (only-in data/collection
                   gen:collection
                   gen:sequence
-                  gen:countable))
+                  gen:countable
+                  sequence?))
 
 (require "interface.rkt"
          "../interface.rkt"
@@ -187,7 +188,7 @@
      (-empty? (template-function-f self)))
    (define (first self)
      (let ([f (-first (template-function-f self))])
-       (if (base-composed-function? f)
+       (if (sequence? f)
            (struct-copy template-composed-function self
                         [f #:parent template-function (-first (template-function-f self))])
            (template-atomic-function f
@@ -208,7 +209,7 @@
 (define (make-template-function f args)
   (let ([pos (arguments-positional args)]
         [kw (arguments-keyword args)])
-    (if (base-composed-function? f)
+    (if (sequence? f)
         (template-composed-function f pos kw)
         (template-atomic-function f pos kw))))
 
