@@ -221,15 +221,21 @@ This module provides general-purpose utilities to support programming in the @hy
   ]
 }
 
+@deftogether[(
 @defproc[(partial [g procedure?] [v any/c] ...)
-         function?]{
+         function?]
+@defproc[(partialr [g procedure?] [v any/c] ...)
+         function?]
+ )]{
 
- Partially apply the function @racket[g] using the provided arguments. The result is a function with a flat set of these pre-supplied arguments which must be invoked with all of the remaining expected arguments when the time comes, i.e. it is @emph{not} curried.
+ Partially apply the function @racket[g] using the provided arguments. The result is a function with a flat set of these pre-supplied arguments which must be invoked with all of the remaining expected arguments when the time comes, i.e. it is @emph{not} curried. @racket[partial] supplies the arguments on the left, while @racket[partialr] supplies them on the right.
 
 @examples[
     #:eval eval-for-docs
     (partial + 2)
     ((partial + 2) 3 4)
+    (partialr string-append "c")
+    ((partialr string-append "c") "a" "b")
   ]
 }
 
