@@ -394,7 +394,14 @@
       (check-equal? ((partial (app string-append _ "-" _) "a") "b") "a-b")
       (check-exn exn:fail:contract? (thunk (((partial (app string-append _ "-" _)) "a") "b")) "partial application does not curry")
       (check-false (sequence? (curry (app +))) "composed application schemes preserve rich semantics")
-      (check-true (sequence? (curry (app (make-composed-function add1 +)))) "composed application schemes preserve rich semantics"))
+      (check-true (sequence? (curry (app (make-composed-function add1 +)))) "composed application schemes preserve rich semantics")
+      (check-true (sequence? (curry (curryr (make-composed-function add1 +)))) "composed application schemes preserve rich semantics")
+      (check-false (sequence? (partial (app +))) "composed application schemes preserve rich semantics")
+      (check-true (sequence? (partial (app (make-composed-function add1 +)))) "composed application schemes preserve rich semantics")
+      (check-true (sequence? (partial (partialr (make-composed-function add1 +)))) "composed application schemes preserve rich semantics")
+      (check-false (sequence? (app (curry +))) "composed application schemes preserve rich semantics")
+      (check-true (sequence? (app (curry (make-composed-function add1 +)))) "composed application schemes preserve rich semantics")
+      (check-true (sequence? (app (app (make-composed-function add1 +)))) "composed application schemes preserve rich semantics"))
     (test-case
         "flat-arguments"
       (check-equal? (flat-arguments (curry + 1 2 3)) (make-arguments (list 1 2 3) (hash)))

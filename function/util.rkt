@@ -40,6 +40,7 @@
           [curry (unconstrained-domain-> function?)]
           [curryr (unconstrained-domain-> function?)]
           [partial (unconstrained-domain-> function?)]
+          [partialr (unconstrained-domain-> function?)]
           [partial/template (unconstrained-domain-> function?)]))
 
 ;; from mischief/function - reproviding it via require+provide runs aground
@@ -109,15 +110,14 @@
          [pos (rest (arguments-positional args))]
          [kw (arguments-keyword args)]
          [invocation-args (make-arguments pos kw)])
-    (switch (f)
-            [partial-function?
-             (connect [(~> partial-function-chirality
-                           (eq? 'left))
-                       (call ((esc pass) invocation-args))]
-                      [else (pass (struct-copy partial-function f
-                                               [chirality 'right])
-                                  invocation-args)])]
-            [else (call (make-partial-function invocation-args 'left))])))
+    (make-partial-function f invocation-args 'left)))
+
+(define/arguments (partialr args)
+  (let* ([f (first (arguments-positional args))]
+         [pos (rest (arguments-positional args))]
+         [kw (arguments-keyword args)]
+         [invocation-args (make-arguments pos kw)])
+    (make-partial-function f invocation-args 'right)))
 
 (define/arguments (partial/template args)
   (let* ([f (first (arguments-positional args))]
