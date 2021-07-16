@@ -241,6 +241,12 @@
       (check-equal? (rest (make-composed-function add1 sqr))
                     (make-composed-function add1)))
     (test-case
+        "power function"
+      (check-equal? ((make-power-function add1 3) 5) 8)
+      (check-equal? (first (make-power-function add1 3)) add1)
+      (check-equal? (rest (make-power-function add1 3))
+                    (make-power-function add1 2)))
+    (test-case
         "curried composed function"
       (check-equal? ((make-curried-function (make-composed-function add1 sqr)
                                             empty-arguments

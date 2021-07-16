@@ -5,7 +5,9 @@
          racket/generic
          racket/match
          (only-in data/collection
-                  gen:collection)
+                  gen:collection
+                  gen:sequence
+                  gen:countable)
          ionic)
 
 (require "interface.rkt"
@@ -57,9 +59,30 @@
   #:methods gen:collection
   [(define (conj self elem)
      (switch (elem)
-             [(eq? (power-function-f self))
-              (struct-copy power-function self
-                           [n (add1 (power-function-n self))])]
-             [else
-              (composed-function (base-composed-function-composer self)
-                                 (list elem self))]))])
+         [(eq? (power-function-f self))
+          (struct-copy power-function self
+                       [n (add1 (power-function-n self))])]
+       [else
+        (composed-function (base-composed-function-composer self)
+                           (list elem self))]))]
+
+  #:methods gen:sequence
+  [(define/generic -empty? empty?)
+   (define/generic -first first)
+   (define/generic -rest rest)
+   (define/generic -reverse reverse)
+   (define (empty? self)
+     (= 0 (power-function-n self)))
+   (define (first self)
+     (power-function-f self))
+   (define (rest self)
+     (power-function (base-composed-function-composer self)
+                     (power-function-f self)
+                     (sub1 (power-function-n self))))
+   (define (reverse self)
+     self)]
+
+  #:methods gen:countable
+  [(define/generic -length length)
+   (define (length self)
+     (power-function-n self))])
