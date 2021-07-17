@@ -2,54 +2,44 @@
 
 (require (except-in racket/contract/base
                     predicate/c)
+         arguments
          ionic)
 
-(require "types.rkt"
+(require "type.rkt"
          "composition.rkt"
+         "util.rkt"
          "../private/util.rkt")
 
 (provide
  (contract-out
   [make-function (->* ()
-                      (#:compose-with monoid?
-                       #:apply-with application-scheme?)
+                      (#:thread? boolean?
+                       #:compose-with monoid?)
                       #:rest (listof procedure?)
                       function?)]
   [f (->* ()
-          (#:compose-with monoid?
-           #:apply-with application-scheme?)
+          (#:thread? boolean?
+           #:compose-with monoid?)
           #:rest (listof procedure?)
-          function?)]
-  [make-threading-function (->* ()
-                                (#:compose-with monoid?
-                                 #:apply-with application-scheme?)
-                                #:rest (listof procedure?)
-                                function?)]
-  [f> (->* ()
-           (#:compose-with monoid?
-            #:apply-with application-scheme?)
-           #:rest (listof procedure?)
-           function?)]))
+          function?)]))
 
-(define (make-function #:compose-with [composer usual-composition]
-                       #:apply-with [applier empty-left-curried-arguments]
+;; TODO: we might want to indicate application scheme via the
+;; interfaces in this file, as before
+(define (make-function #:thread? [thread? #f]
+                       #:compose-with [composer usual-composition]
                        . fs)
-  (switch (fs)
-          [singleton? (atomic-function applier (unwrap fs))]
-          [else
-           (call (apply compose-functions
-                        composer
-                        applier
-                        _))]))
+  (curry
+   (switch (fs)
+           [singleton? (unwrap fs)]
+           [else
+            (let ([g (apply compose-functions
+                            composer
+                            ;; we reverse here for threading because
+                            ;; the basic composition interfaces
+                            ;; expect right-to-left ordering
+                            (if thread?
+                                (reverse fs)
+                                fs))])
+              g)])))
 
 (define f make-function)
-
-(define (make-threading-function #:compose-with [composer usual-composition]
-                                 #:apply-with [applier empty-left-curried-arguments]
-                                 . fs)
-  (apply f
-         #:compose-with composer
-         #:apply-with applier
-         (reverse fs)))
-
-(define f> make-threading-function)

@@ -18,11 +18,11 @@
          (only-in data/functor
                   (map f:map))
          arguments
-         contract/social)
+         contract/social
+         ionic)
 
-(require "types.rkt"
-         "composition.rkt"
-         "intf.rkt")
+(require "type.rkt"
+         "composition.rkt")
 
 (provide call
          (contract-out
@@ -40,6 +40,7 @@
           [curry (unconstrained-domain-> function?)]
           [curryr (unconstrained-domain-> function?)]
           [partial (unconstrained-domain-> function?)]
+          [partialr (unconstrained-domain-> function?)]
           [partial/template (unconstrained-domain-> function?)]))
 
 ;; from mischief/function - reproviding it via require+provide runs aground
@@ -51,7 +52,7 @@
      (keyword-apply f ks vs xs))))
 
 (define (negate g)
-  (f not g))
+  (compose not g))
 
 (define !! negate)
 
@@ -83,53 +84,44 @@
   (apply values (filter f args)))
 
 (define (uncurry g)
-  (f (λ args
-       (let loop ([rem-args (reverse args)])
-         (match rem-args
-           ['() (g)]
-           [(list v) (g v)]
-           [(list v vs ...) ((loop vs) v)])))))
-
-(define (~curry chirality func invocation-args)
-  (if (and (function? func)
-           (curried-arguments? (function-applier func)))
-      ;; application scheme is compatible so just apply the
-      ;; new args to the existing scheme
-      (pass-args func
-                 invocation-args
-                 chirality)
-      ;; wrap the existing function with one that will be curried
-      (f func
-         ;; passed-in chirality overrides the attribute
-         ;; so it doesn't matter that we're using 'left' here
-         ;; since it's empty
-         #:apply-with (pass empty-left-curried-arguments
-                            invocation-args
-                            chirality))))
+  (λ args
+    (let loop ([rem-args (reverse args)])
+      (match rem-args
+        ['() (g)]
+        [(list v) (g v)]
+        [(list v vs ...) ((loop vs) v)]))))
 
 (define/arguments (curry args)
   (let* ([f (first (arguments-positional args))]
          [pos (rest (arguments-positional args))]
          [kw (arguments-keyword args)]
          [invocation-args (make-arguments pos kw)])
-    (~curry 'left f invocation-args)))
+    (make-curried-function f invocation-args 'left)))
 
 (define/arguments (curryr args)
   (let* ([f (first (arguments-positional args))]
          [pos (rest (arguments-positional args))]
          [kw (arguments-keyword args)]
          [invocation-args (make-arguments pos kw)])
-    (~curry 'right f invocation-args)))
+    (make-curried-function f invocation-args 'right)))
 
 (define/arguments (partial args)
-  (let* ([func (first (arguments-positional args))]
+  (let* ([f (first (arguments-positional args))]
          [pos (rest (arguments-positional args))]
          [kw (arguments-keyword args)]
          [invocation-args (make-arguments pos kw)])
-    (f func #:apply-with invocation-args)))
+    (make-partial-function f invocation-args 'left)))
+
+(define/arguments (partialr args)
+  (let* ([f (first (arguments-positional args))]
+         [pos (rest (arguments-positional args))]
+         [kw (arguments-keyword args)]
+         [invocation-args (make-arguments pos kw)])
+    (make-partial-function f invocation-args 'right)))
 
 (define/arguments (partial/template args)
-  (let* ([func (first (arguments-positional args))]
+  (let* ([f (first (arguments-positional args))]
          [pos (rest (arguments-positional args))]
-         [kw (arguments-keyword args)])
-    (f func #:apply-with (template-arguments 'left pos kw))))
+         [kw (arguments-keyword args)]
+         [invocation-args (make-arguments pos kw)])
+    (make-template-function f invocation-args)))

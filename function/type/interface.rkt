@@ -2,14 +2,12 @@
 
 (require racket/generic
          racket/function
+         racket/list
          (except-in racket/contract/base
                     predicate/c)
          contract/social
          (prefix-in b: racket/base)
          arguments)
-
-(require "util.rkt"
-         "application-scheme.rkt")
 
 (provide gen:procedure
          procedure/c
@@ -23,19 +21,30 @@
           [procedure-apply (-> procedure?
                                arguments?
                                any)]
-          [pass-args (-> procedure?
-                         arguments?
-                         symbol?
-                         procedure?)]))
+          [render-function (-> procedure?
+                               (or/c list?
+                                     procedure?))]))
 
 (define-generics procedure
   (keywords procedure)
   (arity procedure)
   (procedure-apply procedure args)
-  (pass-args procedure args chirality)
+  (render-function procedure)
+
+  #:derive-property prop:procedure
+  (lambda/arguments
+   packed-args
+   (let* ([self (first (arguments-positional packed-args))]
+          [args (make-arguments (rest (arguments-positional packed-args))
+                                (arguments-keyword packed-args))])
+     (procedure-apply self args)))
+
+  #:fallbacks
+  [(define render-function identity)]
+
   #:defaults
   ([b:procedure?
     (define keywords procedure-keywords)
     (define arity procedure-arity)
-    (define pass-args (arg 0))
-    (define procedure-apply apply/arguments)]))
+    (define procedure-apply apply/arguments)
+    (define render-function identity)]))

@@ -24,22 +24,19 @@
          arguments
          ionic)
 
-(require "procedure.rkt"
-         "application-scheme.rkt"
+(require "interface.rkt"
          "base.rkt"
          "util.rkt")
 
 (provide (contract-out
           [struct monoid ((f procedure?)
                           (id procedure?))]
-          [struct base-composed-function ((applier application-scheme?)
-                                          (composer monoid?))]
-          [struct composed-function ((applier application-scheme?)
-                                     (composer monoid?)
+          [struct base-composed-function ((composer monoid?))]
+          [struct composed-function ((composer monoid?)
                                      (components list?))]
           [make-composed-function (->* ()
-                                       (#:compose-with monoid?
-                                        #:apply-with application-scheme?)
+                                       (#:thread? boolean?
+                                        #:compose-with monoid?)
                                        #:rest (listof procedure?)
                                        composed-function?)]
           [apply/steps (unconstrained-domain-> sequence?)])
@@ -51,7 +48,7 @@
   #:transparent
   #:property prop:procedure
   (λ (self . vs)
-    (foldl (flip (monoid-f self))
+    (foldl (monoid-f self)
            (monoid-id self)
            vs)))
 
@@ -72,24 +69,28 @@
    (define (keywords self)
      (let ([leading-function (switch ((composed-function-components self))
                                      [null? (monoid-id (base-composed-function-composer self))]
-                                     [else (call last)])])
+                                     [else (call first)])])
        (-keywords leading-function)))
    (define (arity self)
      (let ([leading-function (switch ((composed-function-components self))
                                      [null? (monoid-id (base-composed-function-composer self))]
-                                     [else (call last)])])
+                                     [else (call first)])])
        (-arity leading-function)))
    (define (procedure-apply self args)
      (let ([components (composed-function-components self)]
            [composer (base-composed-function-composer self)])
        (-procedure-apply (apply composer components)
                          args)))
-   (define (pass-args self args chirality)
-     (struct-copy composed-function self
-                  [applier #:parent function
-                           (pass (function-applier self)
-                                 args
-                                 chirality)]))]
+   (define (render-function self)
+     (let ([components (composed-function-components self)]
+           [composer (base-composed-function-composer self)])
+       (list 'λ
+             (list* (match composer
+                      [(== usual-composition) '..]
+                      [(== conjoin-composition) '&&]
+                      [(== disjoin-composition) '||]
+                      [_ '??])
+                    components))))]
 
   #:methods gen:collection
   [(define (conj self elem)
@@ -106,46 +107,24 @@
    (define (first self)
      (-first (composed-function-components self)))
    (define (rest self)
-     (composed-function (function-applier self)
-                        (base-composed-function-composer self)
+     (composed-function (base-composed-function-composer self)
                         (-rest (composed-function-components self))))
    (define (reverse self)
-     (composed-function (function-applier self)
-                        (base-composed-function-composer self)
+     (composed-function (base-composed-function-composer self)
                         (-reverse (composed-function-components self))))]
 
   #:methods gen:countable
   [(define/generic -length length)
    (define (length self)
-     (-length (composed-function-components self)))]
+     (-length (composed-function-components self)))])
 
-  #:methods gen:custom-write
-  [(define (write-proc self port mode)
-     (define recur
-       (case mode
-         [(#t) write]
-         [(#f) display]
-         [else (λ (p port) (print p port mode))]))
-     (let* ([applier (function-applier self)]
-            [composer (base-composed-function-composer self)]
-            [components (composed-function-components self)]
-            [representation
-             (list 'λ
-                   applier
-                   (list* (match composer
-                            [(== usual-composition) '..]
-                            [(== conjoin-composition) '&&]
-                            [(== disjoin-composition) '||]
-                            [_ '??])
-                          components))])
-       (recur representation port)))])
-
-(define (make-composed-function #:compose-with [composer usual-composition]
-                                #:apply-with [applier empty-left-curried-arguments]
+(define (make-composed-function #:thread? [thread? #f]
+         #:compose-with [composer usual-composition]
                                 . fs)
-  (composed-function applier
-                     composer
-                     fs))
+  (composed-function composer
+                     (if thread?
+                         fs
+                         (reverse fs))))
 
 (define/arguments (apply/steps args)
   (let ([f (first (arguments-positional args))]
@@ -155,11 +134,9 @@
                               (arguments-keyword args))])
     (if (empty? f)
         (stream (apply/arguments f args))
-        (let* ([remf (reverse f)]
-               [v (apply/arguments (first remf)
-                                   args)])
+        (let ([v (apply/arguments (first f) args)])
           (stream-cons v
-                       (let loop ([remf (rest remf)]
+                       (let loop ([remf (rest f)]
                                   [v v])
                          (if (empty? remf)
                              empty-stream

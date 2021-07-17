@@ -31,7 +31,7 @@
 (define scribblings '(("scribblings/relation.scrbl" (multi-page))))
 (define compile-omit-paths '("dev" "tests" "coverage"))
 (define test-include-paths '("tests"))
-(define clean '("compiled" "doc" "doc/relation" "tests/compiled"))
+(define clean '("compiled" "doc" "doc/relation" "tests/compiled" "tests/private/compiled"))
 (define pkg-desc "Generic interfaces and convenient utilities for relations")
 (define version "1.10")
 (define pkg-authors '(countvajhula))

@@ -8,7 +8,7 @@
          data/maybe
          (for-syntax racket/base))
 
-(require relation/function/types
+(require relation/function/type
          relation/function/composition
          relation/function/intf
          "util.rkt")
