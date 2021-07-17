@@ -19,7 +19,6 @@
                   identity
                   negate
                   thunk*)
-         threading
          (only-in data/collection
                   for-each
                   collection?
@@ -28,7 +27,8 @@
          contract/social
          (only-in relation/composition
                   ID
-                  reify))
+                  reify)
+         ionic)
 
 (provide :
          make!
@@ -99,159 +99,136 @@
 (define (->boolean v)
   (if v #t #f))
 
-(define (->string v)
-  (cond [(string? v) (if (immutable? v)
-                         v
-                         (string->immutable-string v))]
-        [(symbol? v) (~> v
-                         symbol->string
-                         ->string)]
-        [(number? v) (~> v
-                         number->string
-                         ->string)]
-        [(keyword? v) (~> v
-                          keyword->string
-                          ->string)]
-        [((listof char?) v) (~> v
-                                list->string
-                                ->string)]
-        [(bytes? v) (~> v
-                        bytes->string/locale
-                        ->string)]
-        [(list? v) (~> v
-                       ~a
-                       ->string)]
-        [(sequence? v) (~> v
-                           ->list
-                           ->string)]
-        [(generator? v) (~> v
-                            ->list
-                            ->string)]
-        [else (~> v
-                  ~a
-                  ->string)]))
+(define-switch (->string v)
+  [string? (connect [immutable? v]
+                    [else (call string->immutable-string)])]
+  [symbol? (call (~> symbol->string
+                     ->string))]
+  [number? (call (~> number->string
+                     ->string))]
+  [keyword? (call (~> keyword->string
+                      ->string))]
+  [(listof char?) (call (~> list->string
+                            ->string))]
+  [bytes? (call (~> bytes->string/locale
+                    ->string))]
+  [list? (call (~> ~a
+                   ->string))]
+  [sequence? (call (~> ->list
+                       ->string))]
+  [generator? (call (~> ->list
+                        ->string))]
+  [else (call (~> ~a
+                  ->string))])
 
-(define (->number v)
-  (cond [(number? v) v]
-        [(string? v) (string->number v)]
-        [(char? v) (char->integer v)]
-        [(eq? v ID) (reify v 0 +)]
-        [else (error '->number "Unsupported type ~a!" v)]))
+(define-switch (->number v)
+  [number? v]
+  [string? (call string->number)]
+  [char? (call char->integer)]
+  [(eq? ID) (call (reify 0 +))]
+  [else (error '->number "Unsupported type ~a!" v)])
 
-(define (->inexact v)
-  (cond [((and/c number? inexact?) v) v]
-        [(number? v) (exact->inexact v)]
-        [else (~> v
-                  ->number
-                  ->inexact)]))
+(define-switch (->inexact v)
+  [(and number? inexact?) v]
+  [number? (call exact->inexact)]
+  [else (call (~> ->number
+                  ->inexact))])
 
-(define (->exact v)
-  (cond [((and/c number? exact?) v) v]
-        [(number? v) (inexact->exact v)]
-        [else (~> v
-                  ->number
-                  ->exact)]))
+(define-switch (->exact v)
+  [(and number? exact?) v]
+  [number? (call inexact->exact)]
+  [else (call (~> ->number
+                  ->exact))])
 
 (define (->integer v #:round [round 'down])
-  (cond [(integer? v) v]
-        [(number? v) (cond [(eq? round 'down)
-                            (~> v
-                                floor
-                                ->exact)]
-                           [(eq? round 'up)
-                            (~> v
-                                ceiling
-                                ->exact)]
-                           [(eq? round 'nearest)
-                            (~> v
-                                b:round
-                                ->exact)])]
-        [else (~> v
-                  ->number
-                  ->integer)]))
+  (switch (v)
+    [integer? v]
+    [number? (switch (round)
+               [(eq? 'down)
+                  (~> (v)
+                      floor
+                      ->exact)]
+               [(eq? 'up)
+                (~> (v)
+                    ceiling
+                    ->exact)]
+               [(eq? 'nearest)
+                (~> (v)
+                    b:round
+                    ->exact)])]
+    [else (call (~> ->number
+                    ->integer))]))
 
-(define (->list v)
-  (cond [(list? v) v]
-        [(string? v) (string->list v)]
-        [(vector? v) (vector->list v)]
-        [(dict? v) (dict->list v)]
-        [(set? v) (set->list v)]
-        [(syntax? v) (syntax->list v)]
-        [(bytes? v) (bytes->list v)]
-        [(sequence? v) (sequence->list v)]
-        [(generator? v) (~> v
-                            ->stream
-                            ->list)]
-        [(generic-set? v) (set->list v)]
-        [(struct? v) (~> v
-                         ->vector
-                         ->list)]
-        [else (error '->list "Unsupported type ~a!" v)]))
+(define-switch (->list v)
+  [list? v]
+  [string? (call string->list)]
+  [vector? (call vector->list)]
+  [dict? (call dict->list)]
+  [set? (call set->list)]
+  [syntax? (call syntax->list)]
+  [bytes? (call bytes->list)]
+  [sequence? (call sequence->list)]
+  [generator? (call (~> ->stream
+                        ->list))]
+  [generic-set? (call set->list)]
+  [struct? (call (~> ->vector
+                     ->list))]
+  [else (error '->list "Unsupported type ~a!" v)])
 
-(define (->vector v)
-  (cond [(vector? v) (if (immutable? v)
-                         v
-                         (vector->immutable-vector v))]
-        [(list? v) (~> v
-                       list->vector
-                       ->vector)]
-        [(sequence? v) (~> v
-                           ->list
-                           ->vector)]
-        [(struct? v) (~> v
-                         struct->vector
-                         (vector-drop 1)
-                         ->vector)]
-        [else (~> v
-                  ->list
-                  ->vector)]))
+(define-switch (->vector v)
+  [vector? (connect [immutable? v]
+                    [else (call vector->immutable-vector)])]
+  [list? (call (~> list->vector
+                   ->vector))]
+  [sequence? (call (~> ->list
+                       ->vector))]
+  [struct? (call (~> struct->vector
+                     (vector-drop 1)
+                     ->vector))]
+  [else (call (~> ->list
+                  ->vector))])
 
-(define (->symbol v)
-  (cond [(symbol? v) v]
-        [(string? v) (string->symbol v)]
-        [else (~> v
-                  ->string
-                  ->symbol)]))
+(define-switch (->symbol v)
+  [symbol? v]
+  [string? (call string->symbol)]
+  [else (call (~> ->string
+                  ->symbol))])
 
-(define (->keyword v)
-  (cond [(keyword? v) v]
-        [(string? v) (string->keyword v)]
-        [else (~> v
-                  ->string
-                  ->keyword)]))
+(define-switch (->keyword v)
+  [keyword? v]
+  [string? (call string->keyword)]
+  [else (call (~> ->string
+                  ->keyword))])
 
-(define (->bytes v)
-  (cond [(bytes? v) v]
-        [(list? v) (list->bytes v)]
-        [(string? v) (~> v
-                         ->list
-                         (map char->integer _)
-                         ->bytes)]
-        [else (~> v
-                  ->string
-                  ->bytes)]))
+(define-switch (->bytes v)
+  [bytes? v]
+  [list? (call list->bytes)]
+  [string? (call (~> ->list
+                     (map char->integer _)
+                     ->bytes))]
+  [else (call (~> ->string
+                  ->bytes))])
 
-(define (->char v)
-  (cond [(char? v) v]
-        [(integer? v) (integer->char v)]
-        [((and/c non-empty-string? (string-len/c 2)) v) (string-ref v 0)]
-        [((and/c (non-empty-listof any/c)
-                 (property/c length (=/c 1))) v)
-         (~> v
-             (list-ref 0)
-             ->char)]
-        [(symbol? v) (~> v
-                         ->string
-                         ->char)]
-        [else (error '->char "Unsupported type ~a!" v)]))
+(define-switch (->char v)
+  [char? v]
+  [integer? (call integer->char)]
+  [(and non-empty-string?
+        (esc (string-len/c 2)))
+   (call (string-ref 0))]
+  [(and (esc (non-empty-listof any/c))
+        (esc (property/c length (=/c 1))))
+   (call (~> (list-ref 0)
+             ->char))]
+  [symbol? (call (~> ->string
+                     ->char))]
+  [else (error '->char "Unsupported type ~a!" v)])
 
-(define (->stream v)
-  (cond [(stream? v) v]
-        [(sequence? v) (sequence->stream v)]
-        [(generator? v) (~> v
-                            (in-producer (void))
-                            ->stream)]
-        [else (error '->stream "Unsupported type ~a!" v)]))
+(define-switch (->stream v)
+  [stream? v]
+  [sequence? (call sequence->stream)]
+  [generator? (call (~> (in-producer (void))
+                        ->stream))]
+  [else (error '->stream "Unsupported type ~a!" v)])
 
 (define (sequence->generator seq [return (void)])
   (generator ()
@@ -262,40 +239,40 @@
     return))
 
 (define (->generator v [return (void)])
-  (cond [(generator? v) v]
-        [(sequence? v) (sequence->generator v return)]
-        [else (error '->generator "Unsupported type ~a!" v)]))
+  (switch (v)
+    [generator? v]
+    [sequence? (call (sequence->generator return))]
+    [else (error '->generator "Unsupported type ~a!" v)]))
 
-(define (->set v)
-  (cond [(set? v) v]
-        [(list? v) (list->set v)]
-        [else (~> v
-                  ->list
-                  ->set)]))
+(define-switch (->set v)
+  [set? v]
+  [list? (call list->set)]
+  [else (call (~> ->list
+                  ->set))])
 
 (define (->syntax v [ctx #f])
-  (cond [(syntax? v) v]
-        [else (datum->syntax (if ctx ctx #f) v)]))
+  (switch (v)
+    [syntax? v]
+    [else (datum->syntax (if ctx ctx #f) v)]))
 
-(define (->symex v)
-  (cond [(syntax? v) (syntax->datum v)]
-        [else v]))
+(define-switch (->symex v)
+  [syntax? (call syntax->datum)]
+  [else v])
 
 (define (string->symex v)
   (read (open-input-string v)))
 
-(define (->values v)
-  (cond [(vector? v) (vector->values v)]
-        [else (~> v
-                  ->vector
-                  ->values)]))
+(define-switch (->values v)
+  [vector? (call vector->values)]
+  [else (call (~> ->vector
+                  ->values))])
 
-(define (->hash v)
-  (cond [(hash? v) v]
-        [(dict? v) (make-immutable-hash v)]
-        [(eq? v ID) (reify v (hash))]
-        [else (error '->hash "Unsupported type ~a!" v)]))
+(define-switch (->hash v)
+  [hash? v]
+  [dict? (call make-immutable-hash)]
+  [(eq? ID) (call (reify (hash)))]
+  [else (error '->hash "Unsupported type ~a!" v)])
 
-(define (->procedure v)
-  (cond [(procedure? v) v]
-        [else (thunk* v)]))
+(define-switch (->procedure v)
+  [procedure? v]
+  [else (thunk* v)])
