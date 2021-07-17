@@ -324,7 +324,23 @@
     (check-equal? (reify ID (hash 'a 1)) (hash))
     (check-equal? (reify ID add1) values)
     (check-equal? (reify ID (stream 1)) (stream))
-    (check-equal? (reify ID (set 1)) (set)))))
+    (check-equal? (reify ID (set 1)) (set)))
+
+   (test-suite
+    "some?"
+    (check-false (some? 0))
+    (check-false (some? ""))
+    (check-false (some? null))
+    (check-false (some? (hash)))
+    (check-false (some? #()))
+    (check-false (some? empty-stream))
+    (check-true (some? 1))
+    (check-true (some? -1))
+    (check-true (some? "a"))
+    (check-true (some? (list 1)))
+    (check-true (some? (hash 'a 1)))
+    (check-true (some? #(1)))
+    (check-true (some? (stream 1))))))
 
 (module+ test
   (just-do

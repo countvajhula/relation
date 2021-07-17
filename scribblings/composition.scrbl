@@ -104,6 +104,23 @@ In the event no operands are received in the course of a computation, the result
   ]
 }
 
+@defproc[(some? [v any/c])
+         boolean?]{
+
+ Check whether a value is anything other than the identity value for the append operation for the value's type. Since we typically consider identity values to be "empty," (for instance, the empty list, or the empty string) this interface is useful in cases where we wish to check that a result is a nonempty value.
+
+@examples[
+    #:eval eval-for-docs
+	(some? "")
+	(some? "abc")
+	(some? (list 1 2))
+	(some? (list))
+	(some? empty-stream)
+	(some? (hash))
+	(some? (hash 'a 1))
+  ]
+}
+
 @subsection{Concatenation}
 
 @defthing[gen:appendable any/c]{

@@ -50,6 +50,7 @@
           [reify (->* (any/c any/c)
                       (procedure?)
                       any/c)]
+          [some? (predicate/c)]
           [appendable? (predicate/c)]
           [append (binary-composition/c appendable?)]
           [appendable-identity (self-map/c appendable?)]
@@ -337,6 +338,9 @@
   (if (eq? v ID)
       ((id op) example)
       v))
+
+(define (some? v)
+  (not (eq? v (appendable-identity v))))
 
 (define (.. . vs)
   (if (empty? vs)
