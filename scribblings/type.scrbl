@@ -23,8 +23,6 @@
 
 @defmodule[relation/type]
 
-@margin-note{This module was formerly named @racket[relation/transform]. Any code using @racket[relation/transform] directly should be changed to use @racket[relation/type] instead. The former alias is still provided alongside the new one for backwards compatibility, but will be removed in a future version.}
-
 Generic utilities for constructing data and transforming it from one type to another.
 
 The type constructors and transformers provided by Racket out of the box are @italic{type-specific}; for instance in order to construct a list, we use @racket[cons] or @racket[list], and for a stream we'd use @racket[stream-cons] or @racket[stream]. Likewise, to convert data into a string, we would use @racket[symbol->string] if the data is a symbol, and @racket[number->string] if the data is a number. Similarly, converting a number to an integer from a more precise form, or vice versa, typically involves multiple steps and the method varies depending on the number's type.

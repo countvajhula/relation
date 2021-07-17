@@ -55,8 +55,6 @@
 
 @defmodule[relation/composition]
 
-@margin-note{This module was formerly named @racket[relation/algebraic]. Any code using @racket[relation/algebraic] directly should be changed to use @racket[relation/composition] instead. The former alias is still provided alongside the new one for backwards compatibility, but will be removed in a future version.}
-
 Generic algebraic operators for composing data.
 
 The built-in operators @racket[+] and @racket[*] operate on numbers specifically. Often, however, we are interested in performing operations "similar" to these for datatypes that aren't numbers, for which we would resort to type-specific operators like @racketlink[b:append "append"] for lists.
