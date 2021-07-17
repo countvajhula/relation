@@ -24,6 +24,7 @@
                   flip$
                   false.
                   (compose r:compose))
+         mischief/shorthand
          version-case
          contract/social)
 

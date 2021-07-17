@@ -6,12 +6,17 @@
          (only-in kw-utils/kw-hash
                   apply/kw-hash)
          data/maybe
-         (for-syntax racket/base))
+         (for-syntax racket/base)
+         version-case)
 
 (require relation/function/type
          relation/function/composition
          relation/function/intf
          "util.rkt")
+
+(version-case
+ [(version< (version) "7.9.0.22")
+  (define-alias define-syntax-parse-rule define-simple-macro)])
 
 (provide lambda/function
          lambda/f
@@ -29,17 +34,17 @@
 
 (define-alias λ/f lambda/function)
 
-(define-simple-macro (define/function (id:id kw-formals ... . rest-args)
-                       body ...)
+(define-syntax-parse-rule (define/function (id:id kw-formals ... . rest-args)
+                            body ...)
   (define id
     (lambda/function (kw-formals ... . rest-args)
                      body ...)))
 
 (define-alias define/f define/function)
 
-(define-simple-macro (lambda. v ...
-                              (~or* (~datum ->) (~datum →))
-                              body:expr ...)
+(define-syntax-parse-rule (lambda. v ...
+                                   (~or* (~datum ->) (~datum →))
+                                   body:expr ...)
   (lambda/f (v ...)
             body ...))
 

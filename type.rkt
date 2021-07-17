@@ -28,7 +28,14 @@
          (only-in relation/composition
                   ID
                   reify)
-         ionic)
+         ionic
+         mischief/shorthand
+         version-case
+         (for-syntax racket/base))
+
+(version-case
+ [(version< (version) "7.9.0.22")
+  (define-alias define-syntax-parse-rule define-simple-macro)])
 
 (provide :
          make!
@@ -90,10 +97,10 @@
                          (cons form (reverse elements))))
          args)]))
 
-(define-simple-macro (make! form:id elements ...)
+(define-syntax-parse-rule (make! form:id elements ...)
   (set! form (make form elements ...)))
 
-(define-simple-macro (:! elements ... form:id)
+(define-syntax-parse-rule (:! elements ... form:id)
   (set! form (: elements ... form)))
 
 (define (->boolean v)
