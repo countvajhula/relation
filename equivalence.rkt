@@ -37,10 +37,10 @@
          comparable/c
          in?
          (contract-out
-          [comparable? (predicate/c)]
-          [gset? (predicate/c)]
-          [hash-code (hash-function/c)]
-          [secondary-hash-code (hash-function/c)]
+          [comparable? predicate/c]
+          [gset? predicate/c]
+          [hash-code hash-function/c]
+          [secondary-hash-code hash-function/c]
           [= (variadic-comparison-predicate/c comparable?)]
           [≠ (variadic-comparison-predicate/c comparable?)]
           [/= (variadic-comparison-predicate/c comparable?)]

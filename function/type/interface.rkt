@@ -12,18 +12,18 @@
 (provide gen:procedure
          procedure/c
          (contract-out
-          [procedure? (predicate/c)]
+          [procedure? predicate/c]
           [keywords (-> procedure?
                         (values (listof keyword?)
                                 (maybe/c (listof keyword?))))]
           [arity (function/c procedure?
                              normalized-arity?)]
-          [procedure-apply (-> procedure?
-                               arguments?
-                               any)]
-          [render-function (-> procedure?
-                               (or/c list?
-                                     procedure?))]))
+          [procedure-apply (binary-function/c procedure?
+                                              arguments?
+                                              any)]
+          [render-function (function/c procedure?
+                                       (or/c list?
+                                             procedure?))]))
 
 (define-generics procedure
   (keywords procedure)

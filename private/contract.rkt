@@ -4,9 +4,8 @@
                     predicate/c)
          contract/social)
 
-(provide
- (contract-out [variadic-comparison-predicate/c (self-map/c contract?)]
-               [variadic-comparison-selection/c (self-map/c contract?)]))
+(provide variadic-comparison-predicate/c
+         variadic-comparison-selection/c)
 
 (define (variadic-comparison/c type/c return/c)
   ;; TODO: improve to ensure that arguments are type/c

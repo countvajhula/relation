@@ -50,16 +50,16 @@
           [reify (->* (any/c any/c)
                       (procedure?)
                       any/c)]
-          [some? (predicate/c)]
-          [appendable? (predicate/c)]
+          [some? predicate/c]
+          [appendable? predicate/c]
           [append (binary-composition/c appendable?)]
           [appendable-identity (self-map/c appendable?)]
           [appendable-inverse (self-map/c appendable?)]
-          [multipliable? (predicate/c)]
+          [multipliable? predicate/c]
           [multiply (binary-composition/c multipliable?)]
           [multipliable-identity (self-map/c multipliable?)]
           [multipliable-inverse (self-map/c multipliable?)]
-          [addable? (predicate/c)]
+          [addable? predicate/c]
           [add (binary-composition/c addable?)]
           [addable-identity (self-map/c addable?)]
           [addable-inverse (self-map/c addable?)]
@@ -69,9 +69,9 @@
           [..> (variadic-composition/c appendable?)]
           [∘ (variadic-composition/c appendable?)]
           [* (variadic-composition/c multipliable?)]
-          [/ (binary-variadic-composition/c multipliable?)]
+          [/ (variadic-composition/c multipliable? multipliable?)]
           [+ (variadic-composition/c addable?)]
-          [- (binary-variadic-composition/c addable?)]
+          [- (variadic-composition/c addable? addable?)]
           [join (reducer/c appendable?)]
           [sum (reducer/c addable?)]
           [product (reducer/c multipliable?)]
@@ -127,26 +127,26 @@
                                                       'bab)])
                             #:rest [seqs (listof (sequenceof any/c))]
                             [result any/c])]
-          [sequencer (->* ((function/c) (function/c))
-                          (#:stop? (predicate/c)
-                           #:tail (function/c any/c collection?)
+          [sequencer (->* (function/c function/c)
+                          (#:stop? predicate/c
+                           #:tail (encoder/c collection?)
                            #:cons (binary-constructor/c any/c collection?))
                           sequencer?)]
-          [sequencer-map (function/c sequencer? (function/c))]
-          [sequencer-gen (function/c sequencer? (function/c))]
-          [sequencer-stop? (function/c sequencer? (predicate/c))]
+          [sequencer-map (function/c sequencer? function/c)]
+          [sequencer-gen (function/c sequencer? function/c)]
+          [sequencer-stop? (function/c sequencer? predicate/c)]
           [sequencer-tail (function/c sequencer? (encoder/c collection?))]
           [sequencer-cons (function/c sequencer? (binary-constructor/c any/c collection?))]
-          [sequencer? (predicate/c)]
+          [sequencer? predicate/c]
           [unfold (binary-function/c sequencer? any/c stream?)]
           [unfoldl (binary-function/c sequencer? any/c collection?)]
           [unfoldr (binary-function/c sequencer? any/c collection?)]
-          [onto (binary-variadic-function/c (sequenceof procedure?)
-                                            any/c
-                                            any/c)]
-          [gather (binary-variadic-function/c (sequenceof procedure?)
-                                              any/c
-                                              any/c)]))
+          [onto (variadic-function/c (sequenceof procedure?)
+                                     any/c
+                                     any/c)]
+          [gather (variadic-function/c (sequenceof procedure?)
+                                       any/c
+                                       any/c)]))
 
 (define-generics appendable
   (append appendable other)

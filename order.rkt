@@ -23,7 +23,7 @@
 (provide gen:orderable
          orderable/c
          (contract-out
-          [orderable? (predicate/c)]
+          [orderable? predicate/c]
           [< (variadic-comparison-predicate/c orderable?)]
           [≤ (variadic-comparison-predicate/c orderable?)]
           [<= (variadic-comparison-predicate/c orderable?)]

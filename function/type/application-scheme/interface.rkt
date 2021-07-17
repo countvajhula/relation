@@ -12,11 +12,11 @@
          recoverable-apply-error
          recoverable-apply-error?
          (contract-out
-          [empty-application? (predicate/c)]
-          [application-scheme? (predicate/c)]
-          [pass (-> application-scheme?
-                    arguments?
-                    application-scheme?)]
+          [empty-application? predicate/c]
+          [application-scheme? predicate/c]
+          [pass (binary-constructor/c #:order 'bab
+                                      arguments?
+                                      application-scheme?)]
           [flat-arguments (function/c application-scheme?
                                       arguments?)]
           [unwrap-application (function/c application-scheme?

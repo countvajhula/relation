@@ -2,7 +2,6 @@
 
 (require (except-in racket/contract/base
                     predicate/c)
-         arguments
          (only-in data/collection
                   conj
                   collection?)

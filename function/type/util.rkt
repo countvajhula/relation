@@ -15,7 +15,7 @@
           [true. (unconstrained-domain-> boolean?)]
           [false. (unconstrained-domain-> boolean?)]
           [arg (function/c natural-number/c procedure?)]
-          [unwrap (-> list? any)]))
+          [unwrap (function/c list? any)]))
 
 (define (flip f)
   (λ (x y . args)

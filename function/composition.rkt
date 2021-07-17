@@ -15,12 +15,12 @@
          "../private/util.rkt")
 
 (provide (contract-out
-          [compose-functions (-> monoid? procedure? ... procedure?)]
-          [compose (variadic-function/c procedure? procedure?)]
-          [conjoin (variadic-function/c procedure? procedure?)]
-          [&& (variadic-function/c procedure? procedure?)]
-          [disjoin (variadic-function/c procedure? procedure?)]
-          [|| (variadic-function/c procedure? procedure?)]
+          [compose-functions (variadic-function/c monoid? procedure? procedure?)]
+          [compose (variadic-composition/c procedure?)]
+          [conjoin (variadic-composition/c procedure?)]
+          [&& (variadic-composition/c procedure?)]
+          [disjoin (variadic-composition/c procedure?)]
+          [|| (variadic-composition/c procedure?)]
           [function-null (->* ()
                               (#:compose-with monoid?)
                               composed-function?)]))

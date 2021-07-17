@@ -38,7 +38,7 @@
                  (-> collection?)
                  (-> collection? any/c collection?)
                  (-> collection? #:rest list? collection?))]
-          [->boolean (predicate/c)]
+          [->boolean predicate/c]
           [->string (encoder/c string?)]
           [->number (encoder/c number?)]
           [->inexact (encoder/c inexact?)]
@@ -62,9 +62,9 @@
           [->syntax (->* (any/c)
                          (syntax?)
                          syntax?)]
-          [->symex (function/c)]
+          [->symex function/c]
           [string->symex (decoder/c string?)]
-          [->values (-> any/c any)]
+          [->values (encoder/c any)]
           [->hash (encoder/c hash?)]
           [->procedure (encoder/c procedure?)]))
 
