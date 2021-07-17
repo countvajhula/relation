@@ -22,8 +22,6 @@
           [unwrap-application (function/c application-scheme?
                                           procedure?)]))
 
-;; TODO: ideally add tests for method implementations in each
-;; application-scheme in a test submodule
 (define-generics application-scheme
   ;; pass accepts an arguments structure representing args provided in a
   ;; single invocation, and returns an updated application-scheme instance
@@ -42,9 +40,6 @@
 
   ;; yields the function being applied
   (unwrap-application application-scheme))
-
-;; TODO: can we eliminate pass?
-;; right-chiral (partial) arguments?
 
 (define-predicate (empty-application? applier)
   (~> flat-arguments (equal? empty-arguments)))
