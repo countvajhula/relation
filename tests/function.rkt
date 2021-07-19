@@ -297,8 +297,8 @@
 
    (test-suite
     "application schemes"
-    (test-case
-        "application schemes preserve underlying interfaces"
+    (test-suite
+        "application schemes preserve interfaces"
       (check-false (sequence? (curry add1)))
       (check-true (sequence? (curry (make-composed-function add1 sqr))))
       (check-false (sequence? (partial add1)))
@@ -369,7 +369,7 @@
        (check-true ((in? #:key ->number (list 1 2 3)) "3"))
        (check-exn exn:fail:contract? (thunk ((in? #:key ->number #:dummy 'dummy (list 1 2 3)) "3")))
        (check-exn exn:fail:contract? (thunk ((in? #:key ->number (list 1 2 3)) "3" "4")))))
-    (test-case
+    (test-suite
         "partial/template"
       (check-true ((partial/template = #:key (just string-upcase) (just "hi") nothing) "HI"))
       (check-true ((partial/template = #:key nothing (just "hi") nothing) #:key string-upcase "HI"))
@@ -380,17 +380,25 @@
       (check-exn exn:fail:contract? (thunk ((app +) 1)) "extra args")
       (check-exn exn:fail:contract? (thunk ((app + _) 1 2)) "extra args")
       (check-exn exn:fail:contract? (thunk ((app + _))) "not enough args")
-      (define string-append-3 (procedure-reduce-arity string-append 3))
-      (check-equal? ((app string-append-3 _ "-" _) "a" "b") (string-append-3 "a" "-" "b"))
-      (check-exn exn:fail:contract? (thunk ((app string-append-3 _ "-" _) "a" "b" "c")) "extra args")
-      (check-exn exn:fail:contract? (thunk ((app string-append-3 _ "-" _) "a")) "not enough args")
+      (let ([string-append-3 (procedure-reduce-arity string-append 3)])
+        (check-equal? ((app string-append-3 _ "-" _) "a" "b") (string-append-3 "a" "-" "b"))
+        (check-exn exn:fail:contract? (thunk ((app string-append-3 _ "-" _) "a" "b" "c")) "extra args")
+        (check-exn exn:fail:contract? (thunk ((app string-append-3 _ "-" _) "a")) "not enough args"))
       (check-equal? ((app = #:key string-upcase "hi" _) "HI") (= #:key string-upcase "hi" "HI"))
       (check-exn exn:fail:contract? (thunk ((app = #:key string-upcase "hi" _) #:key string-downcase "HI")) "overriding template not allowed")
       (check-equal? ((app = #:key _ _ "hi") #:key string-upcase "HI") (= #:key string-upcase "hi" "HI"))
       (check-exn exn:fail:contract? (thunk ((app = #:key _ _ "hi") "HI")) "missing keyword arg in template")
-      (check-equal? ((template-atomic-function string-append (list nothing (just "-") nothing) (hash)) "a" "b") "a-b"))
+      (check-equal? ((template-atomic-function string-append (list nothing (just "-") nothing) (hash)) "a" "b") "a-b")
+      (test-case
+          "template represents correct arity"
+        (check-equal? 3 (arity (app string-append _ _ _))))
+      (test-case
+          "template represents correct keywords"
+        (let-values ([(required accepted) (keywords (app = #:key _ _))])
+          (check-equal? required (list '#:key))
+          (check-equal? accepted (list '#:key)))))
     (test-case
-        "application scheme composition"
+        "application scheme 'endofunctor' composition, i.e. nesting"
       (check-equal? ((curry (app string-append _ "-" _) "a") "b") "a-b")
       (check-equal? ((curryr (app string-append _ "-" _) "a") "b") "b-a")
       (check-equal? ((app (app string-append _ "b" _ _) _ "c" "d") "a") "abcd" "nested templates")

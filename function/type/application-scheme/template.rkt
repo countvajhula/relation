@@ -105,9 +105,10 @@
             [args (flat-arguments updated-application)])
        (-procedure-apply f args)))
    (define (arity this)
-     (-arity (template-function-f this)))
+     (length (filter nothing? (template-function-pos this))))
    (define (keywords this)
-     (-keywords (template-function-f this)))
+     (let ([kws (hash-keys (template-function-kw this))])
+       (values kws kws)))
    (define (render-function this)
      (let* ([f (template-function-f this)]
             [pos (template-function-pos this)]
