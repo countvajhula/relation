@@ -44,7 +44,8 @@
           [make-curried-function (-> b:procedure?
                                      arguments?
                                      symbol?
-                                     curried-function?)]))
+                                     curried-function?)]
+          [empty-curried-function curried-function?]))
 
 (struct curried-function function (f chirality left right kw)
   #:transparent
