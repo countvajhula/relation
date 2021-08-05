@@ -301,7 +301,7 @@
         "application schemes implement rich interfaces"
       (check-true (sequence? (curry add1)))
       (check-true (sequence? (curry (make-composed-function add1 sqr))))
-      (check-false (sequence? (partial add1)))
+      (check-true (sequence? (partial add1)))
       (check-true (sequence? (partial (make-composed-function add1 sqr))))
       (check-false (sequence? (app +)))
       (check-true (sequence? (app (make-composed-function add1 sqr)))))
@@ -410,7 +410,7 @@
       (check-true (sequence? (curry (app +))) "composed application schemes preserve rich semantics")
       (check-true (sequence? (curry (app (make-composed-function add1 +)))) "composed application schemes preserve rich semantics")
       (check-true (sequence? (curry (curryr (make-composed-function add1 +)))) "composed application schemes preserve rich semantics")
-      (check-false (sequence? (partial (app +))) "composed application schemes preserve rich semantics")
+      (check-true (sequence? (partial (app +))) "composed application schemes preserve rich semantics")
       (check-true (sequence? (partial (app (make-composed-function add1 +)))) "composed application schemes preserve rich semantics")
       (check-true (sequence? (partial (partialr (make-composed-function add1 +)))) "composed application schemes preserve rich semantics")
       (check-true (sequence? (app (curry +))) "composed application schemes preserve rich semantics")
