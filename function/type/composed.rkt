@@ -39,6 +39,9 @@
                                         #:compose-with monoid?)
                                        #:rest (listof procedure?)
                                        composed-function?)]
+          [function-null (->* ()
+                              (#:compose-with monoid?)
+                              composed-function?)]
           [apply/steps (unconstrained-domain-> sequence?)])
          usual-composition
          conjoin-composition
@@ -125,6 +128,9 @@
                      (if thread?
                          fs
                          (reverse fs))))
+
+(define (function-null #:compose-with [composer usual-composition])
+  (composed-function composer null))
 
 (define/arguments (apply/steps args)
   (let ([f (first (arguments-positional args))]
