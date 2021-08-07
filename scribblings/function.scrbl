@@ -27,13 +27,13 @@
 @(define eval-for-docs
    (make-base-eval #:lang 'racket/base
                    '(require data/maybe
-                   arguments
-                   relation
-                   racket/set
-                   (only-in racket/list range)
-                   (only-in racket/math sqr)
-                   racket/generator
-                   racket/stream)))
+                             arguments
+                             relation
+                             racket/set
+                             (only-in racket/list range)
+                             (only-in racket/math sqr)
+                             racket/generator
+                             racket/stream)))
 
 @title{Functional Primitives}
 
@@ -41,7 +41,7 @@
 
 Elementary types and utilities to simplify the use and manipulation of functions.
 
-This module provides general-purpose utilities to support programming in the @hyperlink["https://en.wikipedia.org/wiki/Functional_programming"]{functional style}. As part of its operation, this module defines and provides a "rich" @racket[function] type intended as a drop-in alternative to built-in Racket functions. This function type is usually no different from normal functions, but as a higher-level entity, it provides greater visibility of the make-up of the function, allowing more flexibility in customizing the nature of composition, supporting natural semantics when used with standard sequence utilities, and more seamless use of currying and partial application.
+This module provides general-purpose utilities to support programming in the @hyperlink["https://en.wikipedia.org/wiki/Functional_programming"]{functional style}. As part of its operation, this module defines and provides a suite of "rich" @racket[function] types that interoperate seamlessly with, and may be used as an alternative to, Racket's built-in @seclink["procedures" #:doc '(lib "scribblings/reference/reference.scrbl")]{procedure} type. These function types are usually no different from normal functions, but as higher-level entities, they provide greater visibility of the make-up of the function, allowing more flexibility in customizing the nature of composition, supporting natural semantics when used with standard sequence utilities, and more seamless use of currying and partial application.
 
 @table-of-contents[]
 
@@ -82,7 +82,7 @@ This module provides general-purpose utilities to support programming in the @hy
 }
 
 @defform[(app fn template-args ...)]{
-  Syntactic sugar on the @racket[partial/template] interface, inspired by and greatly resembling @other-doc['(lib "fancy-app/main.scrbl")], this enables applying a function to arguments with reference to a template specified in advance that indicates the expected arguments and their positions.
+  Syntactic sugar on the @racket[partial/template] interface, inspired by and greatly resembling @other-doc['(lib "fancy-app/main.scrbl")], this enables applying a function to arguments with reference to a template specified in advance. The template indicates the expected arguments and their positions or keywords.
 
 @examples[
     #:eval eval-for-docs
@@ -151,19 +151,73 @@ This module provides general-purpose utilities to support programming in the @hy
                   ...)
          function?]{
 
- Analogous to @racketlink[b:compose]{@racket[compose]}, but yields a @racket[function] rather than a primitive Racket @seclink["procedures" "procedure" #:doc '(lib "scribblings/reference/reference.scrbl")]. In general, the composition is performed "naively" by simply wrapping the component functions with a new @racket[function]. In the common case where the component functions have @racketlink[eq?]{identical} composition and application schemes, however, the functions are composed "at the same level," preserving the @racketlink[monoid]{composition method} in the resulting composed function, whether it is the usual function composition or something else.
+ Analogous to @racketlink[b:compose]{@racket[compose]}, but yields a @racket[function] rather than a primitive Racket @seclink["procedures" "procedure" #:doc '(lib "scribblings/reference/reference.scrbl")].
 
-@margin-note{In principle, composition of functions could be formally simplified in certain additional cases including homogeneous or trivial application schemes. This "runtime compilation" would have no impact on the behavior of the resulting function, however, and is left for future consideration.}
+In general, the composition is performed "naively" by simply wrapping the component functions with a new @racket[function]. In the case where none of the component functions are wrapped with an application scheme, however, and where their @racketlink[monoid]{composition methods} are the same, the functions are composed "at the same level." Further study of the interaction between application schemes and composition may suggest some simplification rules here, but that is left for future consideration.
 
 @examples[
     #:eval eval-for-docs
     (compose ->string +)
     (compose ->string (f +))
-    (compose (f ->string) +)
-    (compose (f ->string) (f +))
-    (compose odd? (conjoin positive? integer?))
-    (compose (conjoin odd?) (conjoin positive? integer?))
     (compose ->string (curry + 2))
+  ]
+}
+
+@deftogether[(
+ @defproc[(conjoin [g procedure?]
+                   ...)
+          function?]
+ @defproc[(&& [g procedure?]
+              ...)
+          function?]
+ )]{
+
+ Similar to @racket[compose] and equivalent to @racketlink[b:conjoin]{@racket[conjoin]}, this yields a @racket[function] whose composition method is @racketlink[b:conjoin]{@racket[conjoin]} rather than @racketlink[b:compose]{@racket[compose]}, that is, it composes predicates such that it evaluates to true when @emph{all} components evaluate to true and not otherwise. @racket[&&] is provided as a convenient alias, following the convention in @other-doc['(lib "algebraic/scribblings/algebraic.scrbl")].
+
+@examples[
+    #:eval eval-for-docs
+    (&& positive? integer?)
+    ((&& positive? integer?) -5)
+    ((&& positive? integer?) 5.3)
+    ((&& positive? integer?) 5)
+  ]
+}
+
+@deftogether[(
+ @defproc[(disjoin [g procedure?]
+                   ...)
+          function?]
+ @defproc[(|| [g procedure?]
+              ...)
+          function?]
+ )]{
+
+ Similar to @racket[compose] and equivalent to @racketlink[b:disjoin]{@racket[disjoin]}, this yields a @racket[function] whose composition method is @racketlink[b:disjoin]{@racket[disjoin]} rather than @racketlink[b:compose]{@racket[compose]}, that is, it composes predicates such that it evaluates to true when @emph{any} component evaluates to true. @racket[||] is provided as a convenient alias, following the convention in @other-doc['(lib "algebraic/scribblings/algebraic.scrbl")].
+
+@examples[
+    #:eval eval-for-docs
+    (|| positive? integer?)
+    ((|| positive? integer?) -5)
+    ((|| positive? integer?) 5.3)
+    ((|| positive? integer?) 5)
+    ((|| positive? integer?) -5.3)
+  ]
+}
+
+@deftogether[(
+ @defproc[(negate [g procedure?])
+          function?]
+ @defproc[(!! [g procedure?])
+          function?]
+ )]{
+
+ Analogous to @racketlink[b:negate]{@racket[negate]}, this yields a @racket[function] whose result is the boolean negation of the result of applying @racket[g].
+
+@examples[
+    #:eval eval-for-docs
+    (!! positive?)
+    ((!! positive?) -5)
+    ((!! positive?) 5)
   ]
 }
 
@@ -234,64 +288,6 @@ This module provides general-purpose utilities to support programming in the @hy
     (partial/template = #:key (just string-upcase) (just "apple") nothing)
     ((partial/template = #:key (just string-upcase) nothing (just "apple")) "APPLE")
     ((partial/template = #:key nothing (just "apple") nothing) #:key string-upcase "APPLE")
-  ]
-}
-
-@deftogether[(
- @defproc[(conjoin [g procedure?]
-                   ...)
-          function?]
- @defproc[(&& [g procedure?]
-              ...)
-          function?]
- )]{
-
- Analogous to @racketlink[b:conjoin]{@racket[conjoin]}, this yields a @racket[function] whose composition method is @racketlink[b:conjoin]{@racket[conjoin]} rather than @racketlink[b:compose]{@racket[compose]}. @racket[&&] is provided as a convenient alias, following the convention in @other-doc['(lib "algebraic/scribblings/algebraic.scrbl")].
-
-@examples[
-    #:eval eval-for-docs
-    (&& positive? integer?)
-    ((&& positive? integer?) -5)
-    ((&& positive? integer?) 5.3)
-    ((&& positive? integer?) 5)
-  ]
-}
-
-@deftogether[(
- @defproc[(disjoin [g procedure?]
-                   ...)
-          function?]
- @defproc[(|| [g procedure?]
-              ...)
-          function?]
- )]{
-
- Analogous to @racketlink[b:disjoin]{@racket[disjoin]}, this yields a @racket[function] whose composition method is @racketlink[b:disjoin]{@racket[disjoin]} rather than @racketlink[b:compose]{@racket[compose]}. @racket[||] is provided as a convenient alias, following the convention in @other-doc['(lib "algebraic/scribblings/algebraic.scrbl")].
-
-@examples[
-    #:eval eval-for-docs
-    (|| positive? integer?)
-    ((|| positive? integer?) -5)
-    ((|| positive? integer?) 5.3)
-    ((|| positive? integer?) 5)
-    ((|| positive? integer?) -5.3)
-  ]
-}
-
-@deftogether[(
- @defproc[(negate [g procedure?])
-          function?]
- @defproc[(!! [g procedure?])
-          function?]
- )]{
-
- Analogous to @racketlink[b:negate]{@racket[negate]}, this yields a @racket[function] whose result is the boolean negation of the result of applying @racket[g].
-
-@examples[
-    #:eval eval-for-docs
-    (!! positive?)
-    ((!! positive?) -5)
-    ((!! positive?) 5)
   ]
 }
 
@@ -477,7 +473,7 @@ This module defines an interface, @racket[gen:procedure], to encode the idea of 
 @defproc[(procedure? [v any/c])
          boolean?]{
 
- Predicate to check if a value is a procedure. This is identical to Racket's built-in @racketlink[b:procedure?]{@racket[procedure?]} but also recognizes the @racketlink[function]{@racket[function]} types provided by this module.
+ Predicate to check if a value is a procedure. This is in practice identical to Racket's built-in @racketlink[b:procedure?]{@racket[procedure?]}.
 
 @examples[
     #:eval eval-for-docs

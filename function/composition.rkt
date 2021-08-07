@@ -115,6 +115,9 @@
            (call (~compose-naively composer))]
           [else (call (~compose-by-merging composer))]))
 
+;; this composition interface composes functions using
+;; the provided monoid, and isn't necessarily the usual
+;; function composition, unlike `compose` below.
 (define (compose-functions composer . gs)
   (switch (gs)
           [empty? (function-null #:compose-with composer)]
