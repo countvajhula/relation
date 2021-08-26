@@ -15,7 +15,7 @@
          "../private/util.rkt")
 
 (provide (contract-out
-          [compose-functions (variadic-function/c monoid? procedure? procedure?)]
+          [compose-functions (variadic-composition/c procedure? (head monoid?))]
           [compose (variadic-composition/c procedure?)]
           [conjoin (variadic-composition/c procedure?)]
           [&& (variadic-composition/c procedure?)]

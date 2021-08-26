@@ -2,6 +2,7 @@
 
 (require (except-in racket/contract/base
                     predicate/c)
+         contract/social
          racket/generic
          racket/hash
          racket/set
@@ -41,10 +42,10 @@
              (left list?)
              (right list?)
              (kw hash?))]
-          [make-curried-function (-> b:procedure?
-                                     arguments?
-                                     symbol?
-                                     curried-function?)]
+          [make-curried-function (function/c b:procedure?
+                                             arguments?
+                                             symbol?
+                                             curried-function?)]
           [empty-curried-function curried-function?]))
 
 (struct curried-function function (f chirality left right kw)

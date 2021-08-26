@@ -13,9 +13,9 @@
          procedure/c
          (contract-out
           [procedure? predicate/c]
-          [keywords (-> procedure?
-                        (values (listof keyword?)
-                                (maybe/c (listof keyword?))))]
+          [keywords (function/c procedure?
+                                (values (listof keyword?)
+                                        (maybe/c (listof keyword?))))]
           [arity (function/c procedure?
                              normalized-arity?)]
           [procedure-apply (binary-function/c procedure?

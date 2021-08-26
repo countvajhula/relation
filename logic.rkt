@@ -19,10 +19,10 @@
          (contract-out
           [undefined? predicate/c]
           [orf variadic-function/c]
-          [any? (decoder/c sequence?)]
+          [any? reducer/c]
           [andf variadic-function/c]
-          [all? (decoder/c sequence?)]
-          [none? (decoder/c sequence?)]))
+          [all? reducer/c]
+          [none? reducer/c]))
 
 (define (undefined? v)
   (eq? v undefined))

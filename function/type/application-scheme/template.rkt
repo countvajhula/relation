@@ -3,6 +3,7 @@
 (require (prefix-in f: racket/function)
          (except-in racket/contract/base
                     predicate/c)
+         contract/social
          racket/generic
          racket/format
          (except-in racket/list
@@ -35,9 +36,9 @@
             ((f procedure?)
              (pos list?)
              (kw hash?))]
-          [make-template-function (-> b:procedure?
-                                      arguments?
-                                      template-function?)]
+          [make-template-function (binary-function/c b:procedure?
+                                                     arguments?
+                                                     template-function?)]
           [empty-template-function template-function?]))
 
 (define (~populate-positional-template pos args)

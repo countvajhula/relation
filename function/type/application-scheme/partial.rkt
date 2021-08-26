@@ -2,6 +2,7 @@
 
 (require (except-in racket/contract/base
                     predicate/c)
+         contract/social
          racket/generic
          racket/hash
          (except-in racket/list
@@ -36,10 +37,10 @@
              (left list?)
              (right list?)
              (kw hash?))]
-          [make-partial-function (-> b:procedure?
-                                     arguments?
-                                     symbol?
-                                     partial-function?)]
+          [make-partial-function (function/c b:procedure?
+                                             arguments?
+                                             symbol?
+                                             partial-function?)]
           [empty-partial-function partial-function?]))
 
 (struct partial-function function (f chirality left right kw)

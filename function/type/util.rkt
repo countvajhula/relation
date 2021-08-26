@@ -8,10 +8,7 @@
 (provide !!
          (contract-out
           [flip functional/c]
-          [if-f (-> (unconstrained-domain-> boolean?)
-                    procedure?
-                    procedure?
-                    procedure?)]
+          [if-f (binary-composition/c procedure? (head (unconstrained-domain-> boolean?)))]
           [true. (unconstrained-domain-> boolean?)]
           [false. (unconstrained-domain-> boolean?)]
           [arg (function/c natural-number/c procedure?)]

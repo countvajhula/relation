@@ -45,8 +45,8 @@
           [≠ (variadic-comparison-predicate/c comparable?)]
           [/= (variadic-comparison-predicate/c comparable?)]
           [!= (variadic-comparison-predicate/c comparable?)]
-          [group-by (classifier/c comparable?)]
-          [=/classes (classifier/c comparable?)]
+          [group-by classifier/c]
+          [=/classes classifier/c]
           (generic-set (->* ()
                             (#:key (maybe/c (encoder/c comparable?)))
                             #:rest list?

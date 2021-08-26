@@ -26,16 +26,16 @@
 
 (provide call
          (contract-out
-          [negate (function/c procedure? function?)]
-          [!! (function/c procedure? function?)]
-          [unthunk (variadic-function/c procedure? any/c procedure?)]
+          [negate functional/c]
+          [!! functional/c]
+          [unthunk (variadic-function/c any/c procedure? (head procedure?))]
           [flip$ functional/c]
           [flip* functional/c]
           [lift functional/c]
-          [pack (variadic-function/c procedure? any/c any/c)]
-          [pack-map (variadic-function/c procedure? any/c list?)]
-          [map-values (variadic-function/c procedure? any/c any)]
-          [filter-values (variadic-function/c procedure? any/c any)]
+          [pack (variadic-function/c any/c any/c (head procedure?))]
+          [pack-map (variadic-function/c any/c list? (head procedure?))]
+          [map-values (variadic-function/c any/c any (head procedure?))]
+          [filter-values (variadic-function/c any/c any (head procedure?))]
           [uncurry functional/c]
           [curry (unconstrained-domain-> function?)]
           [curryr (unconstrained-domain-> function?)]

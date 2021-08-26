@@ -70,9 +70,9 @@
           [..> (variadic-composition/c appendable?)]
           [∘ (variadic-composition/c appendable?)]
           [* (variadic-composition/c multipliable?)]
-          [/ (variadic-composition/c multipliable? multipliable?)]
+          [/ (variadic-composition/c multipliable? (head multipliable?))]
           [+ (variadic-composition/c addable?)]
-          [- (variadic-composition/c addable? addable?)]
+          [- (variadic-composition/c addable? (head addable?))]
           [join (reducer/c appendable?)]
           [sum (reducer/c addable?)]
           [product (reducer/c multipliable?)]
@@ -142,12 +142,8 @@
           [unfold (binary-function/c sequencer? any/c stream?)]
           [unfoldl (binary-function/c sequencer? any/c collection?)]
           [unfoldr (binary-function/c sequencer? any/c collection?)]
-          [onto (variadic-function/c (sequenceof procedure?)
-                                     any/c
-                                     any/c)]
-          [gather (variadic-function/c (sequenceof procedure?)
-                                       any/c
-                                       any/c)]))
+          [onto (variadic-function/c any/c any/c (head (sequenceof procedure?)))]
+          [gather (variadic-function/c any/c any/c (head (sequenceof procedure?)))]))
 
 (define-generics appendable
   (append appendable other)

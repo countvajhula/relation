@@ -28,7 +28,10 @@
          "base.rkt"
          "util.rkt")
 
-(provide (contract-out
+(provide usual-composition
+         conjoin-composition
+         disjoin-composition
+         (contract-out
           [struct monoid ((f procedure?)
                           (id procedure?))]
           [struct base-composed-function ((composer monoid?))]
@@ -42,10 +45,7 @@
           [function-null (->* ()
                               (#:compose-with monoid?)
                               composed-function?)]
-          [apply/steps (unconstrained-domain-> sequence?)])
-         usual-composition
-         conjoin-composition
-         disjoin-composition)
+          [apply/steps (unconstrained-domain-> sequence?)]))
 
 (struct monoid (f id)
   #:transparent
