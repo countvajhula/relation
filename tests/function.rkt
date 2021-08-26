@@ -433,7 +433,8 @@
         "conjoin"
       (check-true ((conjoin positive? integer?) 5))
       (check-false ((conjoin positive? integer?) -5))
-      (check-false ((conjoin bytes<? bytes=?) #"apple" #"banana")))
+      (check-false ((conjoin bytes<? bytes=?) #"apple" #"banana"))
+      (check-equal? ((conjoin positive? values) 5) 5))
     (test-case
         "disjoin"
       (check-true ((disjoin positive? integer?) 5))

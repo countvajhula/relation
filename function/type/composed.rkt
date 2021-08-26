@@ -51,7 +51,7 @@
   #:transparent
   #:property prop:procedure
   (λ (self . vs)
-    (foldl (monoid-f self)
+    (foldr (flip (monoid-f self))
            (monoid-id self)
            vs)))
 
