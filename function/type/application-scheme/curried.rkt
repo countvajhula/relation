@@ -5,7 +5,10 @@
          racket/generic
          racket/hash
          racket/set
-         racket/list
+         (except-in racket/list
+                    first
+                    rest
+                    empty?)
          arguments
          relation/logic
          (prefix-in b: racket/base)
@@ -15,7 +18,12 @@
                   gen:collection
                   gen:sequence
                   gen:countable
-                  sequence?)
+                  collection?
+                  sequence?
+                  conj
+                  first
+                  rest
+                  empty?)
          ionic)
 
 (require "interface.rkt"
@@ -33,22 +41,11 @@
              (left list?)
              (right list?)
              (kw hash?))]
-          [struct curried-atomic-function
-            ((f procedure?)
-             (chirality symbol?)
-             (left list?)
-             (right list?)
-             (kw hash?))]
-          [struct curried-composed-function
-            ((f procedure?)
-             (chirality symbol?)
-             (left list?)
-             (right list?)
-             (kw hash?))]
           [make-curried-function (-> b:procedure?
                                      arguments?
                                      symbol?
-                                     curried-function?)]))
+                                     curried-function?)]
+          [empty-curried-function curried-function?]))
 
 (struct curried-function function (f chirality left right kw)
   #:transparent
@@ -143,10 +140,7 @@
            (let-values ([(before after)
                          (split-at inner-representation
                                    (add1 marker-position))])
-             `(,@before ,args ,@after)))))])
-
-(struct curried-atomic-function curried-function ()
-  #:transparent
+             `(,@before ,args ,@after)))))]
 
   #:methods gen:application-scheme
   [(define (pass this args)
@@ -164,43 +158,12 @@
                              (append (arguments-positional args)
                                      (curried-function-right this))
                              (curried-function-right this))])
-         (curried-atomic-function f
-                                  chirality
-                                  left-args
-                                  right-args
-                                  (hash-union (curried-function-kw this)
-                                              (arguments-keyword args))))))
-   (define (flat-arguments this)
-     (make-arguments (curried-function-positional this)
-                     (curried-function-kw this)))
-   (define (unwrap-application this)
-     (curried-function-f this))])
-
-(struct curried-composed-function curried-function ()
-  #:transparent
-
-  #:methods gen:application-scheme
-  [(define (pass this args)
-     ;; incorporate fresh arguments into the partial application,
-     ;; retaining existing arg positions and appending the fresh ones
-     ;; at the positions implied by the chirality
-     (let ([f (curried-function-f this)]
-           [chirality (curried-function-chirality this)])
-       (let ([left-args (if (eq? chirality 'left)
-                            (append (curried-function-left this)
-                                    (arguments-positional args))
-                            (curried-function-left this))]
-             [right-args (if (eq? chirality 'right)
-                             ;; note order reversed for right args
-                             (append (arguments-positional args)
-                                     (curried-function-right this))
-                             (curried-function-right this))])
-         (curried-composed-function f
-                                    chirality
-                                    left-args
-                                    right-args
-                                    (hash-union (curried-function-kw this)
-                                                (arguments-keyword args))))))
+         (curried-function f
+                           chirality
+                           left-args
+                           right-args
+                           (hash-union (curried-function-kw this)
+                                       (arguments-keyword args))))))
    (define (flat-arguments this)
      (make-arguments (curried-function-positional this)
                      (curried-function-kw this)))
@@ -210,7 +173,12 @@
   #:methods gen:collection
   [(define/generic -conj conj)
    (define (conj self elem)
-     (-conj (curried-function-f self) elem))]
+     (let ([f (curried-function-f self)])
+       (if (collection? f)
+           (struct-copy curried-function self
+                        [f (-conj f elem)])
+           (struct-copy curried-function self
+                        [f (-conj (-conj (function-null) f) elem)]))))]
 
   #:methods gen:sequence
   [(define/generic -empty? empty?)
@@ -218,29 +186,45 @@
    (define/generic -rest rest)
    (define/generic -reverse reverse)
    (define (empty? self)
-     (-empty? (curried-function-f self)))
+     (let ([f (curried-function-f self)])
+       (and (sequence? f)
+            (-empty? f))))
    (define (first self)
-     (let ([f (-first (curried-function-f self))])
+     (let ([f (curried-function-f self)])
        (if (sequence? f)
-           (struct-copy curried-composed-function self
-                        [f #:parent curried-function f])
-           (curried-atomic-function f
-                                    (curried-function-chirality self)
-                                    (curried-function-left self)
-                                    (curried-function-right self)
-                                    (curried-function-kw self)))))
+           (struct-copy curried-function self
+                        [f (-first f)])
+           self)))
    (define (rest self)
-     (make-curried-function (-rest (curried-function-f self))
-                            empty-arguments
-                            (curried-function-chirality self)))
+     (let ([f (curried-function-f self)])
+       (if (sequence? f)
+           (make-curried-function (-rest f)
+                                  empty-arguments
+                                  (curried-function-chirality self))
+           empty-curried-function)))
    (define (reverse self)
-     (struct-copy curried-composed-function self
-                  [f #:parent curried-function (-reverse (curried-function-f self))]))]
+     (let ([f (curried-function-f self)])
+       (if (sequence? f)
+           (struct-copy curried-function self
+                        [f (-reverse f)])
+           self)))]
 
   #:methods gen:countable
   [(define/generic -length length)
    (define (length self)
-     (-length (curried-function-f self)))])
+     (if (eq? self empty-curried-function)
+         0
+         (let ([f (curried-function-f self)])
+           (if (sequence? f)
+               (-length f)
+               1))))])
+
+(define empty-curried-function
+  (curried-function (function-null)
+                    'left
+                    null
+                    null
+                    (hash)))
 
 (define (curried-function-positional f)
   (append (curried-function-left f)
@@ -276,30 +260,34 @@
 ;; function with interfaces it doesn't support, but unfortunately necessitates
 ;; _two_ types for every application scheme, even those defined by users by
 ;; by implementing gen:application-scheme.
+;;   (4) treat the rich function types as a "functor" in the haskell sense
+;; characterized by their providing implementations for the collection,
+;; sequence, and countable interfaces. Application schemes being rich types
+;; implement these interfaces, simply "passing through" the implementation
+;; to the wrapped function if the wrapped function is a rich type as well.
+;; If it isn't, then treat the scheme as a singleton, analogous to a list
+;; of size 1.
+;; This provides the desired functionality and doesn't necessitate the
+;; atomic/composed dichotomy in (3), and though it lifts any function to
+;; sequence/collection types making them more heavyweight than necessary,
+;; it doesn't do so accidentally like (2) where the wrapped functions
+;; could be falsely advertised as sequences, but rather as part of lifting
+;; these functions to the rich type, providing reasonable implementations
+;; for the rich (e.g. sequence) interfaces in all cases.
 ;;
-;; Until a better idea comes along, we implement option (3) here.
+;; We implement option (4) here.
 (define (make-curried-function f args chirality)
   (let ([pos (arguments-positional args)]
-        [kw (arguments-keyword args)]
-        [f-cons (if (sequence? f)
-                    curried-composed-function
-                    curried-atomic-function)])
+        [kw (arguments-keyword args)])
     (switch (f)
       [curried-function?
        (connect [(~> curried-function-chirality
                      (eq? chirality))
                  (call ((esc pass) args))]
-                [else (connect
-                       [sequence?
-                        (pass (struct-copy curried-composed-function
-                                           f
-                                           [chirality #:parent curried-function chirality])
-                              args)]
-                       [else
-                        (pass (struct-copy curried-atomic-function
-                                           f
-                                           [chirality #:parent curried-function chirality])
-                              args)])])]
+                [else (pass (struct-copy curried-function
+                                         f
+                                         [chirality chirality])
+                            args)])]
       [else (if (eq? chirality 'left)
-                (f-cons f 'left pos null kw)
-                (f-cons f 'right null pos kw))])))
+                (curried-function f 'left pos null kw)
+                (curried-function f 'right null pos kw))])))

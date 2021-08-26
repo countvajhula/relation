@@ -20,10 +20,7 @@
           [conjoin (variadic-composition/c procedure?)]
           [&& (variadic-composition/c procedure?)]
           [disjoin (variadic-composition/c procedure?)]
-          [|| (variadic-composition/c procedure?)]
-          [function-null (->* ()
-                              (#:compose-with monoid?)
-                              composed-function?)]))
+          [|| (variadic-composition/c procedure?)]))
 
 (define (compose-powers g h composer)
   ;; either or both could be function powers. in that case, the powers
@@ -118,6 +115,9 @@
            (call (~compose-naively composer))]
           [else (call (~compose-by-merging composer))]))
 
+;; this composition interface composes functions using
+;; the provided monoid, and isn't necessarily the usual
+;; function composition, unlike `compose` below.
 (define (compose-functions composer . gs)
   (switch (gs)
           [empty? (function-null #:compose-with composer)]
@@ -144,6 +144,3 @@
 
 (define && conjoin)
 (define || disjoin)
-
-(define (function-null #:compose-with [composer usual-composition])
-  (composed-function composer null))

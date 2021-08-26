@@ -5,7 +5,10 @@
                     predicate/c)
          racket/generic
          racket/format
-         racket/list
+         (except-in racket/list
+                    first
+                    rest
+                    empty?)
          arguments
          (prefix-in b: racket/base)
          (except-in data/maybe maybe/c)
@@ -14,7 +17,12 @@
                   gen:collection
                   gen:sequence
                   gen:countable
-                  sequence?))
+                  collection?
+                  sequence?
+                  conj
+                  first
+                  rest
+                  empty?))
 
 (require "interface.rkt"
          "../interface.rkt"
@@ -27,17 +35,10 @@
             ((f procedure?)
              (pos list?)
              (kw hash?))]
-          [struct template-atomic-function
-            ((f procedure?)
-             (pos list?)
-             (kw hash?))]
-          [struct template-composed-function
-            ((f procedure?)
-             (pos list?)
-             (kw hash?))]
           [make-template-function (-> b:procedure?
                                       arguments?
-                                      template-function?)]))
+                                      template-function?)]
+          [empty-template-function template-function?]))
 
 (define (~populate-positional-template pos args)
   (define n-expected-args
@@ -127,10 +128,7 @@
            (let-values ([(before after)
                          (split-at inner-representation
                                    (add1 marker-position))])
-             `(,@before ,args ,@after)))))])
-
-(struct template-atomic-function template-function ()
-  #:transparent
+             `(,@before ,args ,@after)))))]
 
   #:methods gen:application-scheme
   [(define (pass this invocation-args)
@@ -142,32 +140,9 @@
          (~populate-positional-template pos pos-invocation))
        (define filled-in-kw-template
          (~populate-keyword-template kw kw-invocation))
-       (template-atomic-function (template-function-f this)
-                                 filled-in-pos-template
-                                 filled-in-kw-template)))
-
-   (define (flat-arguments this)
-     (make-arguments (filter-just (template-function-pos this))
-                     (template-function-kw this)))
-   (define (unwrap-application this)
-     (template-function-f this))])
-
-(struct template-composed-function template-function ()
-  #:transparent
-
-  #:methods gen:application-scheme
-  [(define (pass this invocation-args)
-     (let ([pos (template-function-pos this)]
-           [kw (template-function-kw this)]
-           [pos-invocation (arguments-positional invocation-args)]
-           [kw-invocation (arguments-keyword invocation-args)])
-       (define filled-in-pos-template
-         (~populate-positional-template pos pos-invocation))
-       (define filled-in-kw-template
-         (~populate-keyword-template kw kw-invocation))
-       (template-composed-function (template-function-f this)
-                                   filled-in-pos-template
-                                   filled-in-kw-template)))
+       (template-function (template-function-f this)
+                          filled-in-pos-template
+                          filled-in-kw-template)))
 
    (define (flat-arguments this)
      (make-arguments (filter-just (template-function-pos this))
@@ -178,7 +153,12 @@
   #:methods gen:collection
   [(define/generic -conj conj)
    (define (conj self elem)
-     (-conj (template-function-f self) elem))]
+     (let ([f (template-function-f self)])
+       (if (collection? f)
+           (struct-copy template-function self
+                        [f (-conj f elem)])
+           (struct-copy template-function self
+                        [f (-conj (-conj (function-null) f) elem)]))))]
 
   #:methods gen:sequence
   [(define/generic -empty? empty?)
@@ -186,31 +166,45 @@
    (define/generic -rest rest)
    (define/generic -reverse reverse)
    (define (empty? self)
-     (-empty? (template-function-f self)))
+     (let ([f (template-function-f self)])
+       (and (sequence? f)
+            (-empty? f))))
    (define (first self)
-     (let ([f (-first (template-function-f self))])
+     (let ([f (template-function-f self)])
        (if (sequence? f)
-           (struct-copy template-composed-function self
-                        [f #:parent template-function f])
-           (template-atomic-function f
-                                     (template-function-pos self)
-                                     (template-function-kw self)))))
+           (struct-copy template-function self
+                        [f (-first f)])
+           self)))
    (define (rest self)
-     (make-template-function (-rest (template-function-f self))
-                             empty-arguments))
+     (let ([f (template-function-f self)])
+       (if (sequence? f)
+           (make-template-function (-rest f)
+                                   empty-arguments)
+           empty-template-function)))
    (define (reverse self)
-     (struct-copy template-composed-function self
-                  [f #:parent template-function (-reverse (template-function-f self))]))]
+     (let ([f (template-function-f self)])
+       (if (sequence? f)
+           (struct-copy template-function self
+                        [f (-reverse f)])
+           self)))]
 
   #:methods gen:countable
   [(define/generic -length length)
    (define (length self)
-     (-length (template-function-f self)))])
+     (if (eq? self empty-template-function)
+         0
+         (let ([f (template-function-f self)])
+           (if (sequence? f)
+               (-length f)
+               1))))])
+
+(define empty-template-function
+  (template-function (function-null)
+                     null
+                     (hash)))
 
 (define (make-template-function f args)
   (let ([pos (arguments-positional args)]
         [kw (arguments-keyword args)])
-    (if (sequence? f)
-        (template-composed-function f pos kw)
-        (template-atomic-function f pos kw))))
+    (template-function f pos kw)))
 

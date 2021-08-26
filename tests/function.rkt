@@ -298,12 +298,12 @@
    (test-suite
     "application schemes"
     (test-suite
-        "application schemes preserve interfaces"
-      (check-false (sequence? (curry add1)))
+        "application schemes implement rich interfaces"
+      (check-true (sequence? (curry add1)))
       (check-true (sequence? (curry (make-composed-function add1 sqr))))
-      (check-false (sequence? (partial add1)))
+      (check-true (sequence? (partial add1)))
       (check-true (sequence? (partial (make-composed-function add1 sqr))))
-      (check-false (sequence? (app +)))
+      (check-true (sequence? (app +)))
       (check-true (sequence? (app (make-composed-function add1 sqr)))))
     (test-case
         "partial"
@@ -388,7 +388,7 @@
       (check-exn exn:fail:contract? (thunk ((app = #:key string-upcase "hi" _) #:key string-downcase "HI")) "overriding template not allowed")
       (check-equal? ((app = #:key _ _ "hi") #:key string-upcase "HI") (= #:key string-upcase "hi" "HI"))
       (check-exn exn:fail:contract? (thunk ((app = #:key _ _ "hi") "HI")) "missing keyword arg in template")
-      (check-equal? ((template-atomic-function string-append (list nothing (just "-") nothing) (hash)) "a" "b") "a-b")
+      (check-equal? ((template-function string-append (list nothing (just "-") nothing) (hash)) "a" "b") "a-b")
       (test-case
           "template represents correct arity"
         (check-equal? 3 (arity (app string-append _ _ _))))
@@ -407,13 +407,13 @@
       (check-exn exn:fail:contract? (thunk ((curry (app string-append _ "-" _) "a") "b" "c")))
       (check-equal? ((partial (app string-append _ "-" _) "a") "b") "a-b")
       (check-exn exn:fail:contract? (thunk (((partial (app string-append _ "-" _)) "a") "b")) "partial application does not curry")
-      (check-false (sequence? (curry (app +))) "composed application schemes preserve rich semantics")
+      (check-true (sequence? (curry (app +))) "composed application schemes preserve rich semantics")
       (check-true (sequence? (curry (app (make-composed-function add1 +)))) "composed application schemes preserve rich semantics")
       (check-true (sequence? (curry (curryr (make-composed-function add1 +)))) "composed application schemes preserve rich semantics")
-      (check-false (sequence? (partial (app +))) "composed application schemes preserve rich semantics")
+      (check-true (sequence? (partial (app +))) "composed application schemes preserve rich semantics")
       (check-true (sequence? (partial (app (make-composed-function add1 +)))) "composed application schemes preserve rich semantics")
       (check-true (sequence? (partial (partialr (make-composed-function add1 +)))) "composed application schemes preserve rich semantics")
-      (check-false (sequence? (app (curry +))) "composed application schemes preserve rich semantics")
+      (check-true (sequence? (app (curry +))) "composed application schemes preserve rich semantics")
       (check-true (sequence? (app (curry (make-composed-function add1 +)))) "composed application schemes preserve rich semantics")
       (check-true (sequence? (app (app (make-composed-function add1 +)))) "composed application schemes preserve rich semantics"))
     (test-case
