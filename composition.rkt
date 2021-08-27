@@ -142,8 +142,7 @@
           [unfold (binary-function/c sequencer? any/c stream?)]
           [unfoldl (binary-function/c sequencer? any/c collection?)]
           [unfoldr (binary-function/c sequencer? any/c collection?)]
-          [onto (variadic-function/c any/c any/c (head (sequenceof procedure?)))]
-          [gather (variadic-function/c any/c any/c (head (sequenceof procedure?)))]))
+          [onto (variadic-function/c any/c any/c (head (sequenceof procedure?)))]))
 
 (define-generics appendable
   (append appendable other)
@@ -513,8 +512,6 @@
       empty-stream
       (stream-cons (apply (first fs) vs)
                    (apply onto (rest fs) vs))))
-
-(define gather onto) ; backwards compat
 
 (define (~power v n op)
   (if (= n 0)

@@ -567,8 +567,6 @@ In the event no operands are received in the course of a computation, the result
 
   A kind of "dual" to the usual @racket[map] operation where we map @italic{values} under a @italic{function}, @racket[onto] instead maps @italic{functions} onto a @italic{value}. Specifically, this applies each function in the input sequence of functions to the provided arguments, independently, lazily yielding a corresponding sequence of results. Each of the input functions must have an arity that accepts the provided number of arguments.
 
-@margin-note{This utility was formerly known as @racket[gather]. It is still provided under that name for backwards compatibility, but the old name will be removed in a future version. The new name was chosen to match a similar utility found in the @hyperlink["http://www.paulgraham.com/bel.html"]{Bel} dialect of Lisp.}
-
 @examples[
     #:eval eval-for-docs
     (->list (onto (list add1 sub1 ->string) 0))
