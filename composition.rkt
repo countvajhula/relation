@@ -142,7 +142,7 @@
           [unfold (binary-function/c sequencer? any/c stream?)]
           [unfoldl (binary-function/c sequencer? any/c collection?)]
           [unfoldr (binary-function/c sequencer? any/c collection?)]
-          [onto (variadic-function/c any/c any/c (head (sequenceof procedure?)))]))
+          [onto (variadic-function/c (head (sequenceof procedure?)))]))
 
 (define-generics appendable
   (append appendable other)

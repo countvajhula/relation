@@ -32,7 +32,7 @@
           [flip$ functional/c]
           [flip* functional/c]
           [lift functional/c]
-          [pack (variadic-function/c any/c any/c (head procedure?))]
+          [pack (variadic-function/c (head procedure?))]
           [pack-map (variadic-function/c any/c list? (head procedure?))]
           [map-values (variadic-function/c any/c any (head procedure?))]
           [filter-values (variadic-function/c any/c any (head procedure?))]
