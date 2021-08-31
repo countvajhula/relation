@@ -29,8 +29,6 @@
 
 Logical primitives and predicates.
 
-Note: This module is still being designed and the interfaces may change without notice.
-
 @defproc[(undefined? [v any/c]
                      ...)
          any/c]{
