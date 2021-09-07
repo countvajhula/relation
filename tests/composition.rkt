@@ -24,17 +24,17 @@
 
    (test-suite
     "append"
-    (check-equal? (.. "hi" " " "there") "hi there")
-    (check-equal? (.. #"hi" #" " #"there") #"hi there")
-    (check-equal? (.. '(1 2 3) '(4 5 6)) '(1 2 3 4 5 6))
-    (check-equal? (.. #(1 2 3) #(4 5 6)) #(1 2 3 4 5 6))
-    (check-equal? (set-count (.. (set 1 2 3) (set 3 4 5))) 5)
-    (check-equal? ((.. ->string add1 ->number) "23") "24")
+    (check-equal? (~ "hi" " " "there") "hi there")
+    (check-equal? (~ #"hi" #" " #"there") #"hi there")
+    (check-equal? (~ '(1 2 3) '(4 5 6)) '(1 2 3 4 5 6))
+    (check-equal? (~ #(1 2 3) #(4 5 6)) #(1 2 3 4 5 6))
+    (check-equal? (set-count (~ (set 1 2 3) (set 3 4 5))) 5)
+    (check-equal? ((~ ->string add1 ->number) "23") "24")
     (check-equal? ((..> ->number add1 ->string) "23") "24")
-    (check-equal? (.. (hash 'a 1 'b 2) (hash 'c 3)) (hash 'a 1 'b 2 'c 3))
-    (check-equal? (->list (.. (stream 1 2 3) (stream 4 5 6))) (list 1 2 3 4 5 6))
-    (check-equal? ((.. ->string +) 3 4) "7")
-    (check-equal? (..) ID))
+    (check-equal? (~ (hash 'a 1 'b 2) (hash 'c 3)) (hash 'a 1 'b 2 'c 3))
+    (check-equal? (->list (~ (stream 1 2 3) (stream 4 5 6))) (list 1 2 3 4 5 6))
+    (check-equal? ((~ ->string +) 3 4) "7")
+    (check-equal? (~) ID))
 
    (test-suite
     "id"
@@ -43,14 +43,14 @@
     (check-equal? ((id *) 3) 1)
     (check-equal? ((id *) -3) 1)
     (check-equal? ((id +) #(1 -2)) #(0 0))
-    (check-equal? ((id ..) #(1 -2)) #())
-    (check-equal? ((id ..) +) values)
-    (check-equal? ((id ..) "hello") "")
-    (check-equal? ((id ..) #"hello") #"")
-    (check-equal? ((id ..) '(1 2 3)) '())
-    (check-equal? ((id ..) (set 1 2 3)) (set))
-    (check-equal? ((id ..) (hash 'a 1 'b 2 'c 3)) (hash))
-    (check-equal? ((id ..) (stream 1 2 3)) (stream))
+    (check-equal? ((id ~) #(1 -2)) #())
+    (check-equal? ((id ~) +) values)
+    (check-equal? ((id ~) "hello") "")
+    (check-equal? ((id ~) #"hello") #"")
+    (check-equal? ((id ~) '(1 2 3)) '())
+    (check-equal? ((id ~) (set 1 2 3)) (set))
+    (check-equal? ((id ~) (hash 'a 1 'b 2 'c 3)) (hash))
+    (check-equal? ((id ~) (stream 1 2 3)) (stream))
     (check-exn exn:fail:contract?
                (thunk
                 (id add1))))
@@ -288,16 +288,16 @@
     (check-equal? (->list (onto (list add1) 23)) '(24))
     (check-equal? (->list (onto '() 23)) '())
     (check-equal? (->list (onto '() "hi" "there")) '())
-    (check-equal? (->list (onto (list ..) "hi" "there")) '("hithere"))
+    (check-equal? (->list (onto (list ~) "hi" "there")) '("hithere"))
     (check-equal? (->list (onto (list + *) 7 6)) '(13 42)))
 
    (test-suite
     "composition identity"
-    (check-equal? (.. ID) ID)
-    (check-equal? (.. '(1 2 3) ID) '(1 2 3))
-    (check-equal? (.. ID '(1 2 3)) '(1 2 3))
-    (check-equal? (.. "hi" ID) "hi")
-    (check-equal? (.. ID "hi") "hi")
+    (check-equal? (~ ID) ID)
+    (check-equal? (~ '(1 2 3) ID) '(1 2 3))
+    (check-equal? (~ ID '(1 2 3)) '(1 2 3))
+    (check-equal? (~ "hi" ID) "hi")
+    (check-equal? (~ ID "hi") "hi")
     (check-equal? (* ID) ID)
     (check-equal? (* 3 ID) 3)
     (check-equal? (* ID 3) 3)

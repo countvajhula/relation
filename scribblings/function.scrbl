@@ -6,7 +6,6 @@
          @for-label[relation/function
                     relation/type
                     (only-in relation/equivalence member? =)
-                    (only-in relation/composition ..)
                     data/maybe
                     (only-in data/collection sequence?)
                     (rename-in racket (compose b:compose)

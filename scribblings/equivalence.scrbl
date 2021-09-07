@@ -121,7 +121,7 @@ True if the v's are equal. This uses the most appropriate equality check for the
     (= #:key even? 12 20)
     (= #:key odd? 12 20)
     (= #:key first (list 1.5 4 7) (list 3/2 2 3))
-    (= #:key (.. even? ->number) "12" "20")
+    (= #:key (~ even? ->number) "12" "20")
   ]
 }
 

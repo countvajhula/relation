@@ -66,6 +66,7 @@
           [addable-inverse (self-map/c addable?)]
           [id functional/c]
           [inverse functional/c]
+          [~ (variadic-composition/c appendable?)]
           [.. (variadic-composition/c appendable?)]
           [..> (variadic-composition/c appendable?)]
           [∘ (variadic-composition/c appendable?)]
@@ -338,7 +339,7 @@
 (define (some? v)
   (not (eq? v (appendable-identity v))))
 
-(define (.. . vs)
+(define (~ . vs)
   (if (empty? vs)
       ID
       (if (empty? (rest vs))
@@ -348,6 +349,10 @@
           (first vs)
           (let ([rev-vs (reverse vs)])
             (b:foldl append (first rev-vs) (rest rev-vs))))))
+
+(define .. ~)
+
+(define ∘ ~)
 
 (define (..> . vs)
   (if (empty? vs)
@@ -377,7 +382,7 @@
           (let ([rev-vs (reverse vs)])
             (b:foldl add (first rev-vs) (rest rev-vs))))))
 
-(define join (curry apply ..))
+(define join (curry apply ~))
 
 (define sum (curry apply +))
 
@@ -388,14 +393,12 @@
       (addable-inverse v)
       (apply + v (map addable-inverse remaining))))
 
-(define ∘ ..)
-
 (define (id operation)
   (cond [(member operation (list + add b:+))
          addable-identity]
         [(member operation (list * multiply b:*))
          multipliable-identity]
-        [(member operation (list .. append b:compose b:append))
+        [(member operation (list ~ append b:compose b:append))
          appendable-identity]
         [else (raise-argument-error 'id
                                     @~a{A canonical operation such as addition
@@ -408,7 +411,7 @@
          addable-inverse]
         [(member operation (list * multiply b:*))
          multipliable-inverse]
-        [(member operation (list .. append b:compose b:append))
+        [(member operation (list ~ append b:compose b:append))
          appendable-inverse]
         [else (raise-argument-error 'inverse
                                     @~a{A canonical operation such as addition
@@ -524,7 +527,7 @@
             result
             ((inverse op) result)))))
 
-(define (power v n [op ..])
+(define (power v n [op ~])
   (~power v n op))
 
-(define ^ (curryr ~power ..))
+(define ^ (curryr ~power ~))

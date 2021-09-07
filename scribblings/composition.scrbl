@@ -59,13 +59,13 @@ Generic algebraic operators for composing data.
 
 The built-in operators @racket[+] and @racket[*] operate on numbers specifically. Often, however, we are interested in performing operations "similar" to these for datatypes that aren't numbers, for which we would resort to type-specific operators like @racketlink[b:append "append"] for lists.
 
-This module generalizes the standard algebraic operators to work on any type that supports a "canonical" notion of addition, multiplication, or concatenation. This allows our intuitions about addition and other forms of composition to extend over all appropriate types via the use of the common generic operators @racket[+], @racket[*] and @racket[..]. Additionally, a number of general-purpose utilities leveraging generic composition are provided.
+This module generalizes the standard algebraic operators to work on any type that supports a "canonical" notion of addition, multiplication, or concatenation. This allows our intuitions about addition and other forms of composition to extend over all appropriate types via the use of the common generic operators @racket[+], @racket[*] and @racket[~]. Additionally, a number of general-purpose utilities leveraging generic composition are provided.
 
 @table-of-contents[]
 
 @section[#:tag "composition:interfaces"]{Interfaces}
 
-This module provides three generic interfaces -- @racket[gen:appendable], @racket[gen:multipliable], and @racket[gen:addable]. These are meant to represent the canonical "idea" of the operations of concatenation, multiplication and addition, respectively, whose behavior may be customized for each type via these generic interfaces, and used via the common operators @racket[..] (concatenation), @racket[*] (multiplication), and @racket[+] (addition).
+This module provides three generic interfaces -- @racket[gen:appendable], @racket[gen:multipliable], and @racket[gen:addable]. These are meant to represent the canonical "idea" of the operations of concatenation, multiplication and addition, respectively, whose behavior may be customized for each type via these generic interfaces, and used via the common operators @racket[~] (concatenation), @racket[*] (multiplication), and @racket[+] (addition).
 
 In order to support generic composition seamlessly, all of the composition interfaces support a generic (rather than type- and operation-specific) @hyperlink["https://en.wikipedia.org/wiki/Identity_element"]{identity} value that is employed in cases where type information is not available.
 
@@ -86,7 +86,7 @@ In the event no operands are received in the course of a computation, the result
 
 @defproc[(reify [v any/c]
                 [example any/c]
-                [op procedure? ..])
+                [op procedure? ~])
          any/c]{
 
  "Reifies" a value to a specific type. If the value is already a tangible value (i.e. anything other than @racket[ID]), then it is returned without modification. Otherwise, the identity value for the desired type (indicated by supplying an arbitrary @racket[example] of this type) for the operation @racket[op] is returned. Custom types are expected to implement one of the canonical algebraic operations (e.g. @racket[gen:appendable]) in order to leverage this utility.
@@ -138,14 +138,14 @@ In the event no operands are received in the course of a computation, the result
 
 @examples[
     #:eval eval-for-docs
-    (.. "hi" " " "there")
-    (.. '(1 2 3) '(4 5 6))
+    (~ "hi" " " "there")
+    (~ '(1 2 3) '(4 5 6))
   ]
 
 @defproc[(appendable? [v any/c])
          boolean?]{
 
- Predicate to check if a value may be operated on using the generic append operator, @racket[..] or @racket[∘].
+ Predicate to check if a value may be operated on using the generic append operator, @racket[~] or @racket[∘].
 
 @examples[
     #:eval eval-for-docs
@@ -327,7 +327,10 @@ In the event no operands are received in the course of a computation, the result
 
 @section[#:tag "composition:utilities"]{Utilities}
 
-@deftogether[(@defproc[(.. [v appendable?]
+@deftogether[(@defproc[(~ [v appendable?]
+                          ...)
+                       appendable?]
+              @defproc[(.. [v appendable?]
                            ...)
                        appendable?]
               @defproc[(∘ [v appendable?]
@@ -338,16 +341,16 @@ In the event no operands are received in the course of a computation, the result
                        appendable?]
  )]{
 
- Append the provided values together, using the canonical "append-like" operation on the data based on its type. @racket[..] and its alias @racket[∘] compose right-to-left, while @racket[..>] composes left-to-right. The special value @racket[ID] serves as the generic identity value for all composition operations when the type of the operands is not known. In particular, this value is the result when no operands are provided.
+ Append the provided values together, using the canonical "append-like" operation on the data based on its type. @racket[..] and @racket[∘] are deprecated aliases for @racket[~], while @racket[..>] is a deprecated form that composes left-to-right. The special value @racket[ID] serves as the generic identity value for all composition operations when the type of the operands is not known. In particular, this value is the result when no operands are provided.
+
+@margin-note{@racket[..], @racket[∘], and @racket[..>] are deprecated and will be removed in a future version. Use @racket[~] for concatenation, and if you need left-to-right composition for functions, consider using @other-doc['(lib "scribblings/threading.scrbl")].}
 
 @examples[
     #:eval eval-for-docs
-    (.. "hi" " " "there")
-    (.. '(1 2 3) '(4 5 6))
-    (.. (hash 'a 1 'b 2) (hash 'c 3))
-    ((.. ->string +) 3 4)
-    ((..> + ->string) 3 4)
-    (∘ "hi" " " "there")
+    (~ "hi" " " "there")
+    (~ '(1 2 3) '(4 5 6))
+    (~ (hash 'a 1 'b 2) (hash 'c 3))
+    ((~ ->string +) 3 4)
   ]
 }
 
@@ -388,7 +391,7 @@ In the event no operands are received in the course of a computation, the result
     ((id add) #(1 2 -3))
     ((id append) "hi")
     ((id append) '(1 2 3))
-    ((id ..) "hi")
+    ((id ~) "hi")
     ((id +) 3)
     ((id *) 3)
   ]
@@ -470,13 +473,13 @@ In the event no operands are received in the course of a computation, the result
     #:eval eval-for-docs
     (fold + '(1 2 3 4))
     (fold * '(1 2 3 4))
-    (fold .. '("hi" " " "there"))
+    (fold ~ '("hi" " " "there"))
     (foldr + '(1 2 3 4))
     (foldl + '(1 2 3 4))
     (foldr + '(1 2 3 4) #:order 'bab)
     (foldl + '(1 2 3 4) #:order 'bab)
-    (foldr .. '("hi" " " "there"))
-    (foldl .. '("hi" " " "there"))
+    (foldr ~ '("hi" " " "there"))
+    (foldl ~ '("hi" " " "there"))
     (foldr cons '(1 2 3) #:into '() #:order 'abb)
     (foldl cons '(1 2 3) #:into '() #:order 'abb)
     (foldr cons '(1 2 3) #:into '() #:order 'bab)
@@ -512,8 +515,8 @@ In the event no operands are received in the course of a computation, the result
     (->list (foldl/steps + '(1 2 3 4)))
     (->list (foldr/steps * '(1 2 3 4)))
     (->list (foldl/steps * '(1 2 3 4)))
-    (->list (foldr/steps .. '("hi" " " "there")))
-    (->list (foldl/steps .. '("hi" " " "there")))
+    (->list (foldr/steps ~ '("hi" " " "there")))
+    (->list (foldl/steps ~ '("hi" " " "there")))
   ]
 }
 
@@ -572,21 +575,21 @@ In the event no operands are received in the course of a computation, the result
     (->list (onto (list add1 sub1 ->string) 0))
     (->list (onto (list + * min max) 7 6 9))
     (define (conjoin . fs)
-      (.. all? (curry onto fs)))
+      (~ all? (curry onto fs)))
     ((conjoin positive? even? integer?) 4)
     (define (n·xⁿ [n 0])
-      (stream-cons (.. (curry * n)
-                       (curryr expt n))
+      (stream-cons (~ (curry * n)
+                      (curryr expt n))
                    (n·xⁿ (add1 n))))
     (->list (take 10 (onto (n·xⁿ) 3)))
-    (->list (take 10 (onto (map .. (repeat ->string) (n·xⁿ)) 3)))
+    (->list (take 10 (onto (map ~ (repeat ->string) (n·xⁿ)) 3)))
   ]
 }
 
 @defproc[(join [vs (sequenceof appendable?)])
          appendable?]{
 
- Equivalent to @racket[(apply .. vs)], this stitches together a sequence containing elements of any @racketlink[gen:appendable]{appendable} type, for instance, @tech/reference{strings}, @tech/reference{lists}, or @seclink["procedures" "procedures" #:doc '(lib "scribblings/reference/reference.scrbl")]. This function is sometimes called @hyperlink["https://docs.racket-lang.org/srfi/srfi-std/srfi-1.html#concatenate"]{@racket[concatenate]}.
+ Equivalent to @racket[(apply ~ vs)], this stitches together a sequence containing elements of any @racketlink[gen:appendable]{appendable} type, for instance, @tech/reference{strings}, @tech/reference{lists}, or @seclink["procedures" "procedures" #:doc '(lib "scribblings/reference/reference.scrbl")]. This function is sometimes called @hyperlink["https://docs.racket-lang.org/srfi/srfi-std/srfi-1.html#concatenate"]{@racket[concatenate]}.
 
 @examples[
     #:eval eval-for-docs
@@ -625,7 +628,7 @@ In the event no operands are received in the course of a computation, the result
 @deftogether[(
  @defproc[(power [v any/c]
                  [n integer?]
-                 [op procedure? ..])
+                 [op procedure? ~])
 		  any/c]
  @defproc[(^ [v any/c]
              [n integer?])
