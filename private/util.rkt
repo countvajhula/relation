@@ -56,7 +56,7 @@
 (define (join-list lst)
   (apply append lst))
 
-(define-predicate (singleton? seq)
+(define-flow (singleton? seq)
   ;; cheap check to see if a list is of length 1,
   ;; instead of traversing to compute the length
   (and (not empty?)

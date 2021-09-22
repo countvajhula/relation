@@ -41,7 +41,7 @@
   ;; yields the function being applied
   (unwrap-application application-scheme))
 
-(define-predicate (empty-application? applier)
+(define-flow (empty-application? applier)
   (~> flat-arguments (equal? empty-arguments)))
 
 (struct recoverable-apply-error exn:fail:contract ())
