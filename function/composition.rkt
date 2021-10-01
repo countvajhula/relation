@@ -76,7 +76,7 @@
                         (eq? composer))))
           (and (any base-composed-function?)
                (any (not base-composed-function?))
-               (~> (allow base-composed-function?)
+               (~> (pass base-composed-function?)
                    base-composed-function-composer
                    (eq? composer)))
           (none function?))))
@@ -105,7 +105,7 @@
 (define (function-compose g h composer)
   (switch (g h)
           [(or (and (any application-scheme?)
-                    (~> (allow application-scheme?)
+                    (~> (pass application-scheme?)
                         (any (not empty-application?))))
                (not (~compatible-composition? composer)))
            (call (~compose-naively composer))]
