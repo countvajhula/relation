@@ -32,18 +32,18 @@
   ;; composed function if it's a singleton
   ;; and power function if the exponent is 1
   (switch (g)
-          [(and function?
-                (or (not application-scheme?)
-                    empty-application?))
-           (connect
-            [(and composed-function?
-                  (~> composed-function-components
-                      singleton?))
-             (call (~> composed-function-components first))]
-            [(and power-function? (~> power-function-n (= 1)))
-             (call power-function-f)]
-            [else g])]
-          [else g]))
+    [(and function?
+          (or (not application-scheme?)
+              empty-application?))
+     (connect
+      [(and composed-function?
+            (~> composed-function-components
+                singleton?))
+       (~> composed-function-components first)]
+      [(and power-function? (~> power-function-n (= 1)))
+       power-function-f]
+      [else _])]
+    [else _]))
 
 (define (check-naive-composition g0 g1 g)
   (check-equal? (first g) g1)
@@ -60,30 +60,34 @@
 (define (check-partially-unwrapped-composition g0 g1 g)
   ;; only unwraps the compatible part
   (switch (g1)
-          [(and base-composed-function?
-                (with-key base-composed-function-composer
-                  (eq? (base-composed-function-composer g))))
-           (check-equal? (~function-members g1) (->list (take (length g1) g)))]
-          [else (check-equal? (first g) g1)])
+    [(and base-composed-function?
+          (with-key base-composed-function-composer
+            (eq? (base-composed-function-composer g))))
+     (~> (-< ~function-members
+             (~> length (take g) ->list))
+         check-equal?)]
+    [else (gen (check-equal? (first g) g1))])
   (switch (g0)
-          [(and base-composed-function?
-                (with-key base-composed-function-composer
-                  (eq? (base-composed-function-composer g))))
-           (check-equal? (->list (reverse (~function-members g0))) (->list (take (length g0) (reverse g))))]
-          [else (check-equal? (second g) g0)])
+    [(and base-composed-function?
+          (with-key base-composed-function-composer
+            (eq? (base-composed-function-composer g))))
+     (~> (-< (~> ~function-members reverse ->list)
+             (~> length (take (reverse g))))
+         check-equal?)]
+    [else (check-equal? (second g))])
   (check-equal? (base-composed-function-composer g) usual-composition))
 
 (define-switch (~function-members g)
-  [composed-function? (call composed-function-components)]
-  [else (call list)])
+  [composed-function? composed-function-components]
+  [else list])
 
 (define-switch (~underlying-function v)
-  [power-function? (call power-function-f)]
+  [power-function? power-function-f]
   [(and composed-function?
         (.. singleton?
             composed-function-components))
-   (call (.. first composed-function-components))]
-  [else v])
+   (.. first composed-function-components)]
+  [else _])
 
 (define (check-merged-composition g0 g1 g)
   ;; note that power is not unwrapped

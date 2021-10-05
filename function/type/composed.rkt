@@ -70,14 +70,16 @@
    (define/generic -arity arity)
    (define/generic -procedure-apply procedure-apply)
    (define (keywords self)
-     (let ([leading-function (switch ((composed-function-components self))
-                                     [null? (monoid-id (base-composed-function-composer self))]
-                                     [else (call first)])])
+     (let ([leading-function (switch (self)
+                               [(~> composed-function-components null?)
+                                (~> base-composed-function-composer monoid-id)]
+                               [else (~> composed-function-components first)])])
        (-keywords leading-function)))
    (define (arity self)
-     (let ([leading-function (switch ((composed-function-components self))
-                                     [null? (monoid-id (base-composed-function-composer self))]
-                                     [else (call first)])])
+     (let ([leading-function (switch (self)
+                               [(~> composed-function-components null?)
+                                (~> base-composed-function-composer monoid-id)]
+                               [else (~> composed-function-components first)])])
        (-arity leading-function)))
    (define (procedure-apply self args)
      (let ([components (composed-function-components self)]

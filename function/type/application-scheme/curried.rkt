@@ -284,11 +284,11 @@
       [curried-function?
        (connect [(~> curried-function-chirality
                      (eq? chirality))
-                 (call ((esc pass) args))]
-                [else (pass (struct-copy curried-function
-                                         f
-                                         [chirality chirality])
-                            args)])]
-      [else (if (eq? chirality 'left)
-                (curried-function f 'left pos null kw)
-                (curried-function f 'right null pos kw))])))
+                 ((esc pass) args)]
+                [else (~> (gen (struct-copy curried-function
+                                            f
+                                            [chirality chirality]))
+                          ((esc pass) args))])]
+      [else (if (gen (eq? chirality 'left))
+                (curried-function 'left pos null kw)
+                (curried-function 'right null pos kw))])))

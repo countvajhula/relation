@@ -59,12 +59,12 @@
   #:methods gen:collection
   [(define (conj self elem)
      (switch (elem)
-         [(eq? (power-function-f self))
-          (struct-copy power-function self
-                       [n (add1 (power-function-n self))])]
+       [(eq? (power-function-f self))
+        (gen (struct-copy power-function self
+                          [n (add1 (power-function-n self))]))]
        [else
-        (composed-function (base-composed-function-composer self)
-                           (list elem self))]))]
+        (gen (composed-function (base-composed-function-composer self)
+                                (list elem self)))]))]
 
   #:methods gen:sequence
   [(define/generic -empty? empty?)

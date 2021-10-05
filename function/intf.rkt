@@ -30,16 +30,12 @@
                        . fs)
   (curry
    (switch (fs)
-           [singleton? (unwrap fs)]
-           [else
-            (let ([g (apply compose-functions
-                            composer
-                            ;; we reverse here for threading because
-                            ;; the basic composition interfaces
-                            ;; expect right-to-left ordering
-                            (if thread?
-                                (reverse fs)
-                                fs))])
-              g)])))
+     [singleton? unwrap]
+     [else
+      ;; we reverse here for threading because
+      ;; the basic composition interfaces
+      ;; expect right-to-left ordering
+      (~>> (if (gen thread?) reverse _)
+           (apply compose-functions composer))])))
 
 (define f make-function)

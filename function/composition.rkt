@@ -36,14 +36,14 @@
 
 (define (->power-function g composer)
   (switch (g)
-          [power-function? g]
-          [else (make-power-function (~maybe-unwrap g composer) 1
-                                     #:compose-with composer)]))
+    [power-function? _]
+    [else (~> (~maybe-unwrap composer)
+              (make-power-function 1 #:compose-with composer))]))
 
 (define-switch (~function-members g)
-  [power-function? (call (~> power-function-f list))]
-  [composed-function? (call composed-function-components)]
-  [else (call list)])
+  [power-function? (~> power-function-f list)]
+  [composed-function? composed-function-components]
+  [else list])
 
 (define (~maybe-unwrap g composer)
   ;; if the application is empty
@@ -51,23 +51,23 @@
   ;; composed function if it's a singleton
   ;; and power function if the exponent is 1
   (switch (g)
-          [(and function?
-                (or (not application-scheme?)
-                    empty-application?))
-           (connect
-            [(and composed-function?
-                  (~> composed-function-components
-                      singleton?)
-                  (~> base-composed-function-composer
-                      (eq? composer)))
-             (call (~> composed-function-components first))]
-            [(and power-function?
-                  (~> power-function-n (= 1))
-                  (~> base-composed-function-composer
-                      (eq? composer)))
-             (call power-function-f)]
-            [else g])]
-          [else g]))
+    [(and function?
+          (or (not application-scheme?)
+              empty-application?))
+     (connect
+      [(and composed-function?
+            (~> composed-function-components
+                singleton?)
+            (~> base-composed-function-composer
+                (eq? composer)))
+       (~> composed-function-components first)]
+      [(and power-function?
+            (~> power-function-n (= 1))
+            (~> base-composed-function-composer
+                (eq? composer)))
+       power-function-f]
+      [else _])]
+    [else _]))
 
 (define (~compatible-composition? g h composer)
   (on (g h)
@@ -104,28 +104,27 @@
 
 (define (function-compose g h composer)
   (switch (g h)
-          [(or (and (any application-scheme?)
-                    (~> (pass application-scheme?)
-                        (any (not empty-application?))))
-               (not (~compatible-composition? composer)))
-           (call (~compose-naively composer))]
-          [(~> (>< ~function-members) equal?)
-           (call (~compose-as-powers composer))]
-          [(any power-function?)
-           (call (~compose-naively composer))]
-          [else (call (~compose-by-merging composer))]))
+    [(or (and (any application-scheme?)
+              (~> (pass application-scheme?)
+                  (any (not empty-application?))))
+         (not (~compatible-composition? composer)))
+     (~compose-naively composer)]
+    [(~> (>< ~function-members) equal?)
+     (~compose-as-powers composer)]
+    [(any power-function?)
+     (~compose-naively composer)]
+    [else (~compose-by-merging composer)]))
 
 ;; this composition interface composes functions using
 ;; the provided monoid, and isn't necessarily the usual
 ;; function composition, unlike `compose` below.
 (define (compose-functions composer . gs)
   (switch (gs)
-          [empty? (function-null #:compose-with composer)]
-          [(~> rest empty?) (call first)]
-          [else
-           (foldl (curryr function-compose composer)
-                  (first gs)
-                  (rest gs))]))
+    [empty? (gen (function-null #:compose-with composer))]
+    [(~> rest empty?) first]
+    [else
+     (~>> (-< first rest)
+          (foldl (curryr function-compose composer)))]))
 
 (define (compose . fs)
   (apply compose-functions

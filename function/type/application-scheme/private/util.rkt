@@ -2,10 +2,7 @@
 
 (require ionic
          (only-in racket/list empty?)
-         racket/match
-         (rename-in racket/function
-                    [negate !!]
-                    [conjoin &&]))
+         racket/match)
 
 (require "../../interface.rkt"
          (only-in "../../../../private/util.rkt"
@@ -20,12 +17,12 @@
            rackunit/text-ui))
 
 (define-switch (~min-arity-value arity)
-  [number? arity]
-  [arity-at-least? (call arity-at-least-value)]
-  [list? (call (~>> (map ~min-arity-value) (apply min)))]
+  [number? _]
+  [arity-at-least? arity-at-least-value]
+  [list? (~>> (map ~min-arity-value) (apply min))]
   [else (raise-argument-error 'min-arity
                               "normalized-arity?"
-                              arity)])
+                              _)])
 
 (define (min-arity f)
   (~min-arity-value (arity f)))
@@ -33,25 +30,24 @@
 (define (revise-arity v n)
   (let loop ([v v])
     (switch (v)
-            [number? (call (- n))]
-            [arity-at-least? (call (~> arity-at-least-value
-                                       (- n)
-                                       (max 0)
-                                       arity-at-least))]
-            ;; in the case of a curried case-lambda, it may be
-            ;; that we've received m arguments and the case arities
-            ;; are a and b where a < m < b. In this case we know
-            ;; we are in case b, so we simply exclude the other
-            ;; case from the list, flatting the list in case we
-            ;; are left with a single arity value.
-            [list? (call (~>> (map loop)
-                              (filter
-                               (!! (&& integer?
-                                       negative?)))
-                              (if singleton? car _)))]
-            [else (call (raise-argument-error 'revise-arity
-                                              "normalized-arity?"
-                                              _))])))
+      [number? (- n)]
+      [arity-at-least? (~> arity-at-least-value
+                           (- n)
+                           (max 0)
+                           arity-at-least)]
+      ;; in the case of a curried case-lambda, it may be
+      ;; that we've received m arguments and the case arities
+      ;; are a and b where a < m < b. In this case we know
+      ;; we are in case b, so we simply exclude the other
+      ;; case from the list, flatting the list in case we
+      ;; are left with a single arity value.
+      [list? (~>> (map loop)
+                  (filter
+                   (☯ (not (and integer? negative?))))
+                  (if singleton? car _))]
+      [else (raise-argument-error 'revise-arity
+                                  "normalized-arity?"
+                                  _)])))
 
 (define (list-subtract lst1 lst2)
   (cond [(empty? lst1) null]

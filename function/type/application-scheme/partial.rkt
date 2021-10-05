@@ -189,11 +189,11 @@
       [partial-function?
        (connect [(~> partial-function-chirality
                      (eq? chirality))
-                 (call ((esc pass) args))]
-                [else (pass (struct-copy partial-function
-                                         f
-                                         [chirality chirality])
-                            args)])]
-      [else (if (eq? chirality 'left)
-                (partial-function f 'left pos null kw)
-                (partial-function f 'right null pos kw))])))
+                 ((esc pass) args)]
+                [else (~> (gen (struct-copy partial-function
+                                            f
+                                            [chirality chirality]))
+                          ((esc pass) args))])]
+      [else (if (gen (eq? chirality 'left))
+                (partial-function 'left pos null kw)
+                (partial-function 'right null pos kw))])))
