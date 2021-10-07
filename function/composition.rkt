@@ -40,7 +40,7 @@
     [else (~> (~maybe-unwrap composer)
               (make-power-function 1 #:compose-with composer))]))
 
-(define-switch (~function-members g)
+(define-switch ~function-members
   [power-function? (~> power-function-f list)]
   [composed-function? composed-function-components]
   [else list])

@@ -77,11 +77,11 @@
     [else (check-equal? (second g))])
   (check-equal? (base-composed-function-composer g) usual-composition))
 
-(define-switch (~function-members g)
+(define-switch ~function-members
   [composed-function? composed-function-components]
   [else list])
 
-(define-switch (~underlying-function v)
+(define-switch ~underlying-function
   [power-function? power-function-f]
   [(and composed-function?
         (~> composed-function-components

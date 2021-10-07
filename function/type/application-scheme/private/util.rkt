@@ -16,7 +16,7 @@
   (require rackunit
            rackunit/text-ui))
 
-(define-switch (~min-arity-value arity)
+(define-switch ~min-arity-value
   [number? _]
   [arity-at-least? arity-at-least-value]
   [list? (~>> (map ~min-arity-value) (apply min))]

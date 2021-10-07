@@ -106,9 +106,10 @@
 (define (->boolean v)
   (if v #t #f))
 
-(define-switch (->string v)
-  [string? (switch [immutable? _]
-                   [else string->immutable-string])]
+(define-switch ->string
+  [string? (switch
+             [immutable? _]
+             [else string->immutable-string])]
   [symbol? (~> symbol->string
                ->string)]
   [number? (~> number->string
@@ -128,20 +129,20 @@
   [else (~> ~a
             ->string)])
 
-(define-switch (->number v)
+(define-switch ->number
   [number? _]
   [string? string->number]
   [char? char->integer]
   [(eq? ID) (reify 0 +)]
   [else (error '->number "Unsupported type ~a!" _)])
 
-(define-switch (->inexact v)
+(define-switch ->inexact
   [(and number? inexact?) _]
   [number? exact->inexact]
   [else (~> ->number
             ->inexact)])
 
-(define-switch (->exact v)
+(define-switch ->exact
   [(and number? exact?) _]
   [number? inexact->exact]
   [else (~> ->number
@@ -163,7 +164,7 @@
     [else (~> ->number
               ->integer)]))
 
-(define-switch (->list v)
+(define-switch ->list
   [list? _]
   [string? string->list]
   [vector? vector->list]
@@ -179,7 +180,7 @@
                ->list)]
   [else (error '->list "Unsupported type ~a!" _)])
 
-(define-switch (->vector v)
+(define-switch ->vector
   [vector? (switch [immutable? _]
                    [else vector->immutable-vector])]
   [list? (~> list->vector
@@ -192,19 +193,19 @@
   [else (~> ->list
             ->vector)])
 
-(define-switch (->symbol v)
+(define-switch ->symbol
   [symbol? _]
   [string? string->symbol]
   [else (~> ->string
             ->symbol)])
 
-(define-switch (->keyword v)
+(define-switch ->keyword
   [keyword? _]
   [string? string->keyword]
   [else (~> ->string
             ->keyword)])
 
-(define-switch (->bytes v)
+(define-switch ->bytes
   [bytes? _]
   [list? list->bytes]
   [string? (~>> ->list
@@ -213,7 +214,7 @@
   [else (~> ->string
             ->bytes)])
 
-(define-switch (->char v)
+(define-switch ->char
   [char? _]
   [integer? integer->char]
   [(and non-empty-string?
@@ -227,7 +228,7 @@
                ->char)]
   [else (error '->char "Unsupported type ~a!" _)])
 
-(define-switch (->stream v)
+(define-switch ->stream
   [stream? _]
   [sequence? sequence->stream]
   [generator? (~> (in-producer (void))
@@ -248,7 +249,7 @@
     [sequence? (sequence->generator return)]
     [else (error '->generator "Unsupported type ~a!" _)]))
 
-(define-switch (->set v)
+(define-switch ->set
   [set? _]
   [list? list->set]
   [else (~> ->list
@@ -259,19 +260,19 @@
     [syntax? _]
     [else (datum->syntax (if ctx ctx #f) _)]))
 
-(define-switch (->symex v)
+(define-switch ->symex
   [syntax? syntax->datum]
   [else _])
 
 (define (string->symex v)
   (read (open-input-string v)))
 
-(define-switch (->values v)
+(define-switch ->values
   [vector? vector->values]
   [else (~> ->vector
             ->values)])
 
-(define-switch (->hash v)
+(define-switch ->hash
   [hash? _]
   [dict? make-immutable-hash]
   [(eq? ID) (reify (hash))]
