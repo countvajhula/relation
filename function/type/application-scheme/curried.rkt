@@ -282,13 +282,14 @@
         [kw (arguments-keyword args)])
     (switch (f)
       [curried-function?
-       (connect [(~> curried-function-chirality
-                     (eq? chirality))
-                 ((esc pass) args)]
-                [else (~> (gen (struct-copy curried-function
-                                            f
-                                            [chirality chirality]))
-                          ((esc pass) args))])]
+       (switch [(~> curried-function-chirality
+                    (eq? chirality))
+                (gen (pass f args))]
+               [else (~> (-< (gen (struct-copy curried-function
+                                               f
+                                               [chirality chirality]))
+                             (gen args))
+                         pass)])]
       [else (if (gen (eq? chirality 'left))
                 (curried-function 'left pos null kw)
                 (curried-function 'right null pos kw))])))

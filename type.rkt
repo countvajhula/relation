@@ -107,8 +107,8 @@
   (if v #t #f))
 
 (define-switch (->string v)
-  [string? (connect [immutable? _]
-                    [else string->immutable-string])]
+  [string? (switch [immutable? _]
+                   [else string->immutable-string])]
   [symbol? (~> symbol->string
                ->string)]
   [number? (~> number->string
@@ -150,7 +150,7 @@
 (define (->integer v #:round [round 'down])
   (switch (v)
     [integer? _]
-    [number? (connect
+    [number? (switch
               [(gen (eq? round 'down))
                (~> floor
                    ->exact)]
@@ -180,8 +180,8 @@
   [else (error '->list "Unsupported type ~a!" _)])
 
 (define-switch (->vector v)
-  [vector? (connect [immutable? _]
-                    [else vector->immutable-vector])]
+  [vector? (switch [immutable? _]
+                   [else vector->immutable-vector])]
   [list? (~> list->vector
              ->vector)]
   [sequence? (~> ->list

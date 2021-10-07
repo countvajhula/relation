@@ -35,7 +35,7 @@
     [(and function?
           (or (not application-scheme?)
               empty-application?))
-     (connect
+     (switch
       [(and composed-function?
             (~> composed-function-components
                 singleton?))
@@ -61,16 +61,16 @@
   ;; only unwraps the compatible part
   (switch (g1)
     [(and base-composed-function?
-          (with-key base-composed-function-composer
-            (eq? (base-composed-function-composer g))))
+          (~> (>< base-composed-function-composer)
+              (eq? (base-composed-function-composer g))))
      (~> (-< ~function-members
              (~> length (take g) ->list))
          check-equal?)]
     [else (gen (check-equal? (first g) g1))])
   (switch (g0)
     [(and base-composed-function?
-          (with-key base-composed-function-composer
-            (eq? (base-composed-function-composer g))))
+          (~> (>< base-composed-function-composer)
+              (eq? (base-composed-function-composer g))))
      (~> (-< (~> ~function-members reverse ->list)
              (~> length (take (reverse g))))
          check-equal?)]
@@ -84,9 +84,9 @@
 (define-switch (~underlying-function v)
   [power-function? power-function-f]
   [(and composed-function?
-        (.. singleton?
-            composed-function-components))
-   (.. first composed-function-components)]
+        (~> composed-function-components
+            singleton?))
+   (~> composed-function-components first)]
   [else _])
 
 (define (check-merged-composition g0 g1 g)

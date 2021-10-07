@@ -187,13 +187,14 @@
         [kw (arguments-keyword args)])
     (switch (f)
       [partial-function?
-       (connect [(~> partial-function-chirality
-                     (eq? chirality))
-                 ((esc pass) args)]
-                [else (~> (gen (struct-copy partial-function
-                                            f
-                                            [chirality chirality]))
-                          ((esc pass) args))])]
+       (switch [(~> partial-function-chirality
+                    (eq? chirality))
+                (gen (pass f args))]
+               [else (~> (-< (gen (struct-copy partial-function
+                                               f
+                                               [chirality chirality]))
+                             (gen args))
+                         pass)])]
       [else (if (gen (eq? chirality 'left))
                 (partial-function 'left pos null kw)
                 (partial-function 'right null pos kw))])))

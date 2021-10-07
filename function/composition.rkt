@@ -54,7 +54,7 @@
     [(and function?
           (or (not application-scheme?)
               empty-application?))
-     (connect
+     (switch
       [(and composed-function?
             (~> composed-function-components
                 singleton?)
