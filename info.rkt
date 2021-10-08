@@ -9,7 +9,7 @@
                "threading-lib"
                "mischief"
                "social-contract"
-               "ionic"
+               "qi"
                "kw-utils"
                "typed-stack"
                "version-case"
