@@ -5,7 +5,7 @@
          racket/generic
          arguments
          contract/social
-         ionic)
+         qi)
 
 (provide gen:application-scheme
          application-scheme/c

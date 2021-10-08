@@ -9,7 +9,7 @@
          (only-in racket/base
                   (compose b:compose))
          contract/social
-         ionic)
+         qi)
 
 (require "type.rkt"
          "../private/util.rkt")

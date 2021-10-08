@@ -11,7 +11,7 @@
                     empty?)
          arguments
          (prefix-in b: racket/base)
-         ionic
+         qi
          (only-in data/collection
                   gen:collection
                   gen:sequence

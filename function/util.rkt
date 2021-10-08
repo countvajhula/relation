@@ -19,7 +19,7 @@
                   (map f:map))
          arguments
          contract/social
-         ionic)
+         qi)
 
 (require "type.rkt"
          "composition.rkt")

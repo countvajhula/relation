@@ -8,7 +8,7 @@
                   gen:collection
                   gen:sequence
                   gen:countable)
-         ionic)
+         qi)
 
 (require "interface.rkt"
          "base.rkt"

@@ -17,7 +17,7 @@
                   (conjoin f:conjoin))
          arguments
          relation
-         ionic
+         qi
          "private/util.rkt")
 
 (define-flow (singleton? seq)

@@ -22,7 +22,7 @@
                   reverse
                   repeat)
          arguments
-         ionic)
+         qi)
 
 (require "interface.rkt"
          "base.rkt"

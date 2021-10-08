@@ -3,7 +3,7 @@
 (require racket/list
          racket/match
          arguments
-         ionic)
+         qi)
 
 (provide check-pairwise
          exists

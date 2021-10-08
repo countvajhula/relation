@@ -3,7 +3,7 @@
 (require (except-in racket/contract/base
                     predicate/c)
          arguments
-         ionic)
+         qi)
 
 (require "type.rkt"
          "composition.rkt"

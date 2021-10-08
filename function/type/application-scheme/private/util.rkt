@@ -1,6 +1,6 @@
 #lang racket/base
 
-(require ionic
+(require qi
          (only-in racket/list empty?)
          racket/match)
 

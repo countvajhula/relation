@@ -28,7 +28,7 @@
          (only-in relation/composition
                   ID
                   reify)
-         ionic
+         qi
          mischief/shorthand
          version-case
          (for-syntax racket/base))

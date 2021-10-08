@@ -25,7 +25,7 @@
                   first
                   rest
                   empty?)
-         ionic)
+         qi)
 
 (require "interface.rkt"
          "../interface.rkt"
