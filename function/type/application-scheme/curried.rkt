@@ -289,7 +289,7 @@
                                                f
                                                [chirality chirality]))
                              (gen args))
-                         pass)])]
+                         (esc pass))])]
       [else (if (gen (eq? chirality 'left))
                 (curried-function 'left pos null kw)
                 (curried-function 'right null pos kw))])))

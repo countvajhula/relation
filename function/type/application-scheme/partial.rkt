@@ -194,7 +194,7 @@
                                                f
                                                [chirality chirality]))
                              (gen args))
-                         pass)])]
+                         (esc pass))])]
       [else (if (gen (eq? chirality 'left))
                 (partial-function 'left pos null kw)
                 (partial-function 'right null pos kw))])))
