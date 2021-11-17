@@ -81,19 +81,10 @@
                               (raise exn)
                               updated-application))]
                        [exn:fail:contract?
-                        ;; presence of a keyword argument results in a premature
-                        ;; contract failure that's not the arity error, even though
-                        ;; that's probably what it should be since providing additional
-                        ;; positional arguments results in expected behavior
-                        ;; additionally, also handle invalid keyword arg here
                         (λ (exn)
                           (let-values ([(req-kw opt-kw)
                                         (-keywords f)]) ; check against underlying function
                             (if (or (hash-empty? kw-args)
-                                    ;; the arity error is masked in the presence of keyword
-                                    ;; args so we check for it again here
-                                    (> (length pos-args)
-                                       min-arity)
                                     ;; any unexpected keywords?
                                     (any?
                                      (map (!! (in? (append req-kw opt-kw)))
