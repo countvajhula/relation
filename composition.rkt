@@ -527,7 +527,11 @@
             result
             ((inverse op) result)))))
 
-(define (power v n [op ~])
-  (~power v n op))
+(define power
+  (case-lambda
+    [(v n op)
+     (~power v n op)]
+    [(v n)
+     (~power v n ~)]))
 
-(define ^ (curryr ~power ~))
+(define ^ (curryr power))
