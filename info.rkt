@@ -9,7 +9,7 @@
                "threading-lib"
                "mischief"
                "social-contract"
-               "qi-lib"
+               "qi"
                "kw-utils"
                "typed-stack"
                "version-case"
