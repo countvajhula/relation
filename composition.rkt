@@ -210,7 +210,7 @@
                           appendable
                           (vector-append appendable other)))
                     (define (appendable-identity appendable)
-                      #())]
+                      (datum-intern-literal #()))]
                    [set?
                     (define (append appendable other)
                       (if (eq? other ID)
