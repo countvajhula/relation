@@ -332,7 +332,7 @@
     (check-false (some? ""))
     (check-false (some? null))
     (check-false (some? (hash)))
-    (check-false (some? #()))
+    (check-false (some? (datum-intern-literal #())))
     (check-false (some? empty-stream))
     (check-true (some? 1))
     (check-true (some? -1))
