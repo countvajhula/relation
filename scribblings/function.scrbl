@@ -193,6 +193,8 @@ In general, the composition is performed "naively" by simply wrapping the compon
 
  Similar to @racket[compose] and equivalent to @racketlink[b:disjoin]{@racket[disjoin]}, this yields a @racket[function] whose composition method is @racketlink[b:disjoin]{@racket[disjoin]} rather than @racketlink[b:compose]{@racket[compose]}, that is, it composes predicates such that it evaluates to true when @emph{any} component evaluates to true. @racket[||] is provided as a convenient alias, following the convention in @other-doc['(lib "algebraic/scribblings/algebraic.scrbl")].
 
+ @bold{N.B.}: It turns out that Racket considers the symbol @racket[||] to be the @seclink["default-readtable-dispatch" #:doc '(lib "scribblings/reference/reference.scrbl")]{empty symbol}, because of the special handling of @racket[\|] by the reader. This may cause problems in certain (perhaps rare) cases -- for instance, if you do a @racket[symbol->string] conversion, you may expect to find @racket["||"] but you would find @racket[""] instead. In cases where you are doing any kind of parsing or serialization of your code, or if you are using these in macros, it would be advisable to just use the written form of the function instead, i.e. @racket[disjoin] rather than @racket[||], to steer clear of possible issues here.
+
 @examples[
     #:eval eval-for-docs
     (|| positive? integer?)
