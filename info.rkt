@@ -9,7 +9,7 @@
                "threading-lib"
                "mischief"
                "social-contract"
-               "qi-lib"
+               "git://github.com/countvajhula/qi.git?path=qi-lib#v1.0-maintenance"
                "kw-utils"
                "typed-stack"
                "version-case"
