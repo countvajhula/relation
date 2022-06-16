@@ -253,6 +253,9 @@
    (test-suite
     "assoc"
     (check-equal? (assoc 'b (list '(a 1) '(b 2) '(c 3))) '(b 2))
+    (check-equal? (assoc 'b (list '(a . 1) '(b . 2) '(c . 3)))
+                  '(b . 2)
+                  "assoc accepts cons pairs")
     (check-equal? (assoc 'b (stream '(a 1) '(b 2) '(c 3))) '(b 2))
     (check-false (assoc 'd (list '(a 1) '(b 2) '(c 3))))
     (check-equal? (assoc 2 (list '(1 a) '(2 b) '(3 c))) '(2 b))

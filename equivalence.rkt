@@ -249,7 +249,7 @@
   (if (empty? col)
       #f
       (let ([pair (first col)])
-        (match-let ([(list k v) pair])
+        (match-let ([(cons k v) pair])
           (if (= #:key key k elem)
               pair
               (assoc #:key key elem (rest col)))))))
