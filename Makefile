@@ -141,33 +141,33 @@ docs:
 
 profile-logic:
 	echo "Profiling logical relations..."
-	raco profile dev/profile/logic/builtin.rkt | grep "Total cpu time"
-	raco profile dev/profile/logic/relation.rkt | grep "Total cpu time"
+	raco profile profile/logic/builtin.rkt | grep "Total cpu time"
+	raco profile profile/logic/relation.rkt | grep "Total cpu time"
 
 profile-equivalence:
 	echo "Profiling equivalence relations..."
-	raco profile dev/profile/equivalence/builtin.rkt | grep "Total cpu time"
-	raco profile dev/profile/equivalence/relation.rkt | grep "Total cpu time"
+	raco profile profile/equivalence/builtin.rkt | grep "Total cpu time"
+	raco profile profile/equivalence/relation.rkt | grep "Total cpu time"
 
 profile-order:
 	echo "Profiling order relations..."
-	raco profile dev/profile/order/builtin.rkt | grep "Total cpu time"
-	raco profile dev/profile/order/relation.rkt | grep "Total cpu time"
+	raco profile profile/order/builtin.rkt | grep "Total cpu time"
+	raco profile profile/order/relation.rkt | grep "Total cpu time"
 
 profile-function:
 	echo "Profiling functional primitives..."
-	raco profile dev/profile/function/builtin.rkt | grep "Total cpu time"
-	raco profile dev/profile/function/relation.rkt | grep "Total cpu time"
+	raco profile profile/function/builtin.rkt | grep "Total cpu time"
+	raco profile profile/function/relation.rkt | grep "Total cpu time"
 
 profile-type:
 	echo "Profiling type transformers..."
-	raco profile dev/profile/type/builtin.rkt | grep "Total cpu time"
-	raco profile dev/profile/type/relation.rkt | grep "Total cpu time"
+	raco profile profile/type/builtin.rkt | grep "Total cpu time"
+	raco profile profile/type/relation.rkt | grep "Total cpu time"
 
 profile-composition:
 	echo "Profiling composition operators..."
-	raco profile dev/profile/composition/builtin.rkt | grep "Total cpu time"
-	raco profile dev/profile/composition/relation.rkt | grep "Total cpu time"
+	raco profile profile/composition/builtin.rkt | grep "Total cpu time"
+	raco profile profile/composition/relation.rkt | grep "Total cpu time"
 
 profile: profile-logic profile-equivalence profile-order profile-function profile-type profile-composition
 
