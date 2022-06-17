@@ -29,7 +29,7 @@
                      "cover-coveralls"
                      "at-exp-lib"))
 (define scribblings '(("scribblings/relation.scrbl" (multi-page))))
-(define compile-omit-paths '("dev" "tests" "coverage"))
+(define compile-omit-paths '("tests"))
 (define test-include-paths '("tests"))
 (define clean '("compiled" "doc" "doc/relation" "tests/compiled" "tests/private/compiled"))
 (define pkg-desc "Generic interfaces and convenient utilities for relations")
