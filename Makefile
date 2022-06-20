@@ -34,7 +34,7 @@ help:
 # Primarily for use by CI.
 # Installs dependencies as well as linking this as a package.
 install:
-	raco pkg install --deps search-auto
+	raco pkg install --deps search-auto --link $(PWD)/$(PACKAGE-NAME)
 
 remove:
 	raco pkg remove $(PACKAGE-NAME)
@@ -84,49 +84,49 @@ test:
 	raco test -x -p $(PACKAGE-NAME)
 
 test-logic:
-	raco test -x tests/logic.rkt
+	raco test -x $(PACKAGE-NAME)/tests/logic.rkt
 
 test-equivalence:
-	raco test -x tests/equivalence.rkt
+	raco test -x $(PACKAGE-NAME)/tests/equivalence.rkt
 
 test-order:
-	raco test -x tests/order.rkt
+	raco test -x $(PACKAGE-NAME)/tests/order.rkt
 
 test-function:
-	raco test -x tests/function.rkt
+	raco test -x $(PACKAGE-NAME)/tests/function.rkt
 
 test-type:
-	raco test -x tests/type.rkt
+	raco test -x $(PACKAGE-NAME)/tests/type.rkt
 
 test-composition:
-	raco test -x tests/composition.rkt
+	raco test -x $(PACKAGE-NAME)/tests/composition.rkt
 
 build+test: build test
 
 errortrace-logic:
-	racket -l errortrace -l racket -e '(require (submod "tests/logic.rkt" test))'
+	racket -l errortrace -l racket -e '(require (submod "$(PACKAGE-NAME)/tests/logic.rkt" test))'
 
 errortrace-equivalence:
-	racket -l errortrace -l racket -e '(require (submod "tests/equivalence.rkt" test))'
+	racket -l errortrace -l racket -e '(require (submod "$(PACKAGE-NAME)/tests/equivalence.rkt" test))'
 
 errortrace-order:
-	racket -l errortrace -l racket -e '(require (submod "tests/order.rkt" test))'
+	racket -l errortrace -l racket -e '(require (submod "$(PACKAGE-NAME)/tests/order.rkt" test))'
 
 errortrace-function:
-	racket -l errortrace -l racket -e '(require (submod "tests/function.rkt" test))'
+	racket -l errortrace -l racket -e '(require (submod "$(PACKAGE-NAME)/tests/function.rkt" test))'
 
 errortrace-type:
-	racket -l errortrace -l racket -e '(require (submod "tests/type.rkt" test))'
+	racket -l errortrace -l racket -e '(require (submod "$(PACKAGE-NAME)/tests/type.rkt" test))'
 
 errortrace-composition:
-	racket -l errortrace -l racket -e '(require (submod "tests/composition.rkt" test))'
+	racket -l errortrace -l racket -e '(require (submod "$(PACKAGE-NAME)/tests/composition.rkt" test))'
 
 test-with-errortrace: errortrace-logic errortrace-equivalence errortrace-order errortrace-function errortrace-type errortrace-composition
 
 errortrace: test-with-errortrace
 
 coverage-check:
-	raco cover -b -n dev -p $(PACKAGE-NAME)
+	raco cover -b -d ./coverage -p $(PACKAGE-NAME)
 
 coverage-report:
 	open coverage/index.html
@@ -134,40 +134,40 @@ coverage-report:
 cover: coverage-check coverage-report
 
 cover-coveralls:
-	raco cover -b -n dev -f coveralls -p $(PACKAGE-NAME)
+	raco cover -b -f coveralls -p $(PACKAGE-NAME)
 
 docs:
 	raco docs $(PACKAGE-NAME)
 
 profile-logic:
 	echo "Profiling logical relations..."
-	raco profile dev/profile/logic/builtin.rkt | grep "Total cpu time"
-	raco profile dev/profile/logic/relation.rkt | grep "Total cpu time"
+	raco profile profile/logic/builtin.rkt | grep "Total cpu time"
+	raco profile profile/logic/relation.rkt | grep "Total cpu time"
 
 profile-equivalence:
 	echo "Profiling equivalence relations..."
-	raco profile dev/profile/equivalence/builtin.rkt | grep "Total cpu time"
-	raco profile dev/profile/equivalence/relation.rkt | grep "Total cpu time"
+	raco profile profile/equivalence/builtin.rkt | grep "Total cpu time"
+	raco profile profile/equivalence/relation.rkt | grep "Total cpu time"
 
 profile-order:
 	echo "Profiling order relations..."
-	raco profile dev/profile/order/builtin.rkt | grep "Total cpu time"
-	raco profile dev/profile/order/relation.rkt | grep "Total cpu time"
+	raco profile profile/order/builtin.rkt | grep "Total cpu time"
+	raco profile profile/order/relation.rkt | grep "Total cpu time"
 
 profile-function:
 	echo "Profiling functional primitives..."
-	raco profile dev/profile/function/builtin.rkt | grep "Total cpu time"
-	raco profile dev/profile/function/relation.rkt | grep "Total cpu time"
+	raco profile profile/function/builtin.rkt | grep "Total cpu time"
+	raco profile profile/function/relation.rkt | grep "Total cpu time"
 
 profile-type:
 	echo "Profiling type transformers..."
-	raco profile dev/profile/type/builtin.rkt | grep "Total cpu time"
-	raco profile dev/profile/type/relation.rkt | grep "Total cpu time"
+	raco profile profile/type/builtin.rkt | grep "Total cpu time"
+	raco profile profile/type/relation.rkt | grep "Total cpu time"
 
 profile-composition:
 	echo "Profiling composition operators..."
-	raco profile dev/profile/composition/builtin.rkt | grep "Total cpu time"
-	raco profile dev/profile/composition/relation.rkt | grep "Total cpu time"
+	raco profile profile/composition/builtin.rkt | grep "Total cpu time"
+	raco profile profile/composition/relation.rkt | grep "Total cpu time"
 
 profile: profile-logic profile-equivalence profile-order profile-function profile-type profile-composition
 
