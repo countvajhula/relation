@@ -337,7 +337,7 @@
       v))
 
 (define (some? v)
-  (not (eq? v (appendable-identity v))))
+  (not (equal? v (appendable-identity v))))
 
 (define (~ . vs)
   (if (empty? vs)
