@@ -1,4 +1,6 @@
 # Adapted from: http://www.greghendershott.com/2017/04/racket-makefiles.html
+SHELL=/bin/bash
+
 PACKAGE-NAME=relation
 
 DEPS-FLAGS=--check-pkg-deps --unused-pkg-deps
@@ -34,10 +36,10 @@ help:
 # Primarily for use by CI.
 # Installs dependencies as well as linking this as a package.
 install:
-	raco pkg install --deps search-auto --link $(PWD)/$(PACKAGE-NAME)
+	raco pkg install --deps search-auto --link $(PWD)/$(PACKAGE-NAME)-{lib,test,doc} $(PWD)/$(PACKAGE-NAME)
 
 remove:
-	raco pkg remove $(PACKAGE-NAME)
+	raco pkg remove $(PACKAGE-NAME)-{lib,test,doc} $(PACKAGE-NAME)
 
 # TODO: research difference between raco setup relation
 # and raco setup --pkg relation
@@ -47,18 +49,18 @@ remove:
 # Primarily for day-to-day dev.
 # Build libraries from source.
 build:
-	raco setup --no-docs --tidy --pkgs $(PACKAGE-NAME)
+	raco setup --no-docs --pkgs $(PACKAGE-NAME)-lib
 
 # Primarily for day-to-day dev.
 # Build docs (if any).
 build-docs:
 	raco setup --no-launcher --no-foreign-libs --no-info-domain --no-pkg-deps \
-	--no-install --no-post-install --tidy --pkgs $(PACKAGE-NAME)
+	--no-install --no-post-install --pkgs $(PACKAGE-NAME)-doc
 
 # Primarily for day-to-day dev.
 # Build libraries from source, build docs (if any), and check dependencies.
 build-all:
-	raco setup --tidy $(DEPS-FLAGS) --pkgs $(PACKAGE-NAME)
+	raco setup $(DEPS-FLAGS) --pkgs $(PACKAGE-NAME)-{lib,test,doc} $(PACKAGE-NAME)
 
 # Primarily for use by CI, after make install -- since that already
 # does the equivalent of make setup, this tries to do as little as
@@ -70,7 +72,7 @@ check-deps:
 # (define clean '("compiled" "doc" "doc/<collect>")) to clean
 # generated docs, too.
 clean:
-	raco setup --fast-clean --pkgs $(PACKAGE-NAME)
+	raco setup --fast-clean --pkgs $(PACKAGE-NAME)-{lib,test,doc}
 
 # Suitable for both day-to-day dev and CI
 # Note: the removal of compiled test binaries before running tests is
@@ -81,52 +83,52 @@ clean:
 # forces a re-compile at test running time against the current
 # installed version.
 test:
-	raco test -x -p $(PACKAGE-NAME)
+	raco test -exp $(PACKAGE-NAME)-{lib,test,doc}
 
 test-logic:
-	raco test -x $(PACKAGE-NAME)/tests/logic.rkt
+	raco test -x $(PACKAGE-NAME)-test/tests/logic.rkt
 
 test-equivalence:
-	raco test -x $(PACKAGE-NAME)/tests/equivalence.rkt
+	raco test -x $(PACKAGE-NAME)-test/tests/equivalence.rkt
 
 test-order:
-	raco test -x $(PACKAGE-NAME)/tests/order.rkt
+	raco test -x $(PACKAGE-NAME)-test/tests/order.rkt
 
 test-function:
-	raco test -x $(PACKAGE-NAME)/tests/function.rkt
+	raco test -x $(PACKAGE-NAME)-test/tests/function.rkt
 
 test-type:
-	raco test -x $(PACKAGE-NAME)/tests/type.rkt
+	raco test -x $(PACKAGE-NAME)-test/tests/type.rkt
 
 test-composition:
-	raco test -x $(PACKAGE-NAME)/tests/composition.rkt
+	raco test -x $(PACKAGE-NAME)-test/tests/composition.rkt
 
 build+test: build test
 
 errortrace-logic:
-	racket -l errortrace -l racket -e '(require (submod "$(PACKAGE-NAME)/tests/logic.rkt" test))'
+	racket -l errortrace -l racket -e '(require (submod "$(PACKAGE-NAME)-test/tests/logic.rkt" test))'
 
 errortrace-equivalence:
-	racket -l errortrace -l racket -e '(require (submod "$(PACKAGE-NAME)/tests/equivalence.rkt" test))'
+	racket -l errortrace -l racket -e '(require (submod "$(PACKAGE-NAME)-test/tests/equivalence.rkt" test))'
 
 errortrace-order:
-	racket -l errortrace -l racket -e '(require (submod "$(PACKAGE-NAME)/tests/order.rkt" test))'
+	racket -l errortrace -l racket -e '(require (submod "$(PACKAGE-NAME)-test/tests/order.rkt" test))'
 
 errortrace-function:
-	racket -l errortrace -l racket -e '(require (submod "$(PACKAGE-NAME)/tests/function.rkt" test))'
+	racket -l errortrace -l racket -e '(require (submod "$(PACKAGE-NAME)-test/tests/function.rkt" test))'
 
 errortrace-type:
-	racket -l errortrace -l racket -e '(require (submod "$(PACKAGE-NAME)/tests/type.rkt" test))'
+	racket -l errortrace -l racket -e '(require (submod "$(PACKAGE-NAME)-test/tests/type.rkt" test))'
 
 errortrace-composition:
-	racket -l errortrace -l racket -e '(require (submod "$(PACKAGE-NAME)/tests/composition.rkt" test))'
+	racket -l errortrace -l racket -e '(require (submod "$(PACKAGE-NAME)-test/tests/composition.rkt" test))'
 
 test-with-errortrace: errortrace-logic errortrace-equivalence errortrace-order errortrace-function errortrace-type errortrace-composition
 
 errortrace: test-with-errortrace
 
 coverage-check:
-	raco cover -b -d ./coverage -p $(PACKAGE-NAME)
+	raco cover -b -d ./coverage -p $(PACKAGE-NAME)-{lib,test}
 
 coverage-report:
 	open coverage/index.html
@@ -134,7 +136,7 @@ coverage-report:
 cover: coverage-check coverage-report
 
 cover-coveralls:
-	raco cover -b -f coveralls -p $(PACKAGE-NAME)
+	raco cover -b -f coveralls -p $(PACKAGE-NAME)-{lib,test}
 
 docs:
 	raco docs $(PACKAGE-NAME)
