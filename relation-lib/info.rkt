@@ -10,7 +10,6 @@
                "social-contract"
                "qi-lib"
                "kw-utils"
-               "typed-stack"
                "version-case"))
 (define build-deps '("at-exp-lib"))
 (define clean '("compiled"))
