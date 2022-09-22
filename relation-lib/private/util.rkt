@@ -14,9 +14,6 @@
          singleton?
          arguments-cons)
 
-(module+ test
-  (require rackunit))
-
 (define (check-pairwise check? vals)
   (if (empty? vals)
       #t
@@ -65,10 +62,3 @@
 (define (arguments-cons v args)
   (make-arguments (cons v (arguments-positional args))
                   (arguments-keyword args)))
-
-(module+ test
-  (test-case
-      "kwhash->altlist"
-    (check-equal? (kwhash->altlist (hash '#:c 2 '#:a 1 '#:b 3)) '(#:a 1 #:b 3 #:c 2))
-    (check-equal? (kwhash->altlist (hash '#:a 1)) '(#:a 1))
-    (check-equal? (kwhash->altlist (hash)) '())))

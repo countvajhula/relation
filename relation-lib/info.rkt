@@ -12,8 +12,7 @@
                "qi-lib"
                "kw-utils"
                "typed-stack"
-               "version-case"
-               "rackunit-lib"))
+               "version-case"))
 (define build-deps '("at-exp-lib"))
 (define clean '("compiled"))
 (define pkg-desc "Generic interfaces and convenient utilities for relations")
