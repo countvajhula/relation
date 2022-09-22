@@ -1,7 +1,7 @@
 #lang racket/base
 
 (require racket/hash
-         mischief/shorthand
+         "../private/util.rkt"
          syntax/parse/define
          (only-in kw-utils/kw-hash
                   apply/kw-hash)

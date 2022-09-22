@@ -9,7 +9,6 @@
                      "arguments"
                      "collections-lib"
                      "functional-lib"
-                     "mischief"
                      "algebraic"
                      "sugar"
                      "fancy-app"

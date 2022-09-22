@@ -3,9 +3,12 @@
 (require racket/list
          racket/match
          arguments
-         qi)
+         syntax/parse/define
+         qi
+         (for-syntax racket/base))
 
-(provide check-pairwise
+(provide define-alias
+         check-pairwise
          exists
          for-all
          find
@@ -13,6 +16,9 @@
          join-list
          singleton?
          arguments-cons)
+
+(define-syntax-parse-rule (define-alias alias:id name:id)
+  (define-syntax alias (make-rename-transformer #'name)))
 
 (define (check-pairwise check? vals)
   (if (empty? vals)

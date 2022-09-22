@@ -7,7 +7,6 @@
                "functional-lib"
                "arguments"
                "point-free"
-               "mischief"
                "social-contract"
                "qi-lib"
                "kw-utils"

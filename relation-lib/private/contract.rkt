@@ -4,7 +4,7 @@
                     predicate/c)
          contract/social
          syntax/parse/define
-         mischief/shorthand
+         "util.rkt"
          version-case
          (for-syntax racket/base))
 
