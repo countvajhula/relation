@@ -4,8 +4,7 @@
          rackunit/text-ui
          racket/undefined
          racket/stream
-         relation
-         "private/util.rkt")
+         relation)
 
 (define tests
   (test-suite
@@ -57,5 +56,5 @@
     (check-equal? (none? (stream #t #t)) (not (or #t #t))))))
 
 (module+ test
-  (just-do
+  (void
    (run-tests tests)))

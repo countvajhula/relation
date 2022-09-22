@@ -16,8 +16,7 @@
                   gen:sequence
                   empty?
                   first
-                  rest)
-         "private/util.rkt")
+                  rest))
 
 (define tests
   (test-suite
@@ -241,5 +240,5 @@
     (check-equal? ((->procedure (list 1 2 3)) "blah") (list 1 2 3)))))
 
 (module+ test
-  (just-do
+  (void
    (run-tests tests)))

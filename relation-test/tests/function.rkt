@@ -17,8 +17,7 @@
                   (conjoin f:conjoin))
          arguments
          relation
-         qi
-         "private/util.rkt")
+         qi)
 
 (define-flow (singleton? seq)
   ;; cheap check to see if a list is of length 1,
@@ -702,5 +701,5 @@
                     -3.4))))))
 
 (module+ test
-  (just-do
+  (void
    (run-tests tests)))

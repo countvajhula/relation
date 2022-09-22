@@ -3,8 +3,7 @@
 (require rackunit
          rackunit/text-ui
          relation/private/util
-         relation/function/type/application-scheme/private/util
-         "private/util.rkt")
+         relation/function/type/application-scheme/private/util)
 
 (define tests
   (test-suite
@@ -41,5 +40,5 @@
      (check-equal? (list-subtract null null) null)))))
 
 (module+ test
-  (just-do
+  (void
    (run-tests tests)))

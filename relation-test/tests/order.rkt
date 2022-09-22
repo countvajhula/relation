@@ -6,8 +6,7 @@
          (prefix-in b: racket/base)
          racket/set
          racket/stream
-         racket/sequence
-         "private/util.rkt")
+         racket/sequence)
 
 (define tests
   (test-suite
@@ -263,5 +262,5 @@
     (check-equal? (apply max #:key car '((1 . 2) (0 . 1) (3 . 1))) '(3 . 1) "contract accepts unorderable values"))))
 
 (module+ test
-  (just-do
+  (void
    (run-tests tests)))
