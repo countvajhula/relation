@@ -29,7 +29,7 @@
                   ID
                   reify)
          qi
-         mischief/shorthand
+         "private/util.rkt"
          version-case
          (for-syntax racket/base))
 

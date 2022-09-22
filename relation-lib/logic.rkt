@@ -11,7 +11,7 @@
                   (apply d:apply)
                   sequence?)
          (for-syntax racket/base)
-         mischief/shorthand
+         "private/util.rkt"
          contract/social)
 
 (provide :=

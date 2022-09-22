@@ -20,7 +20,6 @@
                     (only-in racket/generator sequence->generator)
                     (prefix-in b: racket/function)
                     arguments
-                    (only-in mischief/function (call m:call))
                     (prefix-in f: data/functor)]]
 
 @(define eval-for-docs
@@ -394,7 +393,7 @@ In general, the composition is performed "naively" by simply wrapping the compon
                ...)
          procedure?]{
 
- Reprovided from @racketlink[m:call]{@racket[call]}. This simply makes standard function invocation available as a function, for use in cases where we cannot directly (i.e. syntactically) invoke the function.
+ Reprovided from @hyperlink["https://docs.racket-lang.org/mischief/function.html#%28def._%28%28lib._mischief%2Ffunction..rkt%29._call%29%29"]{@racket[call]}. This simply makes standard function invocation available as a function, for use in cases where we cannot directly (i.e. syntactically) invoke the function.
  This function is in some respects similar to the @hyperlink["https://typeclasses.com/featured/dollar"]{@racket[$] operator} in Haskell.
 
 @examples[

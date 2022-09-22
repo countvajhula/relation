@@ -15,8 +15,7 @@
          racket/port
          (only-in racket/function
                   identity
-                  thunk)
-         "private/util.rkt")
+                  thunk))
 
 (define tests
   (test-suite
@@ -343,5 +342,5 @@
     (check-true (some? (stream 1))))))
 
 (module+ test
-  (just-do
+  (void
    (run-tests tests)))

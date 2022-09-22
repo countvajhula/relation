@@ -13,8 +13,7 @@
                     foldl
                     foldl/steps
                     append)
-         relation
-         "private/util.rkt")
+         relation)
 
 (define tests
   (test-suite
@@ -264,5 +263,5 @@
     (check-false (assoc 'b (list))))))
 
 (module+ test
-  (just-do
+  (void
    (run-tests tests)))

@@ -13,7 +13,6 @@
          arguments
          (prefix-in b: racket/base)
          (except-in data/maybe maybe/c)
-         typed-stack
          (only-in data/collection
                   gen:collection
                   gen:sequence
@@ -45,23 +44,25 @@
   (define n-expected-args
     (length (filter nothing? pos)))
   (define arg-stack
-    (apply make-stack args))
+    (apply list args))
   (define filled-in-pos-template
     (for/list ([arg pos])
       (if (just? arg)
           arg
-          (if (stack-empty? arg-stack)
+          (if (empty? arg-stack)
               (raise (recoverable-apply-error (~a "Not enough arguments, expected: "
                                                   n-expected-args)
                                               (current-continuation-marks)))
-              (just (pop! arg-stack))))))
-  (unless (stack-empty? arg-stack)
+              (let ([v (first arg-stack)])
+                (set! arg-stack (rest arg-stack))
+                (just v))))))
+  (unless (empty? arg-stack)
     ;; too many args provided
     (apply raise-arity-error
            'pass
            n-expected-args
            (append (filter-just filled-in-pos-template)
-                   (stack->list arg-stack))))
+                   arg-stack)))
   filled-in-pos-template)
 
 (define (~populate-keyword-template kw kw-args)

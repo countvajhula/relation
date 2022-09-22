@@ -3,9 +3,13 @@
 (require racket/list
          racket/match
          arguments
-         qi)
+         syntax/parse/define
+         version-case
+         qi
+         (for-syntax racket/base))
 
-(provide check-pairwise
+(provide define-alias
+         check-pairwise
          exists
          for-all
          find
@@ -14,8 +18,13 @@
          singleton?
          arguments-cons)
 
-(module+ test
-  (require rackunit))
+(version-case
+ [(version< (version) "7.9.0.22")
+  (define-syntax define-syntax-parse-rule
+    (make-rename-transformer #'define-simple-macro))])
+
+(define-syntax-parse-rule (define-alias alias:id name:id)
+  (define-syntax alias (make-rename-transformer #'name)))
 
 (define (check-pairwise check? vals)
   (if (empty? vals)
@@ -65,10 +74,3 @@
 (define (arguments-cons v args)
   (make-arguments (cons v (arguments-positional args))
                   (arguments-keyword args)))
-
-(module+ test
-  (test-case
-      "kwhash->altlist"
-    (check-equal? (kwhash->altlist (hash '#:c 2 '#:a 1 '#:b 3)) '(#:a 1 #:b 3 #:c 2))
-    (check-equal? (kwhash->altlist (hash '#:a 1)) '(#:a 1))
-    (check-equal? (kwhash->altlist (hash)) '())))
