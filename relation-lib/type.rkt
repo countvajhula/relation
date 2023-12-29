@@ -116,8 +116,8 @@
                ->string)]
   [keyword? (~> keyword->string
                 ->string)]
-  [(listof char?) (~> list->string
-                      ->string)]
+  [(esc (listof char?)) (~> list->string
+                            ->string)]
   [bytes? (~> bytes->string/locale
               ->string)]
   [list? (~> ~a
