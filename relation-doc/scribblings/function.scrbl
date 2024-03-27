@@ -3,6 +3,7 @@
          scribble-abbrevs/manual
          scribble/example
          racket/sandbox
+         "eval.rkt"
          @for-label[relation/function
                     relation/type
                     (only-in relation/equivalence member? =)
@@ -23,15 +24,13 @@
                     (prefix-in f: data/functor)]]
 
 @(define eval-for-docs
-   (make-base-eval #:lang 'racket/base
-                   '(require data/maybe
-                             arguments
-                             relation
-                             racket/set
-                             (only-in racket/list range)
-                             (only-in racket/math sqr)
-                             racket/generator
-                             racket/stream)))
+  (make-eval-for-docs '(require data/maybe
+                                arguments
+                                racket/set
+                                (only-in racket/list range)
+                                (only-in racket/math sqr)
+                                racket/generator
+                                racket/stream)))
 
 @title{Functional Primitives}
 

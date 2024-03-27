@@ -3,21 +3,17 @@
          scribble-abbrevs/manual
          scribble/example
          racket/sandbox
+         "eval.rkt"
          @for-label[relation/type
                     (except-in racket < <= = >= >)
                     (only-in data/collection collection? conj conj* gen:collection)
                     racket/generator]]
 
 @(define eval-for-docs
-  (parameterize ([sandbox-output 'string]
-                 [sandbox-error-output 'string]
-                 [sandbox-memory-limit #f])
-    (make-evaluator 'racket/base
-                    '(require relation
-                              racket/set
-                              (only-in racket/function thunk*)
-                              (only-in data/collection conj)
-                              racket/stream))))
+  (make-eval-for-docs '(require racket/set
+                                (only-in racket/function thunk*)
+                                (only-in data/collection conj)
+                                racket/stream)))
 
 @title{Types}
 

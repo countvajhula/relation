@@ -3,6 +3,7 @@
          scribble-abbrevs/manual
          scribble/example
          racket/sandbox
+         "eval.rkt"
          @for-label[relation/order
                     relation/equivalence
                     relation/type
@@ -12,18 +13,13 @@
                     (only-in data/collection length sequenceof)]]
 
 @(define eval-for-docs
-  (parameterize ([sandbox-output 'string]
-                 [sandbox-error-output 'string]
-                 [sandbox-memory-limit #f])
-                 (make-evaluator 'racket/base
-                                 '(require (except-in data/collection
-                                                      append
-                                                      index-of
-                                                      map
-                                                      foldl
-                                                      foldl/steps))
-				                 '(require relation)
-								 '(require racket/set))))
+  (make-eval-for-docs '(require (except-in data/collection
+                                           append
+                                           index-of
+                                           map
+                                           foldl
+                                           foldl/steps)
+                                racket/set)))
 
 @title{Order Relations}
 

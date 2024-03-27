@@ -3,6 +3,7 @@
          scribble-abbrevs/manual
          scribble/example
          racket/sandbox
+         "eval.rkt"
          @for-label[relation/composition
                     relation/type
                     relation/logic
@@ -35,21 +36,16 @@
                                              (foldl/steps d:foldl/steps))]]
 
 @(define eval-for-docs
-  (parameterize ([sandbox-output 'string]
-                 [sandbox-error-output 'string]
-                 [sandbox-memory-limit #f])
-                 (make-evaluator 'racket/base
-                                 '(require (except-in data/collection
-                                                      append
-                                                      index-of
-                                                      foldl
-                                                      foldl/steps)
-                                           (only-in racket/math sqr)
-                                           (only-in racket/function thunk*)
-                                           relation
-                                           racket/match
-                                           racket/set
-                                           racket/stream))))
+  (make-eval-for-docs '(require (except-in data/collection
+                                           append
+                                           index-of
+                                           foldl
+                                           foldl/steps)
+                                (only-in racket/math sqr)
+                                (only-in racket/function thunk*)
+                                racket/match
+                                racket/set
+                                racket/stream)))
 
 @title{Composing Operations}
 

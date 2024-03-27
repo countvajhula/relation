@@ -3,25 +3,21 @@
          scribble-abbrevs/manual
          scribble/example
          racket/sandbox
+         "eval.rkt"
          @for-label[relation/logic
                     (only-in relation/composition fold)
                     racket/undefined
                     racket]]
 
 @(define eval-for-docs
-  (parameterize ([sandbox-output 'string]
-                 [sandbox-error-output 'string]
-                 [sandbox-memory-limit #f])
-    (make-evaluator 'racket/base
-    '(require (except-in data/collection
-                         append
-                         index-of
-                         foldl
-                         foldl/steps)
-              relation
-              racket/undefined
-              racket/set
-              racket/stream))))
+  (make-eval-for-docs '(require (except-in data/collection
+                                           append
+                                           index-of
+                                           foldl
+                                           foldl/steps)
+                                racket/undefined
+                                racket/set
+                                racket/stream)))
 
 @title{Logical Relations}
 

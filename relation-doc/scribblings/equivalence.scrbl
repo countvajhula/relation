@@ -3,6 +3,7 @@
          scribble-abbrevs/manual
          scribble/example
          racket/sandbox
+         "eval.rkt"
          @for-label[relation/equivalence
                     relation/type
                     racket/generic
@@ -13,19 +14,14 @@
                     (only-in data/collection drop length sequenceof)]]
 
 @(define eval-for-docs
-  (parameterize ([sandbox-output 'string]
-                 [sandbox-error-output 'string]
-                 [sandbox-memory-limit #f])
-                 (make-evaluator 'racket/base
-                                 '(require (except-in data/collection
+  (make-eval-for-docs '(require (except-in data/collection
                                                       append
                                                       index-of
                                                       foldl
                                                       foldl/steps)
                                            (only-in racket/function identity)
-                                           relation
                                            racket/set
-                                           racket/stream))))
+                                           racket/stream)))
 
 @title{Equivalence Relations}
 
