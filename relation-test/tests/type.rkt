@@ -166,6 +166,7 @@
    (test-suite
     "->bytes"
     (check-equal? (->bytes (list 97 98 99)) #"abc")
+    (check-equal? (->bytes #(97 98 99)) #"abc")
     (check-equal? (->bytes "abc") #"abc")
     (check-equal? (->bytes ID) #"")
     (check-exn exn:fail?

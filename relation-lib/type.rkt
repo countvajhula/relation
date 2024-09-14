@@ -22,6 +22,8 @@
          (only-in data/collection
                   for-each
                   collection?
+                  sequence->bytes
+                  [sequence? d:sequence?]
                   conj
                   extend)
          contract/social
@@ -211,6 +213,7 @@
   [string? (~>> ->list
                 (map char->integer)
                 ->bytes)]
+  [d:sequence? sequence->bytes]
   [else (~> ->string
             ->bytes)])
 
