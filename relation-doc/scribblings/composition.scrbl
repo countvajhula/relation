@@ -1,39 +1,51 @@
 #lang scribble/doc
+@(module for-label racket/base
+   (require relation/composition
+            relation/type
+            relation/logic
+            (only-in relation/function false.)
+            (only-in racket/math sqr)
+            (only-in racket/function thunk*)
+            racket/contract
+            racket/generic
+            racket/set
+            racket/stream
+            racket/undefined
+            racket/match
+            (only-in racket/base
+                     (foldl f:foldl)
+                     (foldr f:foldr)
+                     (append b:append))
+            (only-in data/collection
+                     length
+                     repeat
+                     sequenceof
+                     sequence?
+                     collection?
+                     map
+                     gen:sequence
+                     (foldl d:foldl)
+                     (foldl/steps d:foldl/steps)))
+   (provide (all-from-out relation/composition
+                          relation/type
+                          relation/logic
+                          relation/function
+                          racket/math
+                          racket/function
+                          racket/contract
+                          racket/generic
+                          racket/set
+                          racket/stream
+                          racket/undefined
+                          racket/match
+                          racket/base
+                          data/collection)))
 @require[scribble/manual
          scribble-abbrevs/manual
          scribble/example
          racket/sandbox
          "eval.rkt"
-         @for-label[relation/composition
-                    relation/type
-                    relation/logic
-                    (only-in relation/function false.)
-                    (only-in racket/function thunk*)
-                    racket/generic
-					racket/undefined
-                    racket/match
-                    (except-in racket +
-                                      -
-                                      *
-                                      /
-                                      foldl
-                                      foldr
-                                      length
-                                      append
-                                      map
-                                      sequence?)
-                    (only-in racket (foldl f:foldl)
-                                    (foldr f:foldr)
-                                    (append b:append))
-                    (only-in data/collection length
-                                             repeat
-                                             sequenceof
-                                             sequence?
-                                             collection?
-                                             map
-                                             gen:sequence
-                                             (foldl d:foldl)
-                                             (foldl/steps d:foldl/steps))]]
+         @for-label['for-label]]
 
 @(define eval-for-docs
   (make-eval-for-docs '(require (except-in data/collection
