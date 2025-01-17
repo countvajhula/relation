@@ -16,7 +16,8 @@
          kwhash->altlist
          join-list
          singleton?
-         arguments-cons)
+         arguments-cons
+         variant)
 
 (version-case
  [(version< (version) "7.9.0.22")
@@ -74,3 +75,11 @@
 (define (arguments-cons v args)
   (make-arguments (cons v (arguments-positional args))
                   (arguments-keyword args)))
+
+;; from the `describe` package
+;; https://docs.racket-lang.org/describe/index.html
+(define (variant x)
+  (string->symbol
+   (regexp-replace #rx"^struct:"
+                   (symbol->string (vector-ref (struct->vector x) 0))
+                   "")))

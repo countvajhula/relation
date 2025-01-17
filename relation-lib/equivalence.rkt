@@ -24,7 +24,6 @@
                   sequence?
                   sequenceof
                   (map d:map))
-         describe
          contract/social
          relation/logic)
 

@@ -3,7 +3,6 @@
 (define collection "relation")
 (define deps '("base"
                "collections-lib"
-               "describe"
                "functional-lib"
                "arguments"
                "point-free"
